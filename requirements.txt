@@ -1,4 +1,5 @@
 black
 Flask
 pandas
+pre-commit
 pytest
