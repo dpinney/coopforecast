@@ -13,5 +13,8 @@ pip install -r requirements.txt
 
 ## Running the application
 
-You can either run the application with a simple `flask run` or you can bring in 
-other development configs by executing `flask.sh`.
+After installation, run the application by executing the run script:
+
+```sh
+source run.sh
+```
