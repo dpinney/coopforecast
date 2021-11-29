@@ -17,11 +17,13 @@
     <h6 class="m-0 font-weight-bold text-primary">Upload load data</h6>
   </div>
   <div class="card-body">
-    <p>Two columns are expected: <code>timestamp</code> and <code>load</code>. New timestamps will be added and
+    <p>Two columns are expected: <code>timestamp</code> and <code>load</code>. Hour-by-hour load data is expected.
+      Please use <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO_8601</a> formatting
+      (<code>YYYY-MM-DD HH:00</code>). New timestamps will be added and
       timestamps with existing values will be overwritten.</p>
     <p>
-      <!-- TODO: Add example dataset to repository -->
-      <a href="/" class="btn btn-secondary btn-sm">View an example dataset</a>
+      <a href="https://gist.github.com/kmcelwee/ce163d8c9d2871ab4c652382431c7801" class="btn btn-secondary btn-sm">View
+        an example dataset</a>
     </p>
     <div class="input-group mb-3">
       <div class="input-group-prepend">
@@ -58,7 +60,9 @@
   <!-- Card Content - Collapse -->
   <div class="collapse show" id="collapse-table">
     <div class="card-body">
-      {% include 'table.html' %}
+      <p>Currently deactivated since it severely slows down the webpage. Discuss with stakeholder if seeing data in
+        table form is necessary. Otherwise, maybe offer a link to a plain text version of their CSV.</p>
+      {# include 'table.html' #}
     </div>
   </div>
 </div>

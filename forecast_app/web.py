@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -11,7 +12,9 @@ def login():
 
 @app.route("/load-data")
 def load_data():
-    return render_template("load-data.html", name="load-data")
+    df = pd.read_csv("forecast_app/static/test-data/ercot-ncent-load.csv")
+    table = df.to_dict("records")
+    return render_template("load-data.html", name="load-data", table=table)
 
 
 @app.route("/weather-data")
