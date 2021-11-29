@@ -1,0 +1,21 @@
+<!doctype html>
+
+<head>
+  <title>{% block title %}{% endblock %} - Load Forecaster</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  {% block head %}{% endblock %}
+</head>
+
+<body>
+  <nav>
+    <h1><a href="/">Load Forecaster</a></h1>
+    <ul>
+      <li><a href="/load-data">Load Data</a></li>
+      <li><a href="/weather-data">Weather Data</a></li>
+      <li><a href="/forecast">Forecast</a></li>
+    </ul>
+  </nav>
+  <section class="content">
+    {% block content %}{% endblock %}
+  </section>
+</body>
