@@ -4,5 +4,65 @@
 {% block head %}{% endblock %}
 
 {% block content %}
+
 <h1>Load Data</h1>
+<ul>
+  <li><a href="#upload">Upload Data</a></li>
+  <li><a href="#charts">Charts</a></li>
+  <li><a href="#tables">Tables</a></li>
+</ul>
+
+<div class="card shadow mb-4" id="upload">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Upload load data</h6>
+  </div>
+  <div class="card-body">
+    <p>Two columns are expected: <code>timestamp</code> and <code>load</code>. New timestamps will be added and
+      timestamps with existing values will be overwritten.</p>
+    <p>
+      <!-- TODO: Add example dataset to repository -->
+      <a href="/" class="btn btn-secondary btn-sm">View an example dataset</a>
+    </p>
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Upload</span>
+      </div>
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="inputGroupFile01">
+        <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow mb-4" id="charts">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-chart" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-chart">
+    <h6 class="m-0 font-weight-bold text-primary">Charts</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-chart">
+    <div class="card-body">
+      <p>Insert charts</p>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow mb-4" id="tables">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-table" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-table">
+    <h6 class="m-0 font-weight-bold text-primary">Table</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-table">
+    <div class="card-body">
+      {% include 'table.html' %}
+    </div>
+  </div>
+</div>
+
+
+
 {% endblock %}
