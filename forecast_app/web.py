@@ -24,5 +24,20 @@ def forecast():
     return render_template("forecast.html", name="forecast")
 
 
+@app.route("/instructions")
+def instructions():
+    return render_template("instructions.html", name="instructions")
+
+
+@app.route("/model-settings")
+def model_settings():
+    return render_template("model-settings.html", name="model-settings")
+
+
+@app.route("/user-settings")
+def user_settings():
+    return render_template("user-settings.html", name="user-settings")
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=1546)
