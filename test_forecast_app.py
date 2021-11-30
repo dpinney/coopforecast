@@ -17,31 +17,20 @@ def client():
     os.unlink(db_path)
 
 
-class TestViews:
-    def test_login(self, client):
-        """Check basic response from login page."""
-        assert client.get("/").status_code == 200
+def test_views(client):
+    """Test that all pages return 200 and have the expected content"""
 
-    def test_load_data(self, client):
-        """Check basic response from load data page."""
-        assert client.get("/load-data").status_code == 200
+    pages = {
+        "/": "Login",
+        "/load-data": "Load Data",
+        "/weather-data": "Weather Data",
+        "/forecast": "Forecast",
+        "/instructions": "Instructions",
+        "/model-settings": "Model Settings",
+        "/user-settings": "User Settings",
+    }
 
-    def test_weather_data(self, client):
-        """Check basic response from weather data page."""
-        assert client.get("/weather-data").status_code == 200
-
-    def test_forecast(self, client):
-        """Check basic response from forecast page."""
-        assert client.get("/forecast").status_code == 200
-
-    def test_instructions(self, client):
-        """Check basic response from instructions page."""
-        assert client.get("/instructions").status_code == 200
-
-    def test_model_settings(self, client):
-        """Check basic response from model settings page."""
-        assert client.get("/model-settings").status_code == 200
-
-    def test_user_settings(self, client):
-        """Check basic response from user settings page."""
-        assert client.get("/user-settings").status_code == 200
+    for route, page_name in pages.items():
+        response = client.get(route)
+        assert response.status_code == 200
+        assert page_name in str(response.data)

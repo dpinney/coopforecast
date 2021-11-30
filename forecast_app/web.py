@@ -7,7 +7,6 @@ app = Flask(__name__)
 @app.route("/")
 def login():
     return render_template("login.html", name="login")
-    # return "Hello World!"
 
 
 @app.route("/load-data")
