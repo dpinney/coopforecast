@@ -1,0 +1,46 @@
+# Instructions
+
+* [Load Data](#load-data)
+* [Weather Data](#weather-data)
+* [Forecaster](#forecaster)
+* [Read More](#read-more)
+
+## Load data
+
+Upload load data via CSV. Any units can be used, but remember that the prediction will then be in those units, and then of course ensure that while inputting data, all values share the same units. Hour-by-hour load data is expected.
+
+Two columns are expected: `timestamp` and `load`. Please use [ISO_8601](https://en.wikipedia.org/wiki/ISO_8601) formatting (`YYYY-MM-DD HH:00`). New timestamps will be added and timestamps with existing values will be overwritten.
+
+[View an example load dataset](https://gist.github.com/kmcelwee/ce163d8c9d2871ab4c652382431c7801)
+
+The model considers hour of day, month of year, holidays, and temperature when making its predictions. We recommended that at least 3 years of data is provided so that each of these factors can be appropriately trained.
+
+An important note: The model must be trained on load data that reflects if no peak shaving strategy was implemented. 
+
+Make sure to fully inspect the data. The quality of the prediction is directly a consequence of the quality of the data. Look for outliers
+
+Fill any zeros or empty values with best-guesses. A single approximate data point will not hurt the model, but a collection of absolutely wrong values could seriously hurt accuracy.
+
+The model will predict the 24 hours following the final hour that is provided.
+
+## Weather Data
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+## Forecaster
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+## Read More
+
+Interested in the details of how this model works? Consider inspecting the [source code](https://www.github.com/dpinney/burtForecaster) or reading [more research.](https://www.kmcelwee.com/load-forecasting)
