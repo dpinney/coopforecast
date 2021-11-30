@@ -24,14 +24,29 @@ def load_data():
 
 @app.route("/weather-data")
 def weather_data():
-    df = pd.read_csv(
+    # Get historical data
+    historical_df = pd.read_csv(
         "forecast_app/static/test-data/ercot-ncent-weather.csv",
         parse_dates=["timestamp"],
     )
-    table = df.to_dict("records")
-    chart = transform_timeseries_df_for_highcharts(df, value="tempc")
+    historical_table = historical_df.to_dict("records")
+    historical_chart = transform_timeseries_df_for_highcharts(
+        historical_df, value="tempc"
+    )
+
+    # Get forecast data
+    forecast_df = pd.read_csv(
+        "forecast_app/static/test-data/mock-forecast-weather.csv",
+        parse_dates=["timestamp"],
+    )
+    forecast_table = forecast_df.to_dict("records")
+    forecast_chart = transform_timeseries_df_for_highcharts(forecast_df, value="tempc")
     return render_template(
-        "weather-data.html", name="weather-data", table=table, chart=chart
+        "weather-data.html",
+        name="weather-data",
+        tables=[forecast_table, historical_table],
+        forecast_chart=forecast_chart,
+        historical_chart=historical_chart,
     )
 
 
