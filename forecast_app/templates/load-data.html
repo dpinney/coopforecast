@@ -1,7 +1,12 @@
 {% extends 'base-and-nav.html' %}
 
 {% block title %}Load Data{% endblock %}
-{% block head %}{% endblock %}
+{% block head %}
+
+<script type="text/javascript" src="{{ url_for('static', filename='vendor/chart.js/Chart.bundle.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/chart-area-demo.js') }}"></script>
+
+{% endblock %}
 
 {% block content %}
 
@@ -45,7 +50,17 @@
   <!-- Card Content - Collapse -->
   <div class="collapse show" id="collapse-chart">
     <div class="card-body">
-      <p>Insert charts</p>
+        {% for year, datapoints in charts.items() %}
+        <div class="chart-area">
+            <canvas id="line-chart-{{ year }}"></canvas>
+            <script type="text/javascript">
+              generate_line_chart_by_id('line-chart-{{ year }}', {{ datapoints | tojson }})
+            </script>
+        </div>
+        {% endfor %}
+        <hr>
+        Styling for the area chart can be found in the
+        <code>/js/demo/chart-area-demo.js</code> file.
     </div>
   </div>
 </div>
@@ -65,7 +80,5 @@
     </div>
   </div>
 </div>
-
-
 
 {% endblock %}

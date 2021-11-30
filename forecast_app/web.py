@@ -13,7 +13,39 @@ def login():
 def load_data():
     df = pd.read_csv("forecast_app/static/test-data/ercot-ncent-load.csv")
     table = df.to_dict("records")
-    return render_template("load-data.html", name="load-data", table=table)
+    charts = {
+        "2012": [
+            0,
+            10000,
+            5000,
+            15000,
+            10000,
+            20000,
+            15000,
+            25000,
+            20000,
+            30000,
+            25000,
+            40000,
+        ],
+        "2013": [
+            0,
+            10000,
+            5000,
+            15000,
+            10000,
+            20000,
+            15000,
+            25000,
+            20000,
+            30000,
+            25000,
+            40000,
+        ],
+    }
+    return render_template(
+        "load-data.html", name="load-data", table=table, charts=charts
+    )
 
 
 @app.route("/weather-data")
