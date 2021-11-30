@@ -10,7 +10,7 @@
 <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/load-line-chart.js') }}"></script>
-
+<script type="text/javascript" src="{{ url_for('static', filename='js/load-data.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -56,7 +56,9 @@
   <div class="collapse show" id="collapse-chart">
     <div class="card-body">
         <div id="chart-container" style="height: 400px; min-width: 310px"></div>
-        <script type="text/javascript">create_timeseries_chart(id='chart-container', data={{ chart | tojson }}, title='Historical Load Data')</script>
+        <script type="text/javascript">
+          create_timeseries_chart(id='chart-container', data={{ chart | tojson }}, title='Historical Load Data')
+        </script>
     </div>
   </div>
 </div>
@@ -70,9 +72,14 @@
   <!-- Card Content - Collapse -->
   <div class="collapse show" id="collapse-table">
     <div class="card-body">
-      <p>Currently deactivated since it severely slows down the webpage. Discuss with stakeholder if seeing data in
-        table form is necessary. Otherwise, maybe offer a link to a plain text version of their CSV.</p>
-      {# include 'table.html' #}
+      <p id="table-warning">This table has been hidden since it is very large and may slow down your webpage. If you're looking to further inspect your data, it may be more convenient to click on the menu in the chart above and click on the "Download CSV" prompt.
+      </p>
+
+      <p>
+      <button id="table-button" class="btn-secondary btn-sm" onclick="toggle_table_visibility()">Show Table</button>
+      </p>
+
+      {% include 'table.html' %}
     </div>
   </div>
 </div>
