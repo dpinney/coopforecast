@@ -2,6 +2,8 @@ from flask import Flask, render_template, url_for
 import json
 import pandas as pd
 
+from utils import transform_timeseries_df_for_highcharts
+
 app = Flask(__name__)
 
 
@@ -12,27 +14,25 @@ def login():
 
 @app.route("/load-data")
 def load_data():
-    df = pd.read_csv("forecast_app/static/test-data/ercot-ncent-load.csv")
+    df = pd.read_csv(
+        "forecast_app/static/test-data/ercot-ncent-load.csv", parse_dates=["timestamp"]
+    )
     table = df.to_dict("records")
-
-    """
-    NOTE: Chart works best using a timestamp. Getting the timestamp from a 
-    dataframe is simple:
-    ```
-    timestamps = df['timestamp'].apply(lambda x: x.timestamp() * 1000)
-    ```
-    Highcharts uses milliseconds, not seconds, so multiply by 1000. And
-    then zip with the load value.
-    """
-
-    with open("forecast_app/static/test-data/chart-formatted-load.json") as f:
-        chart = json.load(f)
+    chart = transform_timeseries_df_for_highcharts(df, value="load")
     return render_template("load-data.html", name="load-data", table=table, chart=chart)
 
 
 @app.route("/weather-data")
 def weather_data():
-    return render_template("weather-data.html", name="weather-data")
+    df = pd.read_csv(
+        "forecast_app/static/test-data/ercot-ncent-weather.csv",
+        parse_dates=["timestamp"],
+    )
+    table = df.to_dict("records")
+    chart = transform_timeseries_df_for_highcharts(df, value="tempc")
+    return render_template(
+        "weather-data.html", name="weather-data", table=table, chart=chart
+    )
 
 
 @app.route("/forecast")

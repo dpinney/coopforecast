@@ -24,7 +24,7 @@
 
 <div class="card shadow mb-4" id="upload">
   <div class="card-header py-3">
-    <h6 class="m-0 font-weight-bold text-primary">Upload data</h6>
+    <h6 class="m-0 font-weight-bold text-primary">Upload Data</h6>
   </div>
   <div class="card-body">
     <p>
@@ -57,7 +57,7 @@
     <div class="card-body">
         <div id="chart-container" style="height: 400px; min-width: 310px"></div>
         <script type="text/javascript">
-          create_timeseries_chart(id='chart-container', data={{ chart | tojson }}, title='Historical Load Data')
+          create_timeseries_chart(id='chart-container', data={{ chart | tojson }}, title='Historical Load Data', series_name='Load')
         </script>
     </div>
   </div>
