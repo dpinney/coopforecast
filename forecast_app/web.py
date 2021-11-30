@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for
+import json
 import pandas as pd
 
 app = Flask(__name__)
@@ -13,53 +14,20 @@ def login():
 def load_data():
     df = pd.read_csv("forecast_app/static/test-data/ercot-ncent-load.csv")
     table = df.to_dict("records")
-    charts = {
-        "2012": [
-            0,
-            10000,
-            5000,
-            15000,
-            10000,
-            20000,
-            15000,
-            25000,
-            20000,
-            30000,
-            25000,
-            40000,
-        ],
-        "2013": [
-            0,
-            10000,
-            5000,
-            15000,
-            10000,
-            20000,
-            15000,
-            25000,
-            20000,
-            30000,
-            25000,
-            40000,
-        ],
-        "2014": [
-            0,
-            10000,
-            5000,
-            15000,
-            10000,
-            20000,
-            15000,
-            25000,
-            20000,
-            30000,
-            25000,
-            40000,
-        ],
-    }
-    return render_template(
-        "load-data.html", name="load-data", table=table, charts=charts
-    )
+
+    """
+    NOTE: Chart works best using a timestamp. Getting the timestamp from a 
+    dataframe is simple:
+    ```
+    timestamps = df['timestamp'].apply(lambda x: x.timestamp() * 1000)
+    ```
+    Highcharts uses milliseconds, not seconds, so multiply by 1000. And
+    then zip with the load value.
+    """
+
+    with open("forecast_app/static/test-data/chart-formatted-load.json") as f:
+        chart = json.load(f)
+    return render_template("load-data.html", name="load-data", table=table, chart=chart)
 
 
 @app.route("/weather-data")

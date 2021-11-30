@@ -9,6 +9,8 @@
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
 
+<script type="text/javascript" src="{{ url_for('static', filename='js/load-line-chart.js') }}"></script>
+
 {% endblock %}
 
 {% block content %}
@@ -22,7 +24,7 @@
 
 <div class="card shadow mb-4" id="upload">
   <div class="card-header py-3">
-    <h6 class="m-0 font-weight-bold text-primary">Upload load data</h6>
+    <h6 class="m-0 font-weight-bold text-primary">Upload data</h6>
   </div>
   <div class="card-body">
     <p>
@@ -53,31 +55,8 @@
   <!-- Card Content - Collapse -->
   <div class="collapse show" id="collapse-chart">
     <div class="card-body">
-        <div id="this_container" style="height: 400px; min-width: 310px"></div>
-        <script type="text/javascript">
-          Highcharts.getJSON('https://demo-live-data.highcharts.com/aapl-c.json', function (data) {
-  // Create the chart
-  Highcharts.stockChart('this_container', {
-
-
-    rangeSelector: {
-      selected: 1
-    },
-
-    title: {
-      text: 'AAPL Stock Price'
-    },
-
-    series: [{
-      name: 'AAPL',
-      data: data,
-      tooltip: {
-        valueDecimals: 2
-      }
-    }]
-  });
-});
-        </script>
+        <div id="chart-container" style="height: 400px; min-width: 310px"></div>
+        <script type="text/javascript">create_timeseries_chart(id='chart-container', data={{ chart | tojson }}, title='Historical Load Data')</script>
     </div>
   </div>
 </div>
@@ -86,7 +65,7 @@
   <!-- Card Header - Accordion -->
   <a href="#collapse-table" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
     aria-controls="collapse-table">
-    <h6 class="m-0 font-weight-bold text-primary">Table</h6>
+    <h6 class="m-0 font-weight-bold text-primary">Tables</h6>
   </a>
   <!-- Card Content - Collapse -->
   <div class="collapse show" id="collapse-table">

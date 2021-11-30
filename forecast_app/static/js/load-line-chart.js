@@ -1,24 +1,19 @@
-function generate_line_chart_by_id(id, data) {
-  Highcharts.getJSON('https://demo-live-data.highcharts.com/aapl-c.json', function (data) {
-    // Create the chart
-    Highcharts.stockChart(id, {
-        rangeSelector: {
-            selected: 1
-        },
+function create_timeseries_chart(id=null, data=null, title=null) {
+  // Create the chart
+  Highcharts.stockChart(id, {
+    rangeSelector: {
+      selected: 1
+    },
 
-        title: {
-            text: 'AAPL Stock Price'
-        },
+    title: {
+      text: title
+    },
 
-        series: [{
-            name: 'AAPL',
-            data: data,
-            tooltip: {
-                valueDecimals: 2
-            }
-        }]
-    });
-});
-}
-
-
+    series: [{
+      data: data,
+      tooltip: {
+        valueDecimals: 2
+      }
+    }]
+  });
+};
