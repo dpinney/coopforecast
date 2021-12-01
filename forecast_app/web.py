@@ -55,7 +55,15 @@ def weather_data():
 
 @app.route("/forecast")
 def forecast():
-    return render_template("forecast.html", name="forecast")
+    df = pd.read_csv(
+        "forecast_app/static/test-data/mock-forecast-load.csv",
+        parse_dates=["timestamp"],
+    )
+    return render_template(
+        "forecast.html",
+        name="forecast",
+        chart=transform_timeseries_df_for_highcharts(df, value="load"),
+    )
 
 
 @app.route("/instructions")
