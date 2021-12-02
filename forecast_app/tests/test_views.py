@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from forecast_app.views import LoadDataView, WeatherDataView
+from forecast_app.views import ForecastView, LoadDataView, WeatherDataView
 
 
 class TestLoadDataView:
@@ -15,5 +15,12 @@ class TestLoadDataView:
 class TestWeatherDataView:
     def test_init(self):
         WeatherDataView()
+
+    # TODO: Test more thoroughly
+
+
+class TestForecastView:
+    def test_init(self):
+        ForecastView()
 
     # TODO: Test more thoroughly
