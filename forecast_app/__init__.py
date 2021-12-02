@@ -3,7 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 from forecast_app.utils import RenderTemplateView
 from forecast_app.views import LoadDataView, WeatherDataView, ForecastView
-from forecast_app.db import db_session, init_db_command
+from forecast_app.db import session, init_db_command
+from forecast_app.commands import upload_load_data
 
 
 def create_app():
@@ -22,9 +23,10 @@ def create_app():
     )
 
     app.cli.add_command(init_db_command)
+    app.cli.add_command(upload_load_data)
 
     @app.teardown_appcontext
     def shutdown_session(exception=None):
-        db_session.remove()
+        session.remove()
 
     return app
