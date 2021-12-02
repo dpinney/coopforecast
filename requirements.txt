@@ -1,5 +1,6 @@
 black
 Flask
+Flask-SQLAlchemy
 pandas
 pre-commit
 pytest

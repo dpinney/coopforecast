@@ -3,6 +3,7 @@ from flask import Flask, render_template, url_for
 from flask.views import View
 
 from forecast_app.utils import transform_timeseries_df_for_highcharts
+from forecast_app.models import User
 
 
 class LoadDataView(View):
@@ -68,8 +69,11 @@ class ForecastView(View):
             parse_dates=["timestamp"],
         )
 
+        user = User.query.filter(User.name == "admin").first().name
+
         return render_template(
             "forecast.html",
             name="forecast",
             chart=transform_timeseries_df_for_highcharts(df, value="load"),
+            user=user,
         )
