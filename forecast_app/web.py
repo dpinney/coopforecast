@@ -2,7 +2,7 @@ from flask import Flask, render_template, url_for
 import json
 import pandas as pd
 
-from utils import transform_timeseries_df_for_highcharts
+from .lib import utils
 
 app = Flask(__name__)
 
@@ -18,7 +18,7 @@ def load_data():
         "forecast_app/static/test-data/ercot-ncent-load.csv", parse_dates=["timestamp"]
     )
     table = df.to_dict("records")
-    chart = transform_timeseries_df_for_highcharts(df, value="load")
+    chart = utils.transform_timeseries_df_for_highcharts(df, value="load")
     return render_template("load-data.html", name="load-data", table=table, chart=chart)
 
 
@@ -43,10 +43,10 @@ def weather_data():
                 forecast_df.to_dict("records"),
                 historical_df.to_dict("records"),
             ],
-            "forecast_chart": transform_timeseries_df_for_highcharts(
+            "forecast_chart": utils.transform_timeseries_df_for_highcharts(
                 forecast_df, value="tempc"
             ),
-            "historical_chart": transform_timeseries_df_for_highcharts(
+            "historical_chart": utils.transform_timeseries_df_for_highcharts(
                 historical_df, value="tempc"
             ),
         }
@@ -63,7 +63,7 @@ def forecast():
     return render_template(
         "forecast.html",
         name="forecast",
-        chart=transform_timeseries_df_for_highcharts(df, value="load"),
+        chart=utils.transform_timeseries_df_for_highcharts(df, value="load"),
     )
 
 
