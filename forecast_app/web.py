@@ -3,7 +3,7 @@ import json
 import pandas as pd
 
 from forecast_app.lib.utils import transform_timeseries_df_for_highcharts
-from forecast_app.lib.load_data import LoadData
+from forecast_app.lib import LoadData
 
 app = Flask(__name__)
 
