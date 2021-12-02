@@ -2,7 +2,7 @@ import pandas as pd
 import json
 import pytest
 
-from forecast_app.lib.utils import transform_timeseries_df_for_highcharts
+from forecast_app.utils import transform_timeseries_df_for_highcharts
 
 
 def test_transform_timeseries_df_for_highcharts():

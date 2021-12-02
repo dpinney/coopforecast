@@ -3,50 +3,19 @@ from flask import Flask, render_template, url_for
 import json
 import pandas as pd
 
-from forecast_app.lib.utils import transform_timeseries_df_for_highcharts
-from forecast_app.lib import LoadDataView
+from forecast_app.utils import (
+    RenderTemplateView,
+    transform_timeseries_df_for_highcharts,
+)
+from forecast_app.views import LoadDataView, WeatherDataView
 
 
 def create_app():
     app = Flask(__name__)
-
-    @app.route("/")
-    def login():
-        return render_template("login.html", name="login")
-
-    @app.route("/load-data")
-    def load_data():
-        return LoadDataView().render()
-
-    @app.route("/weather-data")
-    def weather_data():
-        # Get historical data
-        historical_df = pd.read_csv(
-            "forecast_app/static/test-data/ercot-ncent-weather.csv",
-            parse_dates=["timestamp"],
-        )
-
-        forecast_df = pd.read_csv(
-            "forecast_app/static/test-data/mock-forecast-weather.csv",
-            parse_dates=["timestamp"],
-        )
-
-        return render_template(
-            "weather-data.html",
-            **{
-                "name": "weather-data",
-                "tables": [
-                    forecast_df.to_dict("records"),
-                    historical_df.to_dict("records"),
-                ],
-                "forecast_chart": transform_timeseries_df_for_highcharts(
-                    forecast_df, value="tempc"
-                ),
-                "historical_chart": transform_timeseries_df_for_highcharts(
-                    historical_df, value="tempc"
-                ),
-            }
-        )
+    app.add_url_rule("/", view_func=RenderTemplateView.view("login"))
+    app.add_url_rule("/load-data", view_func=LoadDataView.as_view("load-data"))
+    app.add_url_rule("/weather-data", view_func=WeatherDataView.as_view("weather-data"))
+    app.add_url_rule("/instructions", view_func=RenderTemplateView.view("instructions"))
 
     @app.route("/forecast")
     def forecast():
@@ -60,10 +29,6 @@ def create_app():
             name="forecast",
             chart=transform_timeseries_df_for_highcharts(df, value="load"),
         )
-
-    @app.route("/instructions")
-    def instructions():
-        return render_template("instructions.html", name="instructions")
 
     @app.route("/model-settings")
     def model_settings():
