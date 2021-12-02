@@ -1,4 +1,4 @@
-def test_views(client):
+def test_templates(client):
     """Test that all pages return 200 and have the expected content"""
 
     pages = {

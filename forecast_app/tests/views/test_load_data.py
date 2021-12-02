@@ -1,14 +1,14 @@
 import pandas as pd
 import pytest
 
-from forecast_app.lib.load_data import LoadData
+from forecast_app.lib import LoadDataView
 
 
 class TestLoadData:
     @pytest.fixture(autouse=True, scope="class")
     def instance(self):
         print("CREATING NEW INSTANCE")
-        return LoadData()
+        return LoadDataView()
 
     def test_get_data(self, instance):
         assert type(instance.get_data()) == pd.DataFrame

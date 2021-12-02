@@ -4,7 +4,7 @@ from flask import Flask, render_template, url_for
 from forecast_app.lib.utils import transform_timeseries_df_for_highcharts
 
 
-class LoadData:
+class LoadDataView:
     def __init__(self):
         self.df = self.get_data()
 

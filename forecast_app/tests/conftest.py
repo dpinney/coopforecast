@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from forecast_app.web import app
+from forecast_app import app
 
 
 @pytest.fixture

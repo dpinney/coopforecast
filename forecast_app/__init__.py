@@ -1,0 +1,76 @@
+from flask import Flask
+from flask import Flask, render_template, url_for
+import json
+import pandas as pd
+
+from forecast_app.lib.utils import transform_timeseries_df_for_highcharts
+from forecast_app.lib import LoadDataView
+
+
+def create_app():
+    app = Flask(__name__)
+
+    @app.route("/")
+    def login():
+        return render_template("login.html", name="login")
+
+    @app.route("/load-data")
+    def load_data():
+        return LoadDataView().render()
+
+    @app.route("/weather-data")
+    def weather_data():
+        # Get historical data
+        historical_df = pd.read_csv(
+            "forecast_app/static/test-data/ercot-ncent-weather.csv",
+            parse_dates=["timestamp"],
+        )
+
+        forecast_df = pd.read_csv(
+            "forecast_app/static/test-data/mock-forecast-weather.csv",
+            parse_dates=["timestamp"],
+        )
+
+        return render_template(
+            "weather-data.html",
+            **{
+                "name": "weather-data",
+                "tables": [
+                    forecast_df.to_dict("records"),
+                    historical_df.to_dict("records"),
+                ],
+                "forecast_chart": transform_timeseries_df_for_highcharts(
+                    forecast_df, value="tempc"
+                ),
+                "historical_chart": transform_timeseries_df_for_highcharts(
+                    historical_df, value="tempc"
+                ),
+            }
+        )
+
+    @app.route("/forecast")
+    def forecast():
+        df = pd.read_csv(
+            "forecast_app/static/test-data/mock-forecast-load.csv",
+            parse_dates=["timestamp"],
+        )
+
+        return render_template(
+            "forecast.html",
+            name="forecast",
+            chart=transform_timeseries_df_for_highcharts(df, value="load"),
+        )
+
+    @app.route("/instructions")
+    def instructions():
+        return render_template("instructions.html", name="instructions")
+
+    @app.route("/model-settings")
+    def model_settings():
+        return render_template("model-settings.html", name="model-settings")
+
+    @app.route("/user-settings")
+    def user_settings():
+        return render_template("user-settings.html", name="user-settings")
+
+    return app
