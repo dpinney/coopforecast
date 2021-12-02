@@ -2,4 +2,4 @@ FROM python:3.9-bullseye
 COPY . .
 RUN pip install -r requirements.txt
 
-CMD ["python", "forecast_app/web.py"]
+CMD ["python", "deploy.py"]

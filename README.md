@@ -4,7 +4,17 @@ Electric Utility Load Forecaster Application
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![run_pytest](https://github.com/dpinney/burtForecaster/actions/workflows/run_pytest.yaml/badge.svg)](https://github.com/dpinney/burtForecaster/actions/workflows/run_pytest.yaml)
 
-## Installation
+## Launch with docker
+
+```sh
+docker image build -t burt_forecaster .
+docker run -p 5000:5000 forecaster_app -v "`pwd`/forecast_app":/forecast_app forecaster_app
+```
+
+And view the application at http://localhost:5000/. The `-v` flag allows you to 
+sync your local files to the docker container for code editing.
+
+## Launch without docker
 
 Create a python 3.9 virtual environment and download packages from `requirements.txt`:
 
@@ -14,22 +24,11 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Running the application
-
 After installation, run the application by executing the run script:
 
 ```sh
 source run.sh
 ```
-
-Or you can use docker:
-
-```
-docker image build -t burt_forecaster .
-docker run -p 1546:1546 forecaster_app
-```
-
-And view the application at http://localhost:1546/
 
 ## Development
 
