@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from forecast_app.views import LoadDataView
+from forecast_app.views import LoadDataView, WeatherDataView
 
 
 class TestLoadDataView:
@@ -10,3 +10,10 @@ class TestLoadDataView:
         assert type(chart_array) == list
         assert all([len(datapoint) == 2 for datapoint in chart_array])
         # Already tested by test_utils
+
+
+class TestWeatherDataView:
+    def test_init(self):
+        WeatherDataView()
+
+    # TODO: Test more thoroughly

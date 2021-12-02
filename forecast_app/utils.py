@@ -1,4 +1,5 @@
 from flask.views import View
+from flask import render_template
 
 
 def transform_timeseries_df_for_highcharts(df, value=None):
@@ -21,8 +22,6 @@ class RenderTemplateView(View):
 
     @classmethod
     def view(cls, name, template=None):
-        if template:
-            return self.as_view(name, template_name=template)
-        else:
-            template_name = name + ".html"
-            return cls.as_view(name, template_name=template_name)
+        if not template:
+            template = name + ".html"
+        return cls.as_view(name, template_name=template)
