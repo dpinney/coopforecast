@@ -59,3 +59,17 @@ class WeatherDataView(View):
                 ),
             }
         )
+
+
+class ForecastView(View):
+    def dispatch_request(self):
+        df = pd.read_csv(
+            "forecast_app/static/test-data/mock-forecast-load.csv",
+            parse_dates=["timestamp"],
+        )
+
+        return render_template(
+            "forecast.html",
+            name="forecast",
+            chart=transform_timeseries_df_for_highcharts(df, value="load"),
+        )
