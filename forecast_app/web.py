@@ -59,6 +59,7 @@ def forecast():
         "forecast_app/static/test-data/mock-forecast-load.csv",
         parse_dates=["timestamp"],
     )
+
     return render_template(
         "forecast.html",
         name="forecast",
