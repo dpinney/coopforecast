@@ -7,12 +7,10 @@ Electric Utility Load Forecaster Application
 ## Launch with docker
 
 ```sh
-docker image build -t burt_forecaster .
-docker run -p 5000:5000 forecaster_app -v "`pwd`/forecast_app":/forecast_app forecaster_app
+docker compose up
 ```
 
-And view the application at http://localhost:5000/. The `-v` flag allows you to 
-sync your local files to the docker container for code editing.
+And view the application at http://localhost:5000/.
 
 ## Launch without docker
 
@@ -35,8 +33,11 @@ source run.sh
 To initialize the database and fill with data run the following commands:
 
 ```sh
+export FLASK_APP=forecast_app
+# Remove existing database and create a new one
 flask init-db
-flask upload-load-data
+# Load CSV data into database
+flask upload-demo-data
 ```
 
 ## Development
