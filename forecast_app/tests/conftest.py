@@ -19,4 +19,4 @@ def client(app):
 
 
 def pytest_configure():
-    pytest.test_data_path = Path("forecast_app") / "static" / "test-data"
+    pass

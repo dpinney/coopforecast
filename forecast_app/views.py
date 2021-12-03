@@ -2,22 +2,14 @@ import pandas as pd
 from flask import render_template
 from flask.views import View
 
-from forecast_app.models import HistoricalData
+from forecast_app.models import ForecastData, HistoricalData
 from forecast_app.db import session
-from forecast_app.utils import transform_timeseries_df_for_highcharts
 
 
 class LoadDataView(View):
-    def __init__(self, *args, **kwargs):
-        self.df = pd.read_csv(
-            "forecast_app/static/test-data/ercot-ncent-load.csv",
-            parse_dates=["timestamp"],
-        )
-        super().__init__()
-
     def get_table(self):
         query = session.query(HistoricalData.timestamp, HistoricalData.load)
-        return [{"load": load, "timestamp": timestamp} for load, timestamp in query]
+        return [{"load": load, "timestamp": timestamp} for timestamp, load in query]
 
     def get_chart(self):
         query = session.query(HistoricalData.milliseconds, HistoricalData.load)
@@ -35,45 +27,46 @@ class LoadDataView(View):
 
 
 class WeatherDataView(View):
+    def get_forecast_table(self):
+        query = session.query(ForecastData.milliseconds, ForecastData.tempc)
+        return [{"tempc": temp, "timestamp": timestamp} for timestamp, temp in query]
+
+    def get_historical_table(self):
+        query = session.query(HistoricalData.milliseconds, HistoricalData.tempc)
+        return [{"tempc": temp, "timestamp": timestamp} for timestamp, temp in query]
+
+    def get_forecast_chart(self):
+        query = session.query(ForecastData.milliseconds, ForecastData.tempc)
+        return [list(row) for row in query]
+
+    def get_historical_chart(self):
+        query = session.query(HistoricalData.milliseconds, HistoricalData.tempc)
+        return [list(row) for row in query]
+
     def dispatch_request(self):
-        # Get historical data
-        historical_df = pd.read_csv(
-            "forecast_app/static/test-data/ercot-ncent-weather.csv",
-            parse_dates=["timestamp"],
-        )
-
-        forecast_df = pd.read_csv(
-            "forecast_app/static/test-data/mock-forecast-weather.csv",
-            parse_dates=["timestamp"],
-        )
-
         return render_template(
             "weather-data.html",
             **{
                 "name": "weather-data",
                 "tables": [
-                    forecast_df.to_dict("records"),
-                    historical_df.to_dict("records"),
+                    self.get_forecast_table(),
+                    self.get_historical_table(),
                 ],
-                "forecast_chart": transform_timeseries_df_for_highcharts(
-                    forecast_df, value="tempc"
-                ),
-                "historical_chart": transform_timeseries_df_for_highcharts(
-                    historical_df, value="tempc"
-                ),
+                "forecast_chart": self.get_forecast_chart(),
+                "historical_chart": self.get_historical_chart(),
             }
         )
 
 
 class ForecastView(View):
+    def get_forecast_chart(self):
+        query = session.query(ForecastData.milliseconds, ForecastData.load)
+        return [list(row) for row in query]
+
     def dispatch_request(self):
-        df = pd.read_csv(
-            "forecast_app/static/test-data/mock-forecast-load.csv",
-            parse_dates=["timestamp"],
-        )
 
         return render_template(
             "forecast.html",
             name="forecast",
-            chart=transform_timeseries_df_for_highcharts(df, value="load"),
+            chart=self.get_forecast_chart(),
         )

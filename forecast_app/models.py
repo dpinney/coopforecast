@@ -7,17 +7,34 @@ class HistoricalData(Base):
     milliseconds = Column(Integer, primary_key=True)
     load = Column(Float)
     timestamp = Column(DateTime)
-    weather = Column(Float)
+    tempc = Column(Float)
 
-    def __init__(self, timestamp_dt=None, load=None, weather=None):
-        if not timestamp_dt:
-            raise Exception("timestamp_dt is a required field")
+    def __init__(self, timestamp=None, load=None, tempc=None):
+        if not timestamp:
+            raise Exception("timestamp is a required field")
         self.load = load
-        self.timestamp = timestamp_dt
-        self.milliseconds = timestamp_dt.timestamp() * 1000
-        self.weather = weather
+        self.timestamp = timestamp
+        self.milliseconds = timestamp.timestamp() * 1000
+        self.tempc = tempc
 
     def __repr__(self):
-        return (
-            f"<Historical {self.timestamp}: Load {self.load}, Weather {self.weather}>"
-        )
+        return f"<Historical {self.timestamp}: Load {self.load}, Temperature (°C) {self.tempc}>"
+
+
+class ForecastData(Base):
+    __tablename__ = "forecast_data"
+    milliseconds = Column(Integer, primary_key=True)
+    load = Column(Float)
+    timestamp = Column(DateTime)
+    tempc = Column(Float)
+
+    def __init__(self, timestamp=None, load=None, tempc=None):
+        if not timestamp:
+            raise Exception("timestamp is a required field")
+        self.load = load
+        self.timestamp = timestamp
+        self.milliseconds = timestamp.timestamp() * 1000
+        self.tempc = tempc
+
+    def __repr__(self):
+        return f"<Forecast {self.timestamp}: Load {self.load}, Temperature (°C) {self.tempc}>"

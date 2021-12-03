@@ -2,15 +2,15 @@ from flask.views import View
 from flask import render_template
 
 
-def transform_timeseries_df_for_highcharts(df, value=None):
-    """
-    Highcharts uses milliseconds, not seconds, so multiply by 1000. And
-    then zip with the load value.
-    """
-    highcharts_array = []
-    for i, row in df.iterrows():
-        highcharts_array.append([row["timestamp"].timestamp() * 1000, row[value]])
-    return highcharts_array
+def get_or_create(session, model, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).first()
+    if instance:
+        return instance
+    else:
+        instance = model(**kwargs)
+        session.add(instance)
+        session.commit()
+        return instance
 
 
 class RenderTemplateView(View):
