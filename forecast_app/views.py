@@ -2,6 +2,8 @@ import pandas as pd
 from flask import render_template
 from flask.views import View
 
+from forecast_app.models import HistoricalData
+from forecast_app.db import session
 from forecast_app.utils import transform_timeseries_df_for_highcharts
 
 
@@ -14,10 +16,12 @@ class LoadDataView(View):
         super().__init__()
 
     def get_table(self):
-        return self.df.to_dict("records")
+        query = session.query(HistoricalData.timestamp, HistoricalData.load)
+        return [{"load": load, "timestamp": timestamp} for load, timestamp in query]
 
     def get_chart(self):
-        return transform_timeseries_df_for_highcharts(self.df, value="load")
+        query = session.query(HistoricalData.milliseconds, HistoricalData.load)
+        return [list(row) for row in query]
 
     def dispatch_request(self):
         return render_template(

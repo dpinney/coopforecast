@@ -30,6 +30,15 @@ After installation, run the application by executing the run script:
 source run.sh
 ```
 
+## Prepare database
+
+To initialize the database and fill with data run the following commands:
+
+```sh
+flask init-db
+flask upload-load-data
+```
+
 ## Development
 
 ### Install black pre-commit

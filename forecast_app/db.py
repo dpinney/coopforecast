@@ -19,6 +19,7 @@ def init_db():
     # you will have to import them first before calling init_db()
     import forecast_app.models
 
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
 
