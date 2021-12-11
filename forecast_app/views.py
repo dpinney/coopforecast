@@ -1,14 +1,15 @@
 import pandas as pd
-from flask import render_template
-from flask.views import View
+from flask import render_template, redirect, url_for
+from flask.views import MethodView, View
 
 from forecast_app.models import ForecastData, HistoricalData
 from forecast_app.db import session
+from forecast_app.utils import upload_file
 
 import sys
 
 
-class LoadDataView(View):
+class LoadDataView(MethodView):
     def get_table(self):
         query = session.query(HistoricalData.timestamp, HistoricalData.load)
         return [{"load": load, "timestamp": timestamp} for timestamp, load in query]
@@ -17,10 +18,12 @@ class LoadDataView(View):
         query = session.query(HistoricalData.milliseconds, HistoricalData.load)
         return [list(row) for row in query]
 
-    def post():
-        print("Hello world!", file=sys.stderr)
+    def post(self):
+        upload_file()
+        # TODO: Signal to user that data was uploaded
+        return redirect(url_for("load-data"))
 
-    def dispatch_request(self):
+    def get(self):
         return render_template(
             "load-data.html",
             **{

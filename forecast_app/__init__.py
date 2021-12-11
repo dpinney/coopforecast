@@ -7,38 +7,20 @@ from forecast_app.views import LoadDataView, WeatherDataView, ForecastView
 from forecast_app.db import session, init_db_command
 from forecast_app.commands import upload_demo_data
 
-from werkzeug.utils import secure_filename
-
-
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() == "csv"
-
 
 def create_app():
     app = Flask(__name__)
 
+    # TODO: Add config file
     app.config["UPLOAD_FOLDER"] = "forecast_app/static/uploads"
     app.config["SECRET_KEY"] = "super secret key"
 
     app.add_url_rule("/", view_func=RenderTemplateView.view("login"))
-    app.add_url_rule("/load-data", view_func=LoadDataView.as_view("load-data"))
-
-    @app.route("/load-data", methods=["POST"])
-    def upload_file():
-        # check if the post request has the file part
-        if "file" not in request.files:
-            flash("No file part")
-            return redirect(request.url)
-        file = request.files["file"]
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        if file.filename == "":
-            flash("No selected file")
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-        return redirect(url_for("load-data"))
+    app.add_url_rule(
+        "/load-data",
+        view_func=LoadDataView.as_view("load-data"),
+        methods=["GET", "POST"],
+    )
 
     app.add_url_rule("/weather-data", view_func=WeatherDataView.as_view("weather-data"))
     app.add_url_rule("/instructions", view_func=RenderTemplateView.view("instructions"))
