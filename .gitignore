@@ -1,4 +1,5 @@
 # db/dev.db
+forecast_app/static/uploads/*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -5,6 +5,8 @@ from flask.views import View
 from forecast_app.models import ForecastData, HistoricalData
 from forecast_app.db import session
 
+import sys
+
 
 class LoadDataView(View):
     def get_table(self):
@@ -14,6 +16,9 @@ class LoadDataView(View):
     def get_chart(self):
         query = session.query(HistoricalData.milliseconds, HistoricalData.load)
         return [list(row) for row in query]
+
+    def post():
+        print("Hello world!", file=sys.stderr)
 
     def dispatch_request(self):
         return render_template(

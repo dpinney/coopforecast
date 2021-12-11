@@ -29,20 +29,19 @@
   <div class="card-body">
     <p>
       <a href="/instructions#load-data" class="btn btn-secondary btn-sm">Read data upload instructions</a>
-      <a href="https://gist.github.com/kmcelwee/ce163d8c9d2871ab4c652382431c7801" class="btn btn-secondary btn-sm">View an example dataset</a>
+      <a href="https://gist.github.com/kmcelwee/ce163d8c9d2871ab4c652382431c7801" class="btn btn-secondary btn-sm">View
+        an example dataset</a>
     </p>
     <p>
-      
+
     </p>
     <div class="input-group mb-3">
-      <div class="input-group-prepend">
-        <span class="input-group-text">Upload</span>
-      </div>
-      <div class="custom-file">
-        <input type="file" class="custom-file-input" id="inputGroupFile01">
-        <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
-      </div>
+      <form method=post enctype=multipart/form-data>
+        <input type=file name=file>
+        <input type=submit value=Upload>
+      </form>
     </div>
+
   </div>
 </div>
 
@@ -55,10 +54,10 @@
   <!-- Card Content - Collapse -->
   <div class="collapse show" id="collapse-chart">
     <div class="card-body">
-        <div id="chart-container" style="height: 400px; min-width: 310px"></div>
-        <script type="text/javascript">
-          create_timeseries_chart(id='chart-container', data={{ chart | tojson }}, title='Historical Load Data', series_name='Load')
-        </script>
+      <div id="chart-container" style="height: 400px; min-width: 310px"></div>
+      <script type="text/javascript">
+        create_timeseries_chart(id = 'chart-container', data = {{ chart | tojson }}, title = 'Historical Load Data', series_name = 'Load')
+      </script>
     </div>
   </div>
 </div>
@@ -72,11 +71,13 @@
   <!-- Card Content - Collapse -->
   <div class="collapse show" id="collapse-table">
     <div class="card-body">
-      <p id="table-warning">This table has been hidden since it is very large and may slow down your webpage. If you're looking to further inspect your data, it may be more convenient to click on the menu in the chart above and click on the "Download CSV" prompt.
+      <p id="table-warning">This table has been hidden since it is very large and may slow down your webpage. If you're
+        looking to further inspect your data, it may be more convenient to click on the menu in the chart above and
+        click on the "Download CSV" prompt.
       </p>
 
       <p>
-      <button id="table-button" class="btn-secondary btn-sm" onclick="toggle_table_visibility()">Show Table</button>
+        <button id="table-button" class="btn-secondary btn-sm" onclick="toggle_table_visibility()">Show Table</button>
       </p>
 
       {% include 'table.html' %}
