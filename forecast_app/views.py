@@ -20,6 +20,7 @@ class LoadDataView(MethodView):
 
     def post(self):
         upload_file()
+        # TODO: Add CSV to database
         # TODO: Signal to user that data was uploaded
         return redirect(url_for("load-data"))
 

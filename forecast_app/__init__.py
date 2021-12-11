@@ -5,13 +5,15 @@ from flask_sqlalchemy import SQLAlchemy
 from forecast_app.utils import RenderTemplateView
 from forecast_app.views import LoadDataView, WeatherDataView, ForecastView
 from forecast_app.db import session, init_db_command
-from forecast_app.commands import upload_demo_data
+from forecast_app.commands import upload_demo_data_command
 
 
-def create_app():
-    app = Flask(__name__)
+def create_app(test_config=None):
+    app = Flask(__name__, instance_relative_config=True)
 
     # TODO: Add config file
+    # app.config.from_pyfile("config.py", silent=True)
+    app.config.update(test_config)
     app.config["UPLOAD_FOLDER"] = "forecast_app/static/uploads"
     app.config["SECRET_KEY"] = "super secret key"
 
@@ -33,7 +35,7 @@ def create_app():
     )
 
     app.cli.add_command(init_db_command)
-    app.cli.add_command(upload_demo_data)
+    app.cli.add_command(upload_demo_data_command)
 
     @app.teardown_appcontext
     def shutdown_session(exception=None):

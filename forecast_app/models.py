@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, Float, String, DateTime
 from forecast_app.db import Base
+from forecast_app.utils import get_or_create
 
 
 class HistoricalData(Base):
@@ -38,3 +39,8 @@ class ForecastData(Base):
 
     def __repr__(self):
         return f"<Forecast {self.timestamp}: Load {self.load}, Temperature (°C) {self.tempc}>"
+
+    @classmethod
+    def ingest_data_from_csv(cls, filename):
+        # TODO: validation should happen here
+        get_or_create(cls, timestamp=datetime.datetime.now(), load=0, tempc=0)
