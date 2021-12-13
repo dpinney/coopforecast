@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, Float, String, DateTime
-from forecast_app.db import Base
+from sqlalchemy.ext.declarative import declarative_base
 from forecast_app.utils import get_or_create
+from forecast_app.db import db
 
 
-class HistoricalData(Base):
+class HistoricalData(db.Model):
     __tablename__ = "historical_data"
     milliseconds = Column(Integer, primary_key=True)
     load = Column(Float)
@@ -22,7 +23,7 @@ class HistoricalData(Base):
         return f"<Historical {self.timestamp}: Load {self.load}, Temperature (°C) {self.tempc}>"
 
 
-class ForecastData(Base):
+class ForecastData(db.Model):
     __tablename__ = "forecast_data"
     milliseconds = Column(Integer, primary_key=True)
     load = Column(Float)

@@ -3,7 +3,7 @@ from flask import render_template, redirect, url_for
 from flask.views import MethodView, View
 
 from forecast_app.models import ForecastData, HistoricalData
-from forecast_app.db import session
+from forecast_app.db import db
 from forecast_app.utils import upload_file
 
 import sys
@@ -11,11 +11,11 @@ import sys
 
 class LoadDataView(MethodView):
     def get_table(self):
-        query = session.query(HistoricalData.timestamp, HistoricalData.load)
+        query = db.session.query(HistoricalData.timestamp, HistoricalData.load)
         return [{"load": load, "timestamp": timestamp} for timestamp, load in query]
 
     def get_chart(self):
-        query = session.query(HistoricalData.milliseconds, HistoricalData.load)
+        query = db.session.query(HistoricalData.milliseconds, HistoricalData.load)
         return [list(row) for row in query]
 
     def post(self):
@@ -37,19 +37,19 @@ class LoadDataView(MethodView):
 
 class WeatherDataView(View):
     def get_forecast_table(self):
-        query = session.query(ForecastData.milliseconds, ForecastData.tempc)
+        query = db.session.query(ForecastData.milliseconds, ForecastData.tempc)
         return [{"tempc": temp, "timestamp": timestamp} for timestamp, temp in query]
 
     def get_historical_table(self):
-        query = session.query(HistoricalData.milliseconds, HistoricalData.tempc)
+        query = db.session.query(HistoricalData.milliseconds, HistoricalData.tempc)
         return [{"tempc": temp, "timestamp": timestamp} for timestamp, temp in query]
 
     def get_forecast_chart(self):
-        query = session.query(ForecastData.milliseconds, ForecastData.tempc)
+        query = db.session.query(ForecastData.milliseconds, ForecastData.tempc)
         return [list(row) for row in query]
 
     def get_historical_chart(self):
-        query = session.query(HistoricalData.milliseconds, HistoricalData.tempc)
+        query = db.session.query(HistoricalData.milliseconds, HistoricalData.tempc)
         return [list(row) for row in query]
 
     def dispatch_request(self):
@@ -69,7 +69,7 @@ class WeatherDataView(View):
 
 class ForecastView(View):
     def get_forecast_chart(self):
-        query = session.query(ForecastData.milliseconds, ForecastData.load)
+        query = db.session.query(ForecastData.milliseconds, ForecastData.load)
         return [list(row) for row in query]
 
     def dispatch_request(self):

@@ -4,7 +4,7 @@ from flask.cli import with_appcontext
 from pathlib import Path
 import pandas as pd
 
-from forecast_app import session
+from forecast_app.db import db
 from forecast_app.models import ForecastData, HistoricalData
 from forecast_app.utils import get_or_create
 
@@ -28,8 +28,8 @@ def upload_demo_data():
             load=row["load"],
             tempc=row["tempc"],
         )
-        session.add(new_row)
-    session.commit()
+        db.session.add(new_row)
+    db.session.commit()
     click.echo("Historical data uploaded.")
 
     # Load forecast data
@@ -41,6 +41,6 @@ def upload_demo_data():
             load=row["load"],
             tempc=row["tempc"],
         )
-        session.add(new_row)
-    session.commit()
+        db.session.add(new_row)
+    db.session.commit()
     click.echo("Forecast data uploaded.")

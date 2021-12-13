@@ -1,16 +1,10 @@
 import os
 import click
 from flask.cli import with_appcontext
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from flask_sqlalchemy import SQLAlchemy
 
-filename = os.environ.get("DATABASE_URL", "sqlite:///db/demo.db")
-engine = create_engine(filename)
-print(f"CREATED ENGINE AT {filename}")
-session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
-Base = declarative_base()
-Base.query = session.query_property()
+
+db = SQLAlchemy()
 
 
 def init_db():
@@ -19,8 +13,8 @@ def init_db():
     # you will have to import them first before calling init_db()
     import forecast_app.models
 
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+    db.drop_all()
+    db.create_all()
 
 
 @click.command("init-db")

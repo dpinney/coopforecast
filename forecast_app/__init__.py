@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from forecast_app.utils import RenderTemplateView
 from forecast_app.views import LoadDataView, WeatherDataView, ForecastView
-from forecast_app.db import session, init_db_command
+from forecast_app.db import db, init_db_command
 from forecast_app.commands import upload_demo_data_command
 
 
@@ -13,7 +13,14 @@ def create_app(test_config={}):
 
     # TODO: Add config file
     # app.config.from_pyfile("config.py", silent=True)
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"  # CHANGE ME
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config.update(test_config)
+
+    # Initialize database
+    app.app_context().push()
+    db.init_app(app)
+
     app.config["UPLOAD_FOLDER"] = "forecast_app/static/uploads"
     app.config["SECRET_KEY"] = "super secret key"
 
@@ -36,9 +43,5 @@ def create_app(test_config={}):
 
     app.cli.add_command(init_db_command)
     app.cli.add_command(upload_demo_data_command)
-
-    @app.teardown_appcontext
-    def shutdown_session(exception=None):
-        session.remove()
 
     return app
