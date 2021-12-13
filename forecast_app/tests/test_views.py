@@ -4,9 +4,6 @@ import pytest
 from forecast_app.views import ForecastView, LoadDataView, WeatherDataView
 
 
-# TODO: Ensure that all views can handle an empty database
-
-
 class TestLoadDataView:
     def test_get_table(self, db):
         chart_array = LoadDataView().get_chart()
@@ -19,11 +16,11 @@ class TestWeatherDataView:
     def test_init(self):
         WeatherDataView()
 
-    # TODO: Test more thoroughly
+    # Tested more thoroughly via test_templates
 
 
 class TestForecastView:
     def test_init(self):
         ForecastView()
 
-    # TODO: Test more thoroughly
+    # Tested more thoroughly via test_templates

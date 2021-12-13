@@ -1,3 +1,4 @@
+import datetime
 from sqlalchemy import Column, Integer, Float, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from forecast_app.utils import get_or_create
