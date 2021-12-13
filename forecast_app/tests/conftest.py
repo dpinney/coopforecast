@@ -5,10 +5,8 @@ from pathlib import Path
 import pytest
 
 from forecast_app import create_app
-from forecast_app.db import init_db
 from forecast_app.commands import upload_demo_data
-
-# TESTING CONFIG
+from forecast_app.db import init_db
 
 
 @pytest.fixture
@@ -20,8 +18,8 @@ def app():
 def client(app):
     db_fd, db_path = tempfile.mkstemp()
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_path
-    os.environ["DATABASE_URL"] = db_path
+    os.environ["DATABASE_URL"] = "sqlite:///" + os.path.join(db_fd, "test.db")
+
     with app.test_client() as client:
         with app.app_context():
             init_db()

@@ -7,6 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 filename = os.environ.get("DATABASE_URL", "sqlite:///db/demo.db")
 engine = create_engine(filename)
+print(f"CREATED ENGINE AT {filename}")
 session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 Base = declarative_base()
 Base.query = session.query_property()

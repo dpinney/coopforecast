@@ -8,7 +8,7 @@ from forecast_app.db import session, init_db_command
 from forecast_app.commands import upload_demo_data_command
 
 
-def create_app(test_config=None):
+def create_app(test_config={}):
     app = Flask(__name__, instance_relative_config=True)
 
     # TODO: Add config file
