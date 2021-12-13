@@ -19,8 +19,8 @@ class LoadDataView(MethodView):
         return [list(row) for row in query]
 
     def post(self):
-        upload_file()
-        # TODO: Add CSV to database
+        filepath = upload_file("file")
+        HistoricalData.load_data(filepath)
         # TODO: Signal to user that data was uploaded
         return redirect(url_for("load-data"))
 

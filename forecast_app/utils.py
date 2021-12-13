@@ -8,20 +8,22 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() == "csv"
 
 
-def upload_file():
+def upload_file(name):
     # check if the post request has the file part
     if "file" not in request.files:
         flash("No file part")
-        return redirect(request.url)
-    file = request.files["file"]
+        return None
+    file = request.files[name]
     # If the user does not select a file, the browser submits an
     # empty file without a filename.
     if file.filename == "":
         flash("No selected file")
-        return redirect(request.url)
+        return None
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], filename))
+        filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+        file.save(filepath)
+        return filepath
 
 
 class RenderTemplateView(View):

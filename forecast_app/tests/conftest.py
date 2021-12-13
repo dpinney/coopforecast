@@ -36,4 +36,4 @@ def client(app, db):
 
 
 def pytest_configure():
-    pass
+    pytest.FIXTURE_DIR = Path(__file__).parent / "fixtures"
