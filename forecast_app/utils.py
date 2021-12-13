@@ -4,17 +4,6 @@ from werkzeug.utils import secure_filename
 import os
 
 
-def get_or_create(session, model, **kwargs):
-    instance = session.query(model).filter_by(**kwargs).first()
-    if instance:
-        return instance
-    else:
-        instance = model(**kwargs)
-        session.add(instance)
-        session.commit()
-        return instance
-
-
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() == "csv"
 

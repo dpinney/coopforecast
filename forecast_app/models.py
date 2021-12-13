@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy import Column, Integer, Float, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-from forecast_app.utils import get_or_create
+
 from forecast_app.db import db
 
 
@@ -45,4 +45,4 @@ class ForecastData(db.Model):
     @classmethod
     def ingest_data_from_csv(cls, filename):
         # TODO: validation should happen here
-        get_or_create(cls, timestamp=datetime.datetime.now(), load=0, tempc=0)
+        pass

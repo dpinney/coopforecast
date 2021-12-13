@@ -6,7 +6,6 @@ import pandas as pd
 
 from forecast_app.db import db
 from forecast_app.models import ForecastData, HistoricalData
-from forecast_app.utils import get_or_create
 
 
 @click.command("upload-demo-data")
