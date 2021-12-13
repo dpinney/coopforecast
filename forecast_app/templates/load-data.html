@@ -45,6 +45,7 @@
   </div>
 </div>
 
+{% if chart %}
 <div class="card shadow mb-4" id="charts">
   <!-- Card Header - Accordion -->
   <a href="#collapse-chart" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
@@ -61,7 +62,19 @@
     </div>
   </div>
 </div>
+{% else %}
 
+{# Show message when no data exists #}
+
+<div class="card shadow mb-4" id="upload">
+  <div class="card-body text-center ">
+    No data currently uploaded. Data will display here after uploading a CSV.
+  </div>
+</div>
+
+{% endif %}
+
+{% if table %}
 <div class="card shadow mb-4" id="tables">
   <!-- Card Header - Accordion -->
   <a href="#collapse-table" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
@@ -84,5 +97,6 @@
     </div>
   </div>
 </div>
+{% endif %}
 
 {% endblock %}

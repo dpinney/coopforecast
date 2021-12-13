@@ -66,6 +66,7 @@
   </div>
 </div>
 
+{% if historical_chart %}
 <div class="card shadow mb-4" id="charts">
   <!-- Card Header - Accordion -->
   <a href="#collapse-chart" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
@@ -86,7 +87,19 @@
     </div>
   </div>
 </div>
+{% else %}
 
+{# Show message when no data exists #}
+
+<div class="card shadow mb-4" id="upload">
+  <div class="card-body text-center ">
+    After historical and forecast data is uploaded, all data will display here.
+  </div>
+</div>
+
+{% endif %}
+
+{% if tables[0] %}
 <div class="card shadow mb-4" id="tables">
   <!-- Card Header - Accordion -->
   <a href="#collapse-table" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
@@ -130,5 +143,7 @@
     </div>
   </div>
 </div>
+{% endif %}
+
 
 {% endblock %}
