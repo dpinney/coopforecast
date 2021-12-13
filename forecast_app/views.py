@@ -6,8 +6,6 @@ from forecast_app.models import ForecastData, HistoricalData
 from forecast_app.db import db
 from forecast_app.utils import upload_file
 
-import sys
-
 
 class LoadDataView(MethodView):
     def get_table(self):
@@ -20,18 +18,18 @@ class LoadDataView(MethodView):
 
     def post(self):
         filepath = upload_file("file")
-        HistoricalData.load_data(filepath)
-        # TODO: Signal to user that data was uploaded
-        return redirect(url_for("load-data"))
+        messages = HistoricalData.load_data(filepath)
+        return self.get(messages=messages)  # NOTE: A redirect wouldn't work here
 
-    def get(self):
+    def get(self, messages=[]):
         return render_template(
             "load-data.html",
             **{
                 "name": "load-data",
                 "table": self.get_table(),
                 "chart": self.get_chart(),
-            }
+                "messages": messages,
+            },
         )
 
 
@@ -63,7 +61,7 @@ class WeatherDataView(View):
                 ],
                 "forecast_chart": self.get_forecast_chart(),
                 "historical_chart": self.get_historical_chart(),
-            }
+            },
         )
 
 

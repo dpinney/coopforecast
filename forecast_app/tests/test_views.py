@@ -11,6 +11,8 @@ class TestLoadDataView:
         assert all([len(datapoint) == 2 for datapoint in chart_array])
         # Already tested by test_utils
 
+    # TODO: Test that a post request shows the correct messages
+
 
 class TestWeatherDataView:
     def test_init(self):

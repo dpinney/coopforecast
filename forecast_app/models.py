@@ -45,6 +45,13 @@ class HistoricalData(db.Model):
                 db.session.add(instance)
             db.session.commit()
 
+        return [
+            {
+                "level": "success",
+                "text": f"Success! Loaded {len(df)} historical data points",
+            }
+        ]
+
 
 class ForecastData(db.Model):
     __tablename__ = "forecast_data"
