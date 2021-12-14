@@ -4,3 +4,6 @@ Flask-SQLAlchemy
 pandas
 pre-commit
 pytest
+tensorflow==2.7
+scipy
+numpy

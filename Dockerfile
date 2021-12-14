@@ -1,6 +1,7 @@
-FROM python:3.9-bullseye
+FROM amd64/python:3.7-buster
 WORKDIR /code
 COPY . .
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.lock
 
 CMD ["python", "deploy.py"]

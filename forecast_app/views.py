@@ -1,6 +1,7 @@
 import pandas as pd
 from flask import render_template, redirect, url_for
 from flask.views import MethodView, View
+import tensorflow as tf
 
 from forecast_app.models import ForecastData, HistoricalData
 from forecast_app.db import db
