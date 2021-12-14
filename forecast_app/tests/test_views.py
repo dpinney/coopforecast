@@ -1,7 +1,12 @@
 import pandas as pd
 import pytest
 
-from forecast_app.views import ForecastView, LoadDataView, WeatherDataView
+from forecast_app.views import (
+    ForecastView,
+    LoadDataView,
+    HistoricalWeatherDataView,
+    ForecastWeatherDataView,
+)
 
 
 class TestLoadDataView:
@@ -14,9 +19,16 @@ class TestLoadDataView:
     # TODO: Test that a post request shows the correct messages
 
 
-class TestWeatherDataView:
+class TestHistoricalWeatherDataView:
     def test_init(self):
-        WeatherDataView()
+        HistoricalWeatherDataView()
+
+    # Tested more thoroughly via test_templates
+
+
+class TestForecastWeatherDataView:
+    def test_init(self):
+        ForecastWeatherDataView()
 
     # Tested more thoroughly via test_templates
 

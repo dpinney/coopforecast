@@ -7,7 +7,8 @@ def test_templates(client):
     pages = {
         "/": "Login",
         "/load-data": "Load Data",
-        "/weather-data": "Weather Data",
+        "/forecast-weather-data": "Forecast Weather Data",
+        "/historical-weather-data": "Historical Weather Data",
         "/forecast": "Forecast",
         "/instructions": "Instructions",
         "/model-settings": "Model Settings",

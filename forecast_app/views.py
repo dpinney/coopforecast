@@ -34,19 +34,11 @@ class LoadDataView(MethodView):
 
 
 class HistoricalWeatherDataView(View):
-    def get_forecast_table(self):
-        query = db.session.query(ForecastData.milliseconds, ForecastData.tempc)
-        return [{"tempc": temp, "timestamp": timestamp} for timestamp, temp in query]
-
-    def get_historical_table(self):
+    def get_table(self):
         query = db.session.query(HistoricalData.milliseconds, HistoricalData.tempc)
         return [{"tempc": temp, "timestamp": timestamp} for timestamp, temp in query]
 
-    def get_forecast_chart(self):
-        query = db.session.query(ForecastData.milliseconds, ForecastData.tempc)
-        return [list(row) for row in query]
-
-    def get_historical_chart(self):
+    def get_chart(self):
         query = db.session.query(HistoricalData.milliseconds, HistoricalData.tempc)
         return [list(row) for row in query]
 
@@ -55,31 +47,19 @@ class HistoricalWeatherDataView(View):
             "historical-weather-data.html",
             **{
                 "name": "historical-weather-data",
-                "tables": [
-                    self.get_forecast_table(),
-                    self.get_historical_table(),
-                ],
-                "forecast_chart": self.get_forecast_chart(),
-                "historical_chart": self.get_historical_chart(),
+                "table": self.get_table(),
+                "chart": self.get_chart(),
             },
         )
 
 
 class ForecastWeatherDataView(View):
-    def get_forecast_table(self):
+    def get_table(self):
         query = db.session.query(ForecastData.milliseconds, ForecastData.tempc)
         return [{"tempc": temp, "timestamp": timestamp} for timestamp, temp in query]
 
-    def get_historical_table(self):
-        query = db.session.query(HistoricalData.milliseconds, HistoricalData.tempc)
-        return [{"tempc": temp, "timestamp": timestamp} for timestamp, temp in query]
-
-    def get_forecast_chart(self):
+    def get_chart(self):
         query = db.session.query(ForecastData.milliseconds, ForecastData.tempc)
-        return [list(row) for row in query]
-
-    def get_historical_chart(self):
-        query = db.session.query(HistoricalData.milliseconds, HistoricalData.tempc)
         return [list(row) for row in query]
 
     def dispatch_request(self):
@@ -87,18 +67,14 @@ class ForecastWeatherDataView(View):
             "forecast-weather-data.html",
             **{
                 "name": "forecast-weather-data",
-                "tables": [
-                    self.get_forecast_table(),
-                    self.get_historical_table(),
-                ],
-                "forecast_chart": self.get_forecast_chart(),
-                "historical_chart": self.get_historical_chart(),
+                "table": self.get_table(),
+                "chart": self.get_chart(),
             },
         )
 
 
 class ForecastView(View):
-    def get_forecast_chart(self):
+    def get_chart(self):
         query = db.session.query(ForecastData.milliseconds, ForecastData.load)
         return [list(row) for row in query]
 
@@ -107,5 +83,5 @@ class ForecastView(View):
         return render_template(
             "forecast.html",
             name="forecast",
-            chart=self.get_forecast_chart(),
+            chart=self.get_chart(),
         )
