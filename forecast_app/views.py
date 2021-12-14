@@ -7,7 +7,7 @@ from forecast_app.db import db
 from forecast_app.utils import upload_file
 
 
-class LoadDataView(MethodView):
+class HistoricalLoadDataView(MethodView):
     def get_table(self):
         query = db.session.query(HistoricalData.timestamp, HistoricalData.load)
         return [{"load": load, "timestamp": timestamp} for timestamp, load in query]
@@ -23,9 +23,9 @@ class LoadDataView(MethodView):
 
     def get(self, messages=[]):
         return render_template(
-            "load-data.html",
+            "historical-load-data.html",
             **{
-                "name": "load-data",
+                "name": "historical-load-data",
                 "table": self.get_table(),
                 "chart": self.get_chart(),
                 "messages": messages,

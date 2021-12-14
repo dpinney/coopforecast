@@ -3,7 +3,7 @@ import pytest
 
 from forecast_app.views import (
     ForecastView,
-    LoadDataView,
+    HistoricalLoadDataView,
     HistoricalWeatherDataView,
     ForecastWeatherDataView,
 )
@@ -11,7 +11,7 @@ from forecast_app.views import (
 
 class TestLoadDataView:
     def test_get_table(self, db):
-        chart_array = LoadDataView().get_chart()
+        chart_array = HistoricalLoadDataView().get_chart()
         assert type(chart_array) == list
         assert all([len(datapoint) == 2 for datapoint in chart_array])
         # Already tested by test_utils

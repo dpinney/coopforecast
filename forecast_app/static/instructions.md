@@ -1,11 +1,14 @@
 # Instructions
 
-* [Load Data](#load-data)
-* [Weather Data](#weather-data)
-* [Forecaster](#forecaster)
-* [Read More](#read-more)
+- [Instructions](#instructions)
+  - [Historical Load Data](#historical-load-data)
+  - [Weather Data](#weather-data)
+    - [Historical Data](#historical-data)
+    - [Weather Forecast](#weather-forecast)
+  - [Forecaster](#forecaster)
+  - [Read More](#read-more)
 
-## Load data
+## Historical Load Data
 
 Upload load data via CSV. Any units can be used, but remember that the prediction will then be in those units, and then of course ensure that while inputting data, all values share the same units. Hour-by-hour load data is expected.
 

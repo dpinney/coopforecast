@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from forecast_app.utils import RenderTemplateView
 from forecast_app.views import (
-    LoadDataView,
+    HistoricalLoadDataView,
     ForecastWeatherDataView,
     HistoricalWeatherDataView,
     ForecastView,
@@ -31,8 +31,8 @@ def create_app(test_config={}):
 
     app.add_url_rule("/", view_func=RenderTemplateView.view("login"))
     app.add_url_rule(
-        "/load-data",
-        view_func=LoadDataView.as_view("load-data"),
+        "/historical-load-data",
+        view_func=HistoricalLoadDataView.as_view("historical-load-data"),
         methods=["GET", "POST"],
     )
 
