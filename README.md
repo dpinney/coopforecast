@@ -14,10 +14,10 @@ And view the application at http://localhost:5000/.
 
 ## Launch without docker
 
-Create a python 3.9 virtual environment and download packages from `requirements.txt`:
+Create a python 3.8 virtual environment and download packages from `requirements.txt`:
 
 ```sh
-python3.9 -m venv venv
+python3.8 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
