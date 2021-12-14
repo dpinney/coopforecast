@@ -12,6 +12,12 @@
 
 {% block content %}
 
+{% for message in messages %}
+<div class="alert alert-{{ message.level }}">
+  {{ message.text }}
+</div>
+{% endfor %}
+
 <h1>Historical Weather Data</h1>
 <ul>
   <li><a href="#upload-historical">Upload Historical Data</a></li>
@@ -31,14 +37,12 @@
     </p>
 
     <div class="input-group mb-3">
-      <div class="input-group-prepend">
-        <span class="input-group-text">Upload</span>
-      </div>
-      <div class="custom-file">
-        <input type="file" class="custom-file-input" id="inputGroupFile01">
-        <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
-      </div>
+      <form method=post enctype=multipart/form-data>
+        <input type=file name=file>
+        <input type=submit value=Upload>
+      </form>
     </div>
+
   </div>
 </div>
 

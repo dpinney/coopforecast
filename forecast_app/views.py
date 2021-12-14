@@ -7,25 +7,35 @@ from forecast_app.db import db
 from forecast_app.utils import upload_file
 
 
-class HistoricalLoadDataView(MethodView):
+class DataView(MethodView):
+    data_class = None
+    data_class_key = None
+    data_class_name = None
+
     def get_table(self):
-        query = db.session.query(HistoricalData.timestamp, HistoricalData.load)
-        return [{"load": load, "timestamp": timestamp} for timestamp, load in query]
+        query = db.session.query(
+            self.data_class.milliseconds,
+            getattr(self.data_class, self.data_class_key),
+        )
+        return [
+            {self.data_class_key: temp, "timestamp": timestamp}
+            for timestamp, temp in query
+        ]
 
     def get_chart(self):
-        query = db.session.query(HistoricalData.milliseconds, HistoricalData.load)
+        query = db.session.query(self.data_class.milliseconds, self.data_class.tempc)
         return [list(row) for row in query]
 
     def post(self):
         filepath = upload_file("file")
-        messages = HistoricalData.load_data(filepath)
+        messages = self.data_class.load_data(filepath)
         return self.get(messages=messages)  # NOTE: A redirect wouldn't work here
 
     def get(self, messages=[]):
         return render_template(
-            "historical-load-data.html",
+            f"{self.data_class_name}.html",
             **{
-                "name": "historical-load-data",
+                "name": self.data_class_name,
                 "table": self.get_table(),
                 "chart": self.get_chart(),
                 "messages": messages,
@@ -33,44 +43,22 @@ class HistoricalLoadDataView(MethodView):
         )
 
 
-class HistoricalWeatherDataView(View):
-    def get_table(self):
-        query = db.session.query(HistoricalData.milliseconds, HistoricalData.tempc)
-        return [{"tempc": temp, "timestamp": timestamp} for timestamp, temp in query]
-
-    def get_chart(self):
-        query = db.session.query(HistoricalData.milliseconds, HistoricalData.tempc)
-        return [list(row) for row in query]
-
-    def dispatch_request(self):
-        return render_template(
-            "historical-weather-data.html",
-            **{
-                "name": "historical-weather-data",
-                "table": self.get_table(),
-                "chart": self.get_chart(),
-            },
-        )
+class ForecastWeatherDataView(DataView):
+    data_class = ForecastData
+    data_class_key = "tempc"
+    data_class_name = "forecast-weather-data"
 
 
-class ForecastWeatherDataView(View):
-    def get_table(self):
-        query = db.session.query(ForecastData.milliseconds, ForecastData.tempc)
-        return [{"tempc": temp, "timestamp": timestamp} for timestamp, temp in query]
+class HistoricalLoadDataView(DataView):
+    data_class = HistoricalData
+    data_class_key = "load"
+    data_class_name = "historical-load-data"
 
-    def get_chart(self):
-        query = db.session.query(ForecastData.milliseconds, ForecastData.tempc)
-        return [list(row) for row in query]
 
-    def dispatch_request(self):
-        return render_template(
-            "forecast-weather-data.html",
-            **{
-                "name": "forecast-weather-data",
-                "table": self.get_table(),
-                "chart": self.get_chart(),
-            },
-        )
+class HistoricalWeatherDataView(DataView):
+    data_class = HistoricalData
+    data_class_key = "tempc"
+    data_class_name = "historical-weather-data"
 
 
 class ForecastView(View):
