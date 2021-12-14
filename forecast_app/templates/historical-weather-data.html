@@ -1,0 +1,149 @@
+{% extends 'base-and-nav.html' %}
+
+{% block title %}Weather Data{% endblock %}
+{% block head %}
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/data.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/load-line-chart.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/load-data.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+
+<h1>Weather Data</h1>
+<ul>
+  <li><a href="#upload-historical">Upload Historical Data</a></li>
+  <li><a href="#upload-forecast">Upload Forecast Data</a></li>
+  <li><a href="#charts">Charts</a></li>
+  <li><a href="#tables">Tables</a></li>
+</ul>
+
+<div class="card shadow mb-4" id="upload-historical">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Upload Historical Data</h6>
+  </div>
+  <div class="card-body">
+    <p>
+      <a href="/instructions#historical-data" class="btn btn-secondary btn-sm">Read data upload instructions</a>
+      <a href="https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4" class="btn btn-secondary btn-sm">View
+        an example dataset</a>
+    </p>
+
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Upload</span>
+      </div>
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="inputGroupFile01">
+        <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow mb-4" id="upload-forecast">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Upload Forecast Data</h6>
+  </div>
+  <div class="card-body">
+    <p>
+      <a href="/instructions#weather-forecast" class="btn btn-secondary btn-sm">Read data upload instructions</a>
+      <a href="https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4" class="btn btn-secondary btn-sm">View
+        an example dataset</a>
+    </p>
+
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Upload</span>
+      </div>
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="inputGroupFile01">
+        <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if historical_chart %}
+<div class="card shadow mb-4" id="charts">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-chart" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-chart">
+    <h6 class="m-0 font-weight-bold text-primary">Charts</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-chart">
+    <div class="card-body">
+      <div id="historical-chart-container" style="height: 400px; min-width: 310px"></div>
+      <script type="text/javascript">
+        create_timeseries_chart(id = 'historical-chart-container', data = {{ historical_chart | tojson }}, title = 'Historical Temperature Data', series_name = 'Temperature (°C)')
+      </script>
+      <div id="forecast-chart-container" style="height: 400px; min-width: 310px"></div>
+      <script type="text/javascript">
+        create_timeseries_chart(id = 'forecast-chart-container', data = {{ forecast_chart | tojson }}, title = 'Forecasted Temperature Data', series_name = 'Temperature (°C)')
+      </script>
+    </div>
+  </div>
+</div>
+{% else %}
+
+{# Show message when no data exists #}
+
+<div class="card shadow mb-4" id="upload">
+  <div class="card-body text-center ">
+    After historical and forecast data is uploaded, all data will display here.
+  </div>
+</div>
+
+{% endif %}
+
+{% if tables[0] %}
+<div class="card shadow mb-4" id="tables">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-table" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-table">
+    <h6 class="m-0 font-weight-bold text-primary">Tables</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-table">
+    <div class="card-body">
+      <h3>Historical Data</h3>
+      <p id="table-warning">This table has been hidden since it is very large and may slow down your webpage. If you're
+        looking to further inspect your data, it may be more convenient to click on the menu in the chart above and
+        click on the "Download CSV" prompt.
+      </p>
+      <p>
+        <button id="table-button" class="btn-secondary btn-sm" onclick="toggle_table_visibility()">Show Table</button>
+      </p>
+      {% set table = tables[1] %}
+      {% include 'table.html' %}
+      <h3>Forecast Data</h3>
+      <div class="table-responsive" id="small-table">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              {% for key, value in tables[0][0].items() %}
+              <th>{{ key }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in tables[0] %}
+            <tr>
+              {% for key, value in row.items() %}
+              <td>{{value}}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+{% endblock %}

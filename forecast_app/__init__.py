@@ -3,7 +3,12 @@ from flask import Flask, flash, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 from forecast_app.utils import RenderTemplateView
-from forecast_app.views import LoadDataView, WeatherDataView, ForecastView
+from forecast_app.views import (
+    LoadDataView,
+    ForecastWeatherDataView,
+    HistoricalWeatherDataView,
+    ForecastView,
+)
 from forecast_app.db import db, init_db_command
 from forecast_app.commands import upload_demo_data_command
 
@@ -31,7 +36,14 @@ def create_app(test_config={}):
         methods=["GET", "POST"],
     )
 
-    app.add_url_rule("/weather-data", view_func=WeatherDataView.as_view("weather-data"))
+    app.add_url_rule(
+        "/forecast-weather-data",
+        view_func=ForecastWeatherDataView.as_view("forecast-weather-data"),
+    )
+    app.add_url_rule(
+        "/historical-weather-data",
+        view_func=HistoricalWeatherDataView.as_view("historical-weather-data"),
+    )
     app.add_url_rule("/instructions", view_func=RenderTemplateView.view("instructions"))
     app.add_url_rule("/forecast", view_func=ForecastView.as_view("forecast"))
     app.add_url_rule(
