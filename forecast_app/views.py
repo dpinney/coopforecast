@@ -32,7 +32,7 @@ class DataView(MethodView):
         messages = self.data_class.load_data(filepath)
         return self.get(messages=messages)  # NOTE: A redirect wouldn't work here
 
-    def get(self, messages=[]):
+    def get(self, messages=None):
         return render_template(
             f"{self.data_class_name}.html",
             **{
