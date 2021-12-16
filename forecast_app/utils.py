@@ -2,19 +2,13 @@ from flask import render_template, request, flash, current_app, redirect
 from flask.views import View
 from werkzeug.utils import secure_filename
 import os
-
+from flask_executor import Executor
 
 from forecast_app.models import HistoricalData, ForecastData
 import pandas as pd
 
 
-def run_forecast():
-    df = pd.DataFrame(
-        [
-            {"timestamp": test.timestamp, "load": test.load, "tempc": test.tempc}
-            for test in HistoricalData.query.all()
-        ]
-    )
+executor = Executor()
 
 
 def allowed_file(filename):

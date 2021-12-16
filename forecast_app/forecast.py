@@ -8,42 +8,6 @@ from datetime import timedelta, date
 import pickle
 from scipy.stats import zscore
 
-from forecast_app.models import HistoricalData, ForecastData
-
-
-def execute_forecast():
-    epochs = 20  # TODO: Config epochs
-    OUTPUT_DIR = "./forecast_app/static/output/"  # TODO: Config output dir
-
-    df = HistoricalData.to_df()
-
-    weather = [
-        row.tempc for row in ForecastData.query.all()
-    ]  # Ensure length is appropriate
-
-    # ---------------------- MAKE PREDICTIONS ------------------------------- #
-
-    df = df.sort_values("dates")
-    d = dict(df.groupby(df.dates.dt.date)["dates"].count())
-    df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]  # find all non-24
-
-    df, tomorrow = add_day(df, weather[:24])
-    all_X, all_y = makeUsefulDf(df, structure="3D")
-
-    tomorrow_load, model, tomorrow_accuracy = neural_net_next_day(
-        all_X,
-        all_y,
-        epochs=epochs,
-        save_file=pJoin(OUTPUT_DIR, "one_day_model.h5"),
-        model=None,
-        structure="3D",
-    )
-
-    # TODO: Confirm that this can work from any hour
-    # TODO: Confirm that the zscore normalization is appropriate
-    # TODO: Add tomorrow's load and accuracy to database
-    return tomorrow_load, tomorrow_accuracy
-
 
 def makeUsefulDf(df, noise=2.5, hours_prior=24, structure=None):
     """

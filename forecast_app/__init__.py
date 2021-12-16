@@ -2,7 +2,7 @@ import os
 from flask import Flask, flash, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
-from forecast_app.utils import RenderTemplateView
+from forecast_app.utils import RenderTemplateView, executor
 from forecast_app.views import (
     HistoricalLoadDataView,
     ForecastWeatherDataView,
@@ -55,5 +55,7 @@ def create_app(test_config={}):
 
     app.cli.add_command(init_db_command)
     app.cli.add_command(upload_demo_data_command)
+
+    executor.init_app(app)
 
     return app

@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from forecast_app.db import db
-from forecast_app.models import ForecastData, HistoricalData
+from forecast_app.models import ForecastData, ForecastModel, HistoricalData
 
 
 @click.command("upload-demo-data")
@@ -37,9 +37,15 @@ def upload_demo_data():
     for _, row in df.iterrows():
         new_row = ForecastData(
             timestamp=row["timestamp"],
-            load=row["load"],
             tempc=row["tempc"],
         )
         db.session.add(new_row)
     db.session.commit()
     click.echo("Forecast data uploaded.")
+
+    mock_model = ForecastModel()
+    mock_model.loads = df["load"].tolist()
+    mock_model.exited_successfully = True
+    mock_model.accuracy = {"test": 96.5, "train": 98.5}
+    mock_model.save()
+    click.echo("Forecast model uploaded.")

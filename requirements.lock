@@ -38,3 +38,4 @@ typing_extensions==4.0.1
 virtualenv==20.10.0
 Werkzeug==2.0.2
 tensorflow==2.7.0
+flask-executor==0.10.0

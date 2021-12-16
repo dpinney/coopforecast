@@ -3,9 +3,9 @@ from flask import render_template, redirect, url_for
 from flask.views import MethodView, View
 import tensorflow as tf
 
-from forecast_app.models import ForecastData, HistoricalData
+from forecast_app.models import ForecastData, HistoricalData, ForecastModel
 from forecast_app.db import db
-from forecast_app.utils import upload_file
+from forecast_app.utils import upload_file, executor
 
 
 class DataView(MethodView):
@@ -33,6 +33,9 @@ class DataView(MethodView):
         return self.get(messages=messages)  # NOTE: A redirect wouldn't work here
 
     def get(self, messages=None):
+        if not messages:
+            messages = []
+
         return render_template(
             f"{self.data_class_name}.html",
             **{
@@ -62,15 +65,54 @@ class HistoricalWeatherDataView(DataView):
     data_class_name = "historical-weather-data"
 
 
-class ForecastView(View):
-    def get_chart(self):
-        query = db.session.query(ForecastData.milliseconds, ForecastData.load)
-        return [list(row) for row in query]
+class ForecastView(MethodView):
+    # TODO:
+    # - make model downloadable
+    # - display messages about why data is not prepared
 
-    def dispatch_request(self):
+    def check_data_preparation(self, messages):
+        # If data is prepared and no model exists
+        # messages.append({"level": "info", "text": "Data is not prepared"})
+        pass
+
+    def get_chart(self, forecast):
+        if forecast:
+            return [
+                [timestamp, load]
+                for load, timestamp in zip(forecast.loads, forecast.milliseconds)
+            ]
+        else:
+            return None
+
+    def post(self):
+        new_model = ForecastModel()
+        new_model.save()
+        print(f"Starting model {new_model.creation_date}")
+        executor.submit(new_model.launch_model)
+        print(f"Ending model {new_model.creation_date}")
+        return self.get(messages=[{"level": "info", "text": "Forecast started"}])
+
+    def get_running_models(self):
+        return [model for model in db.session.query(ForecastModel) if model.is_running]
+
+    def get(self, messages=None):
+        if not messages:
+            messages = []
+        self.check_data_preparation(messages)
+
+        # Filter by exited_successfully
+        latest_successful_forecast = (
+            db.session.query(ForecastModel)
+            .filter_by(exited_successfully=True)
+            .order_by(ForecastModel.creation_date)
+            .first()
+        )
 
         return render_template(
             "forecast.html",
             name="forecast",
-            chart=self.get_chart(),
+            chart=self.get_chart(latest_successful_forecast),
+            is_running=self.get_running_models(),
+            forecast=latest_successful_forecast,
+            messages=messages,
         )

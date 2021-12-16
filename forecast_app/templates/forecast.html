@@ -13,26 +13,41 @@
 {% block content %}
 <h1>Forecast</h1>
 
+{% for message in messages %}
+<div class="alert alert-{{ message.level }}">
+  {{ message.text }}
+</div>
+{% endfor %}
+
+{% for model in running_models %}
+<div class="alert alert-primary">
+  <i class="fa fa-circle text-warning Blink"></i> Currently training a model from <b class="text-primary">{{
+    model.start_date }}</b> to <b class="text-primary">{{ model.end_date }}</b>
+</div>
+{% endfor %}
+
+{% if not running_models %}
+<form action="" method="post"></form>
+<div class="alert alert-primary">
+  <a onclick="this.closest('form').submit();return false;" class="btn btn-primary btn-icon-split">
+    <span class="icon text-white-600">
+      <i class="fas fa-arrow-right"></i>
+    </span>
+    <span class="text">Generate new model</span>
+  </a>
+</div>
+{% endif %}
+
+{% if forecast %}
 <div class="card shadow mb-4">
   <div class="card-header py-3">
     <h6 class="m-0 font-weight-bold text-primary">Latest Forecast</h6>
   </div>
   <div class="card-body">
-    <div class="alert alert-primary">
-      <p>Your input data has changed since last running this model. Would you like to generate a new forecast? You will
-        be shown a prediction from <b class="text-primary">January 1, 2019 08:00</b> to <b class="text-primary">January
-          2, 2019 07:00</b></p>
-      <a href="#" class="btn btn-primary btn-icon-split">
-        <span class="icon text-white-600">
-          <i class="fas fa-arrow-right"></i>
-        </span>
-        <span class="text">Generate new forecast</span>
-        <script type="text/javascript">create_timeseries_chart()</script>
-      </a>
-    </div>
     <p>
-      Displaying a forecast of <b class="text-primary">January 1, 2019 00:00</b> to <b class="text-primary">January 1,
-        2019 23:00</b>.
+      Displaying a forecast of <b class="text-primary">{{ forecast.start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b
+        class="text-primary">{{
+        forecast.end_date.strftime('%b %d, %Y %H:%M') }}</b>.
     </p>
     <div id="chart-container" style="height: 400px; min-width: 310px"></div>
     <script type="text/javascript">
@@ -53,8 +68,10 @@
     <p>
       <a href="#" class="btn btn-secondary btn-sm">Read about how accuracy is measured</a>
     </p>
-    <div><b>Train</b>: 5.6 MAPE</div>
-    <div><b>Test</b>: 8.6 MAPE</div>
+    <div><b>Train</b>: {{ forecast.accuracy.train }} MAPE</div>
+    <div><b>Test</b>: {{ forecast.accuracy.test }} MAPE</div>
   </div>
 </div>
+{% endif %}
+
 {% endblock %}
