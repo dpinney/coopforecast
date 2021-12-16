@@ -28,6 +28,10 @@ class HistoricalData(db.Model):
     def load_data(cls, filepath, columns=None):
         return _load_data(cls, filepath, columns)
 
+    @classmethod
+    def to_df(cls):
+        return _to_df(cls)
+
 
 class ForecastData(db.Model):
     __tablename__ = "forecast_data"
@@ -50,6 +54,20 @@ class ForecastData(db.Model):
     @classmethod
     def load_data(cls, filepath, columns=None):
         return _load_data(cls, filepath, columns)
+
+    @classmethod
+    def to_df(cls):
+        return _to_df(cls)
+
+
+def _to_df(cls):
+    return pd.DataFrame(
+        [
+            # TODO: Rename dates to timestamp, or just make a universal var
+            {"dates": row.timestamp, "load": row.load, "tempc": row.tempc}
+            for row in cls.query.all()
+        ]
+    )
 
 
 def _load_data(cls, filepath, columns=None):

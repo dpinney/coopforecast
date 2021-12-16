@@ -4,6 +4,19 @@ from werkzeug.utils import secure_filename
 import os
 
 
+from forecast_app.models import HistoricalData, ForecastData
+import pandas as pd
+
+
+def run_forecast():
+    df = pd.DataFrame(
+        [
+            {"timestamp": test.timestamp, "load": test.load, "tempc": test.tempc}
+            for test in HistoricalData.query.all()
+        ]
+    )
+
+
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() == "csv"
 
