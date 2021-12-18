@@ -10,27 +10,27 @@ from forecast_app.utils import upload_file, executor
 
 
 class DataView(MethodView):
-    data_class = None
-    data_class_key = None
-    data_class_name = None
+    decorators = [flask_login.login_required]
+    view = None
+    view_key = None
+    view_name = None
 
     def get_table(self):
         query = db.session.query(
-            self.data_class.timestamp,
-            getattr(self.data_class, self.data_class_key),
+            self.view.timestamp,
+            getattr(self.view, self.view_key),
         )
         return [
-            {"timestamp": timestamp, self.data_class_key: temp}
-            for timestamp, temp in query
+            {"timestamp": timestamp, self.view_key: temp} for timestamp, temp in query
         ]
 
     def get_chart(self):
-        query = db.session.query(self.data_class.milliseconds, self.data_class.tempc)
+        query = db.session.query(self.view.milliseconds, self.view.tempc)
         return [list(row) for row in query]
 
     def post(self):
         filepath = upload_file("file")
-        messages = self.data_class.load_data(filepath)
+        messages = self.view.load_data(filepath)
         return self.get(messages=messages)  # NOTE: A redirect wouldn't work here
 
     def get(self, messages=None):
@@ -38,9 +38,9 @@ class DataView(MethodView):
             messages = []
 
         return render_template(
-            f"{self.data_class_name}.html",
+            f"{self.view_name}.html",
             **{
-                "name": self.data_class_name,
+                "name": self.view_name,
                 "table": self.get_table(),
                 "chart": self.get_chart(),
                 "messages": messages,
@@ -49,24 +49,26 @@ class DataView(MethodView):
 
 
 class ForecastWeatherDataView(DataView):
-    data_class = ForecastData
-    data_class_key = "tempc"
-    data_class_name = "forecast-weather-data"
+    view = ForecastData
+    view_key = "tempc"
+    view_name = "forecast-weather-data"
 
 
 class HistoricalLoadDataView(DataView):
-    data_class = HistoricalData
-    data_class_key = "load"
-    data_class_name = "historical-load-data"
+    view = HistoricalData
+    view_key = "load"
+    view_name = "historical-load-data"
 
 
 class HistoricalWeatherDataView(DataView):
-    data_class = HistoricalData
-    data_class_key = "tempc"
-    data_class_name = "historical-weather-data"
+    view = HistoricalData
+    view_key = "tempc"
+    view_name = "historical-weather-data"
 
 
 class ForecastView(MethodView):
+    view_name = "forecast"
+    decorators = [flask_login.login_required]
     # TODO:
     # - make model downloadable
     # - display messages about why data is not prepared
@@ -96,8 +98,6 @@ class ForecastView(MethodView):
     def get_running_models(self):
         return [model for model in db.session.query(ForecastModel) if model.is_running]
 
-    # TODO: Automatically add login requred to all view objects with one exception?
-    @flask_login.login_required
     def get(self, messages=None):
         if not messages:
             messages = []
@@ -134,6 +134,9 @@ class User(flask_login.UserMixin):
 
 
 class LoginView(MethodView):
+    view_name = "login"
+    view_url = "/"
+
     def post(self):
         username = request.form.get("username")
         if request.form.get("pw") == users[username]["pw"]:
@@ -149,6 +152,8 @@ class LoginView(MethodView):
 
 
 class LogoutView(MethodView):
+    view_name = "logout"
+
     def get(self):
         flask_login.logout_user()
         return redirect("/")

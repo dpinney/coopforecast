@@ -34,30 +34,23 @@ def create_app(test_config={}):
     app.config["UPLOAD_FOLDER"] = "forecast_app/static/uploads"
     app.config["SECRET_KEY"] = "super secret key"
 
-    app.add_url_rule("/", view_func=LoginView.as_view("login"))
-    app.add_url_rule("/logout", view_func=LogoutView.as_view("logout"))
-    app.add_url_rule(
-        "/historical-load-data",
-        view_func=HistoricalLoadDataView.as_view("historical-load-data"),
-        methods=["GET", "POST"],
-    )
+    method_views = [
+        LoginView,
+        LogoutView,
+        ForecastView,
+        HistoricalLoadDataView,
+        ForecastWeatherDataView,
+        HistoricalWeatherDataView,
+    ]
+    for view in method_views:
+        app.add_url_rule(
+            view.view_url if hasattr(view, "view_url") else f"/{view.view_name}",
+            view_func=view.as_view(view.view_name),
+        )
 
-    app.add_url_rule(
-        "/forecast-weather-data",
-        view_func=ForecastWeatherDataView.as_view("forecast-weather-data"),
-    )
-    app.add_url_rule(
-        "/historical-weather-data",
-        view_func=HistoricalWeatherDataView.as_view("historical-weather-data"),
-    )
-    app.add_url_rule("/instructions", view_func=RenderTemplateView.view("instructions"))
-    app.add_url_rule("/forecast", view_func=ForecastView.as_view("forecast"))
-    app.add_url_rule(
-        "/model-settings", view_func=RenderTemplateView.view("model-settings")
-    )
-    app.add_url_rule(
-        "/user-settings", view_func=RenderTemplateView.view("user-settings")
-    )
+    static_views = ["instructions", "model-settings", "user-settings"]
+    for view in static_views:
+        app.add_url_rule(f"/{view}", view_func=RenderTemplateView.as_view(view))
 
     app.cli.add_command(init_db_command)
     app.cli.add_command(upload_demo_data_command)

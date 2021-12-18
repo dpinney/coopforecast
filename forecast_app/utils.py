@@ -3,7 +3,7 @@ from flask.views import View
 from werkzeug.utils import secure_filename
 import os
 from flask_executor import Executor
-from flask_login import LoginManager, UserMixin
+from flask_login import LoginManager, UserMixin, login_required
 
 from forecast_app.models import HistoricalData, ForecastData
 import pandas as pd
