@@ -127,14 +127,14 @@ class LoginView(MethodView):
     view_url = "/"
 
     def post(self):
-        users = current_app.config["USERS"]
         username = request.form.get("username")
-        if request.form.get("password") == users[username]["password"]:
+        if request.form.get("password") == current_app.config["ADMIN_PASSWORD"]:
             user = User()
             user.id = username
             remember = request.form.get("remember-me") == "on"
             flask_login.login_user(user, remember=remember)
             return redirect("/forecast")
+        # TODO: Otherwise redirect with error message
 
     def get(self):
         if flask_login.current_user.is_authenticated:

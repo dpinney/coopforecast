@@ -15,10 +15,8 @@ login_manager = LoginManager()
 
 @login_manager.user_loader
 def user_loader(username):
-    users = current_app.config["USERS"]
-    if username not in users:
+    if username != current_app.config["ADMIN_USER"]:
         return
-
     user = User()
     user.id = username
     return user
@@ -26,17 +24,14 @@ def user_loader(username):
 
 @login_manager.request_loader
 def request_loader(request):
-    users = current_app.config["USERS"]
-
     username = request.form.get("username")
-    if username not in users:
+    if username != current_app.config["ADMIN_USER"]:
         return
-
     user = User()
     user.id = username
-
-    user.is_authenticated = request.form["password"] == users[username]["password"]
-
+    user.is_authenticated = (
+        request.form["password"] == current_app.config["ADMIN_PASSWORD"]
+    )
     return user
 
 

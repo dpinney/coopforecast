@@ -16,15 +16,10 @@ from forecast_app.db import db, init_db_command
 from forecast_app.commands import upload_demo_data_command
 
 
-def create_app(test_config={}):
+def create_app(config):
     app = Flask(__name__, instance_relative_config=True)
-
-    # TODO: Add config file
-    # app.config.from_pyfile("config.py", silent=True)
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"  # CHANGE ME
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["USERS"] = {"admin": {"password": "admin"}}
-    app.config.update(test_config)
+    app.config.from_object(config)
+    print(app.config)
 
     # Initialize database
     app.app_context().push()
@@ -34,7 +29,6 @@ def create_app(test_config={}):
     login_manager.init_app(app)
 
     app.config["UPLOAD_FOLDER"] = "forecast_app/static/uploads"
-    app.config["SECRET_KEY"] = "super secret key"
 
     method_views = [
         LoginView,

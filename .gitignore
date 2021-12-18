@@ -1,5 +1,6 @@
 # db/dev.db
 forecast_app/static/uploads/*.csv
+forecast_app/secret_config.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

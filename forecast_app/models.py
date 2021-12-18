@@ -3,6 +3,7 @@ import datetime
 import pandas as pd
 from sqlalchemy import Column, Integer, Float, String, DateTime, JSON, Boolean
 from flask_login import UserMixin
+from flask import current_app
 
 from forecast_app.db import db
 import forecast_app.forecast as lf
@@ -11,7 +12,6 @@ import forecast_app.forecast as lf
 class ForecastModel(db.Model):
     __tablename__ = "forecast_model"
     creation_date = Column(DateTime, default=datetime.datetime.utcnow, primary_key=True)
-    # timestamps = Column(JSON, nullable=False)
     milliseconds = Column(JSON, nullable=False)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
@@ -25,7 +25,7 @@ class ForecastModel(db.Model):
 
     def __init__(self):
         # NOTE: Object is initialized from state of the database
-        OUTPUT_DIR = "./forecast_app/static/output/"  # TODO: Config output dir
+        OUTPUT_DIR = current_app.config["MODEL_OUTPUT_DIR"]
         self.model_path = os.path.join(OUTPUT_DIR, f"{self.creation_date}.h5")
         self.tempcs = [
             row.tempc for row in ForecastData.query.all()
