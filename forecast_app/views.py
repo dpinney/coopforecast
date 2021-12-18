@@ -1,7 +1,16 @@
 import pandas as pd
-from flask import render_template, redirect, url_for
+from flask import render_template, redirect, url_for, request
 from flask.views import MethodView, View
 import tensorflow as tf
+import flask_login
+from flask_login import (
+    UserMixin,
+    login_required,
+    login_user,
+    logout_user,
+    current_user,
+)
+
 
 from forecast_app.models import ForecastData, HistoricalData, ForecastModel
 from forecast_app.db import db
@@ -95,6 +104,8 @@ class ForecastView(MethodView):
     def get_running_models(self):
         return [model for model in db.session.query(ForecastModel) if model.is_running]
 
+    # TODO: Automatically add login requred to all view objects with one exception?
+    @flask_login.login_required
     def get(self, messages=None):
         if not messages:
             messages = []
@@ -116,3 +127,34 @@ class ForecastView(MethodView):
             forecast=latest_successful_forecast,
             messages=messages,
         )
+
+
+# TODO: Move me!
+users = {
+    "user1@gmail.com": {"pw": "pass1"},
+    "user2@aol.com": {"pw": "pass2"},
+    "user3@hotmail.com": {"pw": "pass3"},
+}
+
+# TODO: Move me!
+class User(UserMixin):
+    pass
+
+
+class LoginView(MethodView):
+    def post(self):
+        username = request.form.get("username")
+        if request.form.get("pw") == users[username]["pw"]:
+            user = User()
+            user.id = username
+            flask_login.login_user(user)
+            return redirect("/forecast")
+
+    def get(self):
+        return render_template("login.html")
+
+
+class LogoutView(MethodView):
+    def get(self):
+        flask_login.logout_user()
+        return "Logged out"

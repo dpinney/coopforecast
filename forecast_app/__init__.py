@@ -1,13 +1,22 @@
 import os
-from flask import Flask, flash, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, render_template, redirect, url_for, flash
+import flask_login
+from flask_login import (
+    UserMixin,
+    login_required,
+    login_user,
+    logout_user,
+    current_user,
+)
 
-from forecast_app.utils import RenderTemplateView, executor
+from forecast_app.utils import RenderTemplateView, executor, login_manager
 from forecast_app.views import (
     HistoricalLoadDataView,
     ForecastWeatherDataView,
     HistoricalWeatherDataView,
     ForecastView,
+    LoginView,
+    LogoutView,
 )
 from forecast_app.db import db, init_db_command
 from forecast_app.commands import upload_demo_data_command
@@ -26,10 +35,14 @@ def create_app(test_config={}):
     app.app_context().push()
     db.init_app(app)
 
+    # Initialize flask-login
+    login_manager.init_app(app)
+
     app.config["UPLOAD_FOLDER"] = "forecast_app/static/uploads"
     app.config["SECRET_KEY"] = "super secret key"
 
-    app.add_url_rule("/", view_func=RenderTemplateView.view("login"))
+    app.add_url_rule("/login", view_func=LoginView.as_view("login"))
+    app.add_url_rule("/logout", view_func=LogoutView.as_view("logout"))
     app.add_url_rule(
         "/historical-load-data",
         view_func=HistoricalLoadDataView.as_view("historical-load-data"),

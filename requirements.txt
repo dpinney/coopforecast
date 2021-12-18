@@ -8,3 +8,4 @@ tensorflow==2.7
 scipy
 numpy
 flask-executor
+flask-login
