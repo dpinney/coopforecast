@@ -131,7 +131,7 @@ class LoginView(MethodView):
             return redirect("/forecast")
         # NOTE: Some kind of attribute error is preventing me from simply using
         #  self.get(error=error). It's not occuring in other pages.
-        return redirect(url_for("login", error="Incorrect password."))
+        return redirect(url_for("login", error="Incorrect username and/or password."))
 
     def get(self):
         if flask_login.current_user.is_authenticated:
