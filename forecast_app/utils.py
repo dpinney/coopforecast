@@ -1,38 +1,43 @@
-from flask import render_template, request, flash, current_app, redirect
-from flask.views import View
+from flask import request, flash, current_app
 from werkzeug.utils import secure_filename
 import os
 from flask_executor import Executor
-from flask_login import LoginManager, UserMixin, login_required
+from flask_login import LoginManager, UserMixin
+from flask_sqlalchemy import SQLAlchemy
 
-from forecast_app.models import HistoricalData, ForecastData, User
 import pandas as pd
 
-
 executor = Executor()
+db = SQLAlchemy()
+
+# SETUP LOGIN MANAGER ---------------------------------------------------------
+# https://flask-login.readthedocs.io/en/latest/
+# Currently only supporting one user. flask-login requires user_loader and
+#  request_loader to be implemented. Username and password set in
+#  config.py / secret_config.py
+
 login_manager = LoginManager()
+ADMIN_USER = UserMixin()
 
 
 @login_manager.user_loader
 def user_loader(username):
-    if username != current_app.config["ADMIN_USER"]:
+    if username != ADMIN_USER.id:
         return
-    user = User()
-    user.id = username
-    return user
+    return ADMIN_USER
 
 
 @login_manager.request_loader
 def request_loader(request):
-    username = request.form.get("username")
-    if username != current_app.config["ADMIN_USER"]:
+    if request.form.get("username") != ADMIN_USER.id:
         return
-    user = User()
-    user.id = username
-    user.is_authenticated = (
+    ADMIN_USER.is_authenticated = (
         request.form["password"] == current_app.config["ADMIN_PASSWORD"]
     )
-    return user
+    return ADMIN_USER
+
+
+# -----------------------------------------------------------------------------
 
 
 def allowed_file(filename):

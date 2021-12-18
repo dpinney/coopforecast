@@ -4,9 +4,8 @@ from pathlib import Path
 import pytest
 
 from forecast_app import create_app
-from forecast_app.commands import upload_demo_data
+from forecast_app.commands import init_db
 from forecast_app.config import TestingConfig
-from forecast_app.db import init_db
 from flask_sqlalchemy import SQLAlchemy
 
 

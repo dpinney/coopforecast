@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, render_template, redirect, url_for, flash
 import flask_login
 
-from forecast_app.utils import executor, login_manager
+from forecast_app.utils import executor, login_manager, ADMIN_USER, db
 from forecast_app.views import (
     HistoricalLoadDataView,
     ForecastWeatherDataView,
@@ -12,23 +12,18 @@ from forecast_app.views import (
     LogoutView,
     RenderTemplateView,
 )
-from forecast_app.db import db, init_db_command
-from forecast_app.commands import upload_demo_data_command
 
 
 def create_app(config):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config)
-    print(app.config)
 
     # Initialize database
-    app.app_context().push()
     db.init_app(app)
 
     # Initialize flask-login
     login_manager.init_app(app)
-
-    app.config["UPLOAD_FOLDER"] = "forecast_app/static/uploads"
+    ADMIN_USER.id = app.config["ADMIN_USER"]
 
     method_views = [
         LoginView,
@@ -47,9 +42,6 @@ def create_app(config):
     static_views = ["instructions", "model-settings", "user-settings"]
     for view in static_views:
         app.add_url_rule(f"/{view}", view_func=RenderTemplateView.view(view))
-
-    app.cli.add_command(init_db_command)
-    app.cli.add_command(upload_demo_data_command)
 
     executor.init_app(app)
 

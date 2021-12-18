@@ -1,5 +1,4 @@
 from forecast_app.secret_config import ADMIN_USER, ADMIN_PASSWORD, SECRET_KEY
-import tempfile
 
 
 class Config(object):
@@ -8,7 +7,8 @@ class Config(object):
     ADMIN_PASSWORD = "admin"
     SECRET_KEY = "secret"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    MODEL_OUTPUT_DIR = "forecast_app/static/output/"
+    MODEL_OUTPUT_DIR = "forecast_app/static/output"
+    UPLOAD_FOLDER = "forecast_app/static/uploads"
 
 
 class ProductionConfig(Config):
@@ -18,11 +18,10 @@ class ProductionConfig(Config):
 
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/test.db"
-    UPLOAD_FOLDER = "forecast_app/static/uploads"
+    SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/dev.db"
 
 
 class TestingConfig(Config):
-    SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/testing.db"
+    SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/test.db"
     TESTING = True
     # TODO: set upload folder

@@ -1,4 +1,3 @@
-# db/dev.db
 forecast_app/static/uploads/*.csv
 forecast_app/secret_config.py
 

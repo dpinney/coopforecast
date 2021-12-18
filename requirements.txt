@@ -9,3 +9,4 @@ scipy
 numpy
 flask-executor
 flask-login
+typer

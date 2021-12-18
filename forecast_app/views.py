@@ -1,13 +1,11 @@
-from click import decorators
 import pandas as pd
 from flask import render_template, redirect, url_for, request, current_app
 from flask.views import MethodView, View
-import tensorflow as tf
 import flask_login
 
-from forecast_app.models import ForecastData, HistoricalData, ForecastModel, User
-from forecast_app.db import db
-from forecast_app.utils import upload_file, executor
+from forecast_app.models import ForecastData, HistoricalData, ForecastModel
+from forecast_app.utils import db
+from forecast_app.utils import ADMIN_USER, upload_file, executor
 
 
 class DataView(MethodView):
@@ -127,12 +125,9 @@ class LoginView(MethodView):
     view_url = "/"
 
     def post(self):
-        username = request.form.get("username")
         if request.form.get("password") == current_app.config["ADMIN_PASSWORD"]:
-            user = User()
-            user.id = username
             remember = request.form.get("remember-me") == "on"
-            flask_login.login_user(user, remember=remember)
+            flask_login.login_user(ADMIN_USER, remember=remember)
             return redirect("/forecast")
         # TODO: Otherwise redirect with error message
 
