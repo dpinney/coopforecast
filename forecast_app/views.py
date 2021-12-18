@@ -15,11 +15,11 @@ class DataView(MethodView):
 
     def get_table(self):
         query = db.session.query(
-            self.data_class.milliseconds,
+            self.data_class.timestamp,
             getattr(self.data_class, self.data_class_key),
         )
         return [
-            {self.data_class_key: temp, "timestamp": timestamp}
+            {"timestamp": timestamp, self.data_class_key: temp}
             for timestamp, temp in query
         ]
 
