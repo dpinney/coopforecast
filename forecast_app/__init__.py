@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, render_template, redirect, url_for, flash
 import flask_login
 
-from forecast_app.utils import RenderTemplateView, executor, login_manager
+from forecast_app.utils import executor, login_manager
 from forecast_app.views import (
     HistoricalLoadDataView,
     ForecastWeatherDataView,
@@ -10,6 +10,7 @@ from forecast_app.views import (
     ForecastView,
     LoginView,
     LogoutView,
+    RenderTemplateView,
 )
 from forecast_app.db import db, init_db_command
 from forecast_app.commands import upload_demo_data_command

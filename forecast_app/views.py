@@ -1,3 +1,4 @@
+from click import decorators
 import pandas as pd
 from flask import render_template, redirect, url_for, request
 from flask.views import MethodView, View
@@ -157,3 +158,19 @@ class LogoutView(MethodView):
     def get(self):
         flask_login.logout_user()
         return redirect("/")
+
+
+class RenderTemplateView(View):
+    decorators = [flask_login.login_required]
+
+    def __init__(self, template_name):
+        self.template_name = template_name
+
+    def dispatch_request(self):
+        return render_template(self.template_name)
+
+    @classmethod
+    def view(cls, name, template=None):
+        if not template:
+            template = name + ".html"
+        return cls.as_view(name, template_name=template)

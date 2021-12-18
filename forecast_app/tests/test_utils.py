@@ -3,7 +3,6 @@ import json
 import pytest
 
 from forecast_app.utils import allowed_file, upload_file
-from forecast_app.models import HistoricalData
 
 
 def test_upload_file():

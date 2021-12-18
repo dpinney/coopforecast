@@ -68,17 +68,3 @@ def upload_file(name):
         filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
         file.save(filepath)
         return filepath
-
-
-class RenderTemplateView(View):
-    def __init__(self, template_name):
-        self.template_name = template_name
-
-    def dispatch_request(self):
-        return render_template(self.template_name)
-
-    @classmethod
-    def view(cls, name, template=None):
-        if not template:
-            template = name + ".html"
-        return cls.as_view(name, template_name=template)

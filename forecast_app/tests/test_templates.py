@@ -5,7 +5,6 @@ def test_templates(auth, client):
     """Test that all pages return 200 and have the expected content"""
 
     pages = {
-        # "/": "Login", # Login page is a 302 when authenticated
         "/historical-load-data": "Historical Load Data",
         "/forecast-weather-data": "Forecast Weather Data",
         "/historical-weather-data": "Historical Weather Data",
@@ -16,7 +15,6 @@ def test_templates(auth, client):
     }
 
     auth.login()
-
     for route, page_name in pages.items():
         response = client.get(route)
         assert response.status_code == 200
@@ -28,3 +26,9 @@ def test_templates(auth, client):
         response = client.get(route)
         assert response.status_code == 200
         assert page_name in str(response.data)
+
+    # Test again without having logged in
+    auth.logout()
+    for route, page_name in pages.items():
+        response = client.get(route)
+        assert response.status_code == 401, page_name
