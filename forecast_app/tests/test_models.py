@@ -37,6 +37,9 @@ class TestHistoricalData:
 
         assert new_object.timestamp.timestamp() * 1000 == new_object.milliseconds
 
+    def test_to_df(self):
+        pass
+
 
 class TestForecastData:
     def test_init(self, db):
@@ -46,3 +49,23 @@ class TestForecastData:
         assert ForecastData.query.count() == 1
 
         assert new_object.timestamp.timestamp() * 1000 == new_object.milliseconds
+
+    def test_load_data(self):
+        pass
+
+    def test_to_df(self):
+        pass
+
+
+class TestForecastModel:
+    def test_init(self):
+        pass
+
+    def test_timestamps(self):
+        pass
+
+    def test_launch_model(self):
+        pass
+
+    def test_data_is_prepared_for_forecast(self):
+        pass

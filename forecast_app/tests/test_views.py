@@ -8,33 +8,70 @@ from forecast_app.views import (
     ForecastWeatherDataView,
 )
 
+from forecast_app.commands import upload_demo_data
 
-class TestLoadDataView:
+
+def test_templates(auth, client):
+    """Test that all pages return 200 and have the expected content"""
+
+    pages = {
+        "/historical-load-data": "Historical Load Data",
+        "/forecast-weather-data": "Forecast Weather Data",
+        "/historical-weather-data": "Historical Weather Data",
+        "/forecast": "Forecast",
+        "/instructions": "Instructions",
+        "/model-settings": "Model Settings",
+        "/user-settings": "User Settings",
+    }
+
+    auth.login()
+    for route, page_name in pages.items():
+        response = client.get(route)
+        assert response.status_code == 200
+        assert page_name in str(response.data)
+
+    # Test again but with data
+    upload_demo_data()
+    for route, page_name in pages.items():
+        response = client.get(route)
+        assert response.status_code == 200
+        assert page_name in str(response.data)
+
+    # Test again without having logged in
+    auth.logout()
+    for route, page_name in pages.items():
+        response = client.get(route)
+        assert response.status_code == 401, page_name
+
+
+class TestDataViews:
+    classes = [
+        ForecastWeatherDataView,
+        HistoricalWeatherDataView,
+        HistoricalLoadDataView,
+    ]
+
+    def test_get_table(self):
+        pass
+
     def test_get_table(self, db):
-        chart_array = HistoricalLoadDataView().get_chart()
-        assert type(chart_array) == list
-        assert all([len(datapoint) == 2 for datapoint in chart_array])
-        # Already tested by test_utils
-
-    # TODO: Test that a post request shows the correct messages
-
-
-class TestHistoricalWeatherDataView:
-    def test_init(self):
-        HistoricalWeatherDataView()
-
-    # Tested more thoroughly via test_templates
-
-
-class TestForecastWeatherDataView:
-    def test_init(self):
-        ForecastWeatherDataView()
+        for cls in self.classes:
+            chart_array = cls().get_chart()
+            assert type(chart_array) == list
+            assert all([len(datapoint) == 2 for datapoint in chart_array])
 
     # Tested more thoroughly via test_templates
 
 
 class TestForecastView:
-    def test_init(self):
-        ForecastView()
+    def test_get(self):
+        pass
 
-    # Tested more thoroughly via test_templates
+    def test_post(self):
+        pass
+
+    def test_get_chart(self):
+        pass
+
+    def test_check_data_preparation(self):
+        pass

@@ -72,11 +72,6 @@ class ForecastView(MethodView):
     # - make model downloadable
     # - display messages about why data is not prepared
 
-    def check_data_preparation(self, messages):
-        # If data is prepared and no model exists
-        # messages.append({"level": "info", "text": "Data is not prepared"})
-        pass
-
     def get_chart(self, forecast):
         if forecast:
             return [
@@ -100,7 +95,6 @@ class ForecastView(MethodView):
     def get(self, messages=None):
         if not messages:
             messages = []
-        self.check_data_preparation(messages)
 
         # Filter by exited_successfully
         latest_successful_forecast = (
