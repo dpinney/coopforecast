@@ -5,7 +5,7 @@ from flask.views import MethodView, View
 import tensorflow as tf
 import flask_login
 
-from forecast_app.models import ForecastData, HistoricalData, ForecastModel
+from forecast_app.models import ForecastData, HistoricalData, ForecastModel, User
 from forecast_app.db import db
 from forecast_app.utils import upload_file, executor
 
@@ -120,11 +120,6 @@ class ForecastView(MethodView):
             forecast=latest_successful_forecast,
             messages=messages,
         )
-
-
-# TODO: Move me!
-class User(flask_login.UserMixin):
-    pass
 
 
 class LoginView(MethodView):

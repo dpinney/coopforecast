@@ -2,6 +2,7 @@ import os
 import datetime
 import pandas as pd
 from sqlalchemy import Column, Integer, Float, String, DateTime, JSON, Boolean
+from flask_login import UserMixin
 
 from forecast_app.db import db
 import forecast_app.forecast as lf
@@ -201,3 +202,7 @@ def _load_data(cls, filepath, columns=None):
             "text": f"Success! Loaded {len(df)} historical data points",
         }
     ]
+
+
+class User(UserMixin):
+    pass

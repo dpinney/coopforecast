@@ -5,17 +5,12 @@ import os
 from flask_executor import Executor
 from flask_login import LoginManager, UserMixin, login_required
 
-from forecast_app.models import HistoricalData, ForecastData
+from forecast_app.models import HistoricalData, ForecastData, User
 import pandas as pd
 
 
 executor = Executor()
 login_manager = LoginManager()
-
-
-# TODO: Move me!
-class User(UserMixin):
-    pass
 
 
 @login_manager.user_loader
