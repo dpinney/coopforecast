@@ -129,7 +129,9 @@ class LoginView(MethodView):
             remember = request.form.get("remember-me") == "on"
             flask_login.login_user(ADMIN_USER, remember=remember)
             return redirect("/forecast")
-        # TODO: Otherwise redirect with error message
+        # NOTE: Some kind of attribute error is preventing me from simply using
+        #  self.get(error=error). It's not occuring in other pages.
+        return redirect(url_for("login", error="Incorrect password."))
 
     def get(self):
         if flask_login.current_user.is_authenticated:
