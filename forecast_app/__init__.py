@@ -1,13 +1,6 @@
 import os
 from flask import Flask, request, render_template, redirect, url_for, flash
 import flask_login
-from flask_login import (
-    UserMixin,
-    login_required,
-    login_user,
-    logout_user,
-    current_user,
-)
 
 from forecast_app.utils import RenderTemplateView, executor, login_manager
 from forecast_app.views import (
@@ -41,7 +34,7 @@ def create_app(test_config={}):
     app.config["UPLOAD_FOLDER"] = "forecast_app/static/uploads"
     app.config["SECRET_KEY"] = "super secret key"
 
-    app.add_url_rule("/login", view_func=LoginView.as_view("login"))
+    app.add_url_rule("/", view_func=LoginView.as_view("login"))
     app.add_url_rule("/logout", view_func=LogoutView.as_view("logout"))
     app.add_url_rule(
         "/historical-load-data",

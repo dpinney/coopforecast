@@ -3,14 +3,6 @@ from flask import render_template, redirect, url_for, request
 from flask.views import MethodView, View
 import tensorflow as tf
 import flask_login
-from flask_login import (
-    UserMixin,
-    login_required,
-    login_user,
-    logout_user,
-    current_user,
-)
-
 
 from forecast_app.models import ForecastData, HistoricalData, ForecastModel
 from forecast_app.db import db
@@ -137,7 +129,7 @@ users = {
 }
 
 # TODO: Move me!
-class User(UserMixin):
+class User(flask_login.UserMixin):
     pass
 
 
@@ -151,10 +143,12 @@ class LoginView(MethodView):
             return redirect("/forecast")
 
     def get(self):
+        if flask_login.current_user.is_authenticated:
+            return redirect(url_for("forecast"))
         return render_template("login.html")
 
 
 class LogoutView(MethodView):
     def get(self):
         flask_login.logout_user()
-        return "Logged out"
+        return redirect("/")
