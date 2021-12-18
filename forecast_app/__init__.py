@@ -23,6 +23,7 @@ def create_app(test_config={}):
     # app.config.from_pyfile("config.py", silent=True)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"  # CHANGE ME
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["USERS"] = {"admin": {"password": "admin"}}
     app.config.update(test_config)
 
     # Initialize database

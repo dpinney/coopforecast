@@ -1,6 +1,6 @@
 from click import decorators
 import pandas as pd
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, url_for, request, current_app
 from flask.views import MethodView, View
 import tensorflow as tf
 import flask_login
@@ -123,13 +123,6 @@ class ForecastView(MethodView):
 
 
 # TODO: Move me!
-users = {
-    "user1@gmail.com": {"pw": "pass1"},
-    "user2@aol.com": {"pw": "pass2"},
-    "user3@hotmail.com": {"pw": "pass3"},
-}
-
-# TODO: Move me!
 class User(flask_login.UserMixin):
     pass
 
@@ -139,10 +132,12 @@ class LoginView(MethodView):
     view_url = "/"
 
     def post(self):
+        users = current_app.config["USERS"]
         username = request.form.get("username")
-        if request.form.get("pw") == users[username]["pw"]:
+        if request.form.get("password") == users[username]["password"]:
             user = User()
             user.id = username
+            # TODO: Implement remember me here by passing remember=True
             flask_login.login_user(user)
             return redirect("/forecast")
 

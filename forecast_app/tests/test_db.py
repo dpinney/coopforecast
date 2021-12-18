@@ -16,6 +16,7 @@ def test_teardown(db):
 
 
 def test_teardown2(db):
+    """Ensure that the database is empty at the end of each test."""
     HistoricalData.query.count() == 0
     historical_data = HistoricalData(timestamp=datetime(2020, 1, 1), load=1)
     db.session.add(historical_data)

@@ -11,7 +11,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 @pytest.fixture
 def app():
-    return create_app(test_config={"TESTING": True})
+    return create_app(
+        test_config={"TESTING": True, "USERS": {"test": {"password": "test"}}}
+    )
 
 
 @pytest.fixture
@@ -43,8 +45,8 @@ class AuthActions:
     def __init__(self, client):
         self._client = client
 
-    def login(self, username="user1@gmail.com", password="pass1"):
-        return self._client.post("/", data={"username": username, "pw": password})
+    def login(self, username="test", password="test"):
+        return self._client.post("/", data={"username": username, "password": password})
 
     def logout(self):
         return self._client.get("/logout")

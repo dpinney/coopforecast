@@ -12,12 +12,6 @@ import pandas as pd
 executor = Executor()
 login_manager = LoginManager()
 
-# TODO: Move me!
-users = {
-    "user1@gmail.com": {"pw": "pass1"},
-    "user2@aol.com": {"pw": "pass2"},
-    "user3@hotmail.com": {"pw": "pass3"},
-}
 
 # TODO: Move me!
 class User(UserMixin):
@@ -26,6 +20,7 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def user_loader(username):
+    users = current_app.config["USERS"]
     if username not in users:
         return
 
@@ -36,6 +31,8 @@ def user_loader(username):
 
 @login_manager.request_loader
 def request_loader(request):
+    users = current_app.config["USERS"]
+
     username = request.form.get("username")
     if username not in users:
         return
@@ -43,7 +40,7 @@ def request_loader(request):
     user = User()
     user.id = username
 
-    user.is_authenticated = request.form["pw"] == users[username]["pw"]
+    user.is_authenticated = request.form["password"] == users[username]["password"]
 
     return user
 
