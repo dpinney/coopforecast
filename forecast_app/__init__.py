@@ -50,7 +50,7 @@ def create_app(test_config={}):
 
     static_views = ["instructions", "model-settings", "user-settings"]
     for view in static_views:
-        app.add_url_rule(f"/{view}", view_func=RenderTemplateView.as_view(view))
+        app.add_url_rule(f"/{view}", view_func=RenderTemplateView.view(view))
 
     app.cli.add_command(init_db_command)
     app.cli.add_command(upload_demo_data_command)

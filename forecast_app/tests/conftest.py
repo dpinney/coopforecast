@@ -37,3 +37,19 @@ def client(app, db):
 
 def pytest_configure():
     pytest.FIXTURE_DIR = Path(__file__).parent / "fixtures"
+
+
+class AuthActions:
+    def __init__(self, client):
+        self._client = client
+
+    def login(self, username="user1@gmail.com", password="pass1"):
+        return self._client.post("/", data={"username": username, "pw": password})
+
+    def logout(self):
+        return self._client.get("/logout")
+
+
+@pytest.fixture
+def auth(client):
+    return AuthActions(client)

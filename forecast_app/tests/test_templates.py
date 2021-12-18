@@ -1,11 +1,11 @@
 from forecast_app.commands import upload_demo_data
 
 
-def test_templates(client):
+def test_templates(auth, client):
     """Test that all pages return 200 and have the expected content"""
 
     pages = {
-        "/": "Login",
+        # "/": "Login", # Login page is a 302 when authenticated
         "/historical-load-data": "Historical Load Data",
         "/forecast-weather-data": "Forecast Weather Data",
         "/historical-weather-data": "Historical Weather Data",
@@ -14,6 +14,8 @@ def test_templates(client):
         "/model-settings": "Model Settings",
         "/user-settings": "User Settings",
     }
+
+    auth.login()
 
     for route, page_name in pages.items():
         response = client.get(route)
