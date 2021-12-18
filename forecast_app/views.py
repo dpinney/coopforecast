@@ -132,8 +132,8 @@ class LoginView(MethodView):
         if request.form.get("password") == users[username]["password"]:
             user = User()
             user.id = username
-            # TODO: Implement remember me here by passing remember=True
-            flask_login.login_user(user)
+            remember = request.form.get("remember-me") == "on"
+            flask_login.login_user(user, remember=remember)
             return redirect("/forecast")
 
     def get(self):
