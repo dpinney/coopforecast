@@ -68,9 +68,12 @@ class ForecastModel(db.Model):
             self.exited_successfully = True
             self.save()
         except:
+            raise Exception("Model failed.")
+        finally:
             self.is_running = False
             self.exited_successfully = False
-            raise Exception("Model failed.")
+            self.save()
+            print("Saving model before quitting.")
 
     def _execute_forecast(self):
         df = (
@@ -99,12 +102,16 @@ class ForecastModel(db.Model):
         # TODO: Add tomorrow's load and accuracy to database
 
     @classmethod
-    def data_is_prepared_for_forecast():
-        pass
-        df = HistoricalData.to_df()
+    def is_prepared(cls):
+        hd_is_prepared, hd_start_date, hd_end_date = HistoricalData.is_prepared()
+        fd_is_prepared, fd_start_date, fd_end_date = ForecastData.is_prepared()
+        is_prepared = True if hd_is_prepared and fd_is_prepared else False
+        if is_prepared and hd_end_date - fd_end_date > datetime.timedelta(hours=24):
+            is_prepared = False
 
-        # check each model for data
-        # TODO: reimplement data validation
+        start_date = hd_end_date + datetime.timedelta(hours=1) if is_prepared else None
+        end_date = hd_end_date + datetime.timedelta(hours=24) if is_prepared else None
+        return is_prepared, start_date, end_date
 
 
 class HistoricalData(db.Model):
@@ -133,6 +140,18 @@ class HistoricalData(db.Model):
     def to_df(cls):
         return _to_df(cls)
 
+    @classmethod
+    def is_prepared(cls):
+        is_prepared = True
+        df = cls.to_df().dropna()
+        if df.shape[0] < 24 * 365 * 3:
+            is_prepared = False
+        if is_prepared:
+            start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
+        else:
+            start_date, end_date = None, None
+        return is_prepared, start_date, end_date
+
 
 class ForecastData(db.Model):
     __tablename__ = "forecast_data"
@@ -160,6 +179,16 @@ class ForecastData(db.Model):
     def to_df(cls):
         return _to_df(cls)
 
+    @classmethod
+    def is_prepared(cls):
+        df = cls.to_df()
+        if df.shape[0] < 24:
+            return False, None, None
+        else:
+            df = df.dropna(subset=["tempc"])
+            start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
+            return True, start_date, end_date
+
 
 def _to_df(cls):
     return pd.DataFrame(
@@ -175,38 +204,55 @@ def _load_data(cls, filepath, columns=None):
     # NOTE: Entering a csv with both weather and load will overwrite both.
     #  Use columns var to ensure that only intended data is loaded?
     # TODO: validation should happen here
-    df = pd.read_csv(filepath, parse_dates=["timestamp"])
-    if columns:
-        df = df[columns]
+    messages = []
+    try:
+        df = pd.read_csv(filepath, parse_dates=["timestamp"])
 
-    # If uploading data for the first time, don't perform tens of thousands of queries
-    if cls.query.count() == 0:
-        for _, row in df.iterrows():
-            instance = cls(
-                timestamp=row["timestamp"],
-                load=row.get("load"),
-                tempc=row.get("tempc"),
-            )
-            db.session.add(instance)
-        db.session.commit()
-    else:
-        for _, row in df.iterrows():
-            instance = cls.query.get(row["timestamp"])
-            if instance:
-                instance.load = row.get("load", instance.load)
-                instance.tempc = row.get("tempc", instance.tempc)
-            else:
+        for column in df.columns:
+            if column not in ["timestamp", "tempc", "load"]:
+                messages.append(
+                    {"level": "warning", "text": f"Column {column} not recognized."}
+                )
+
+        if columns:
+            df = df[columns]
+
+        # If uploading data for the first time, don't perform tens of thousands of queries
+        if cls.query.count() == 0:
+            for _, row in df.iterrows():
                 instance = cls(
                     timestamp=row["timestamp"],
                     load=row.get("load"),
                     tempc=row.get("tempc"),
                 )
-            db.session.add(instance)
-        db.session.commit()
+                db.session.add(instance)
+            db.session.commit()
+        else:
+            for _, row in df.iterrows():
+                instance = cls.query.get(row["timestamp"])
+                if instance:
+                    instance.load = row.get("load", instance.load)
+                    instance.tempc = row.get("tempc", instance.tempc)
+                else:
+                    instance = cls(
+                        timestamp=row["timestamp"],
+                        load=row.get("load"),
+                        tempc=row.get("tempc"),
+                    )
+                db.session.add(instance)
+            db.session.commit()
 
-    return [
-        {
-            "level": "success",
-            "text": f"Success! Loaded {len(df)} historical data points",
-        }
-    ]
+        messages.append(
+            {
+                "level": "success",
+                "text": f"Success! Loaded {len(df)} historical data points",
+            }
+        )
+    except Exception as e:
+        messages.append(
+            {
+                "level": "danger",
+                "text": f"Failed to load data. {e}",
+            }
+        )
+    return messages

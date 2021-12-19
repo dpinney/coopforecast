@@ -1,7 +1,8 @@
 import pytest
 from datetime import datetime
+from forecast_app.commands import upload_demo_data
 
-from forecast_app.models import HistoricalData, ForecastData
+from forecast_app.models import HistoricalData, ForecastData, ForecastModel
 
 
 class TestHistoricalData:
@@ -37,9 +38,6 @@ class TestHistoricalData:
 
         assert new_object.timestamp.timestamp() * 1000 == new_object.milliseconds
 
-    def test_to_df(self):
-        pass
-
 
 class TestForecastData:
     def test_init(self, db):
@@ -53,9 +51,6 @@ class TestForecastData:
     def test_load_data(self):
         pass
 
-    def test_to_df(self):
-        pass
-
 
 class TestForecastModel:
     def test_init(self):
@@ -67,5 +62,56 @@ class TestForecastModel:
     def test_launch_model(self):
         pass
 
-    def test_data_is_prepared_for_forecast(self):
-        pass
+
+def test_is_prepared(db):
+    # Combine tests to make tests faster
+    # FORECAST MODEL
+    is_prepared, start_date, end_date = ForecastModel.is_prepared()
+    assert is_prepared is False
+    assert start_date is None and end_date is None
+    # FORECAST DATA
+    is_prepared, start_date, end_date = ForecastData.is_prepared()
+    assert is_prepared is False
+    assert start_date is None and end_date is None
+    # HISTORICAL DATA
+    is_prepared, start_date, end_date = HistoricalData.is_prepared()
+    assert is_prepared is False
+    assert start_date is None and end_date is None
+
+    upload_demo_data()
+
+    # FORECAST MODEL
+    is_prepared, start_date, end_date = ForecastModel.is_prepared()
+    assert is_prepared is True
+    assert start_date == datetime(2019, 1, 1, 0)
+    assert end_date == datetime(2019, 1, 1, 23)
+    # FORECAST DATA
+    is_prepared, start_date, end_date = ForecastData.is_prepared()
+    assert is_prepared is True
+    assert start_date == datetime(2019, 1, 1, 0)
+    assert end_date == datetime(2019, 1, 1, 23)
+    # HISTORICAL DATA
+    is_prepared, start_date, end_date = HistoricalData.is_prepared()
+    assert is_prepared is True
+    assert start_date == datetime(2002, 1, 1, 0)
+    assert end_date == datetime(2018, 12, 31, 23)
+
+
+def test_to_df(db):
+    # Combine tests to make tests faster
+    # Works on an empty database
+    # FORECAST DATA
+    df = ForecastData.to_df()
+    assert df.empty
+    # HISTORICAL DATA
+    df = HistoricalData.to_df()
+    assert df.empty
+
+    # ... and on a populated database
+    upload_demo_data()
+
+    # FORECAST DATA
+    df = ForecastData.to_df()
+    assert df.shape[0] > 20
+    df = HistoricalData.to_df()
+    assert df.shape[0] > 1000

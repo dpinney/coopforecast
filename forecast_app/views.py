@@ -91,7 +91,7 @@ class ForecastView(MethodView):
         return self.get(messages=[{"level": "info", "text": "Forecast started"}])
 
     def get_running_models(self):
-        return db.session.query(ForecastModel).filter_by(is_running=True)
+        return db.session.query(ForecastModel).filter_by(is_running=True).all()
 
     def get(self, messages=None):
         if not messages:
@@ -105,12 +105,18 @@ class ForecastView(MethodView):
             .first()
         )
 
+        is_prepared, start_date, end_date = ForecastModel.is_prepared()
+
         return render_template(
             "forecast.html",
             name="forecast",
             chart=self.get_chart(latest_successful_forecast),
-            is_running=self.get_running_models(),
+            running_models=self.get_running_models(),
             forecast=latest_successful_forecast,
+            # Is the data prepared for a new forecast?
+            is_prepared=is_prepared,
+            start_date=start_date,
+            end_date=end_date,
             messages=messages,
         )
 
