@@ -27,9 +27,9 @@
 {% endfor %}
 
 {% if not running_models %}
-<form action="" method="post"></form>
+<form action="" method="post" id="runModel"></form>
 <div class="alert alert-primary">
-  <a onclick="this.closest('form').submit();return false;" class="btn btn-primary btn-icon-split">
+  <a onclick="document.forms['runModel'].submit(); return false;" class="btn btn-primary btn-icon-split">
     <span class="icon text-white-600">
       <i class="fas fa-arrow-right"></i>
     </span>

@@ -21,11 +21,14 @@ class ForecastModel(db.Model):
     loads = Column(JSON)
     exited_successfully = Column(Boolean)
     epochs = 1  # TODO: Config epochs
+    # TODO: Add elapsed time
 
     def __init__(self):
         # NOTE: Object is initialized from state of the database
         OUTPUT_DIR = current_app.config["MODEL_OUTPUT_DIR"]
-        self.model_path = os.path.join(OUTPUT_DIR, f"{self.creation_date}.h5")
+        self.model_path = os.path.join(
+            OUTPUT_DIR, f"{datetime.datetime.utcnow().timestamp()}.h5"
+        )
         self.tempcs = [
             row.tempc for row in ForecastData.query.all()
         ]  # Ensure length is appropriate
@@ -50,11 +53,17 @@ class ForecastModel(db.Model):
     def __repr__(self):
         return f"<ForecastModel {self.creation_date}>"
 
+    def long_job(self):
+        import time
+
+        time.sleep(10)
+        print("FINISHED")
+
     def launch_model(self):
         try:
-            self.is_running = True
-            self.save()
+            print("Executing forecast...")
             self._execute_forecast()
+            print("Finished with forecast...")
             self.is_running = False
             self.exited_successfully = True
             self.save()

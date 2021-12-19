@@ -2,6 +2,7 @@ import pandas as pd
 from flask import render_template, redirect, url_for, request, current_app
 from flask.views import MethodView, View
 import flask_login
+from sqlalchemy import desc
 
 from forecast_app.models import ForecastData, HistoricalData, ForecastModel
 from forecast_app.utils import db
@@ -83,14 +84,14 @@ class ForecastView(MethodView):
 
     def post(self):
         new_model = ForecastModel()
+        new_model.is_running = True
         new_model.save()
         print(f"Starting model {new_model.creation_date}")
         executor.submit(new_model.launch_model)
-        print(f"Ending model {new_model.creation_date}")
         return self.get(messages=[{"level": "info", "text": "Forecast started"}])
 
     def get_running_models(self):
-        return [model for model in db.session.query(ForecastModel) if model.is_running]
+        return db.session.query(ForecastModel).filter_by(is_running=True)
 
     def get(self, messages=None):
         if not messages:
@@ -100,7 +101,7 @@ class ForecastView(MethodView):
         latest_successful_forecast = (
             db.session.query(ForecastModel)
             .filter_by(exited_successfully=True)
-            .order_by(ForecastModel.creation_date)
+            .order_by(desc(ForecastModel.creation_date))
             .first()
         )
 
@@ -155,3 +156,12 @@ class RenderTemplateView(View):
         if not template:
             template = name + ".html"
         return cls.as_view(name, template_name=template)
+
+
+class ForecastModelListView(MethodView):
+    decorators = [flask_login.login_required]
+    view_name = "forecast-models"
+
+    def get(self):
+        models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()
+        return render_template("forecast-models.html", models=models)

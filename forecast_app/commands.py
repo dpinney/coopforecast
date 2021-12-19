@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import pandas as pd
+import time
 from flask import current_app
 
 from forecast_app.utils import db
@@ -52,4 +53,12 @@ def upload_demo_data():
     mock_model.exited_successfully = True
     mock_model.accuracy = {"test": 96.5, "train": 98.5}
     mock_model.save()
-    print("Forecast model uploaded.")
+    print("First forecast model uploaded.")
+
+    time.sleep(1)
+    mock_model = ForecastModel()
+    mock_model.loads = df["load"].tolist()
+    mock_model.exited_successfully = False
+    mock_model.accuracy = None
+    mock_model.save()
+    print("Second forecast model uploaded.")
