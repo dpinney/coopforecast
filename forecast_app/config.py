@@ -1,4 +1,10 @@
-from forecast_app.secret_config import ADMIN_USER, ADMIN_PASSWORD, SECRET_KEY
+try:
+    from forecast_app.secret_config import ADMIN_USER, ADMIN_PASSWORD, SECRET_KEY
+except ImportError:
+    # It's okay if this isn't defined for local development and testing
+    ADMIN_USER = None
+    ADMIN_PASSWORD = None
+    SECRET_KEY = None
 
 
 class Config(object):
