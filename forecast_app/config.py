@@ -16,7 +16,8 @@ class Config(object):
     MODEL_OUTPUT_DIR = "forecast_app/static/output"
     UPLOAD_FOLDER = "forecast_app/static/uploads"
     PORT = 5000
-    WORKERS = 5
+    WORKERS = 1
+    DEBUG = True
 
 
 class ProductionConfig(Config):
@@ -24,20 +25,19 @@ class ProductionConfig(Config):
     ADMIN_USER = ADMIN_USER
     ADMIN_PASSWORD = ADMIN_PASSWORD
     SECRET_KEY = SECRET_KEY
-    # TODO: Use better database location
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/prod.db"
     PORT = 443
+    WORKERS = 5
+    DEBUG = False
 
 
 class DevelopmentConfig(Config):
     NAME = "dev"
-    # TODO: Use better database location
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/dev.db"
 
 
 class TestingConfig(Config):
     NAME = "test"
-    # TODO: Use better database location
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/test.db"
     TESTING = True
     # TODO: set upload folder

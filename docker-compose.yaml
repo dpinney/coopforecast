@@ -1,12 +1,12 @@
 version: '3.3'
 services:
     web:
-      build: .
-      ports:
+        build: .
+        image: requirements
+        ports:
           - '5000:5000'
-      volumes:
+        volumes:
           - '.:/code'
-      restart: always
-      environment:
-        FLASK_ENV: development
-        FLASK_APP: forecast_app
+        restart: always
+        container_name: burt_forecaster
+        command: python cli.py deploy --config=dev

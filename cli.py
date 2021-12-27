@@ -6,14 +6,12 @@ from forecast_app.config import config_map
 
 typer_app = typer.Typer()
 
-# NOTE: Currently only configured for development config.
-# - Because of lazy loading, restarting db and uploading demo data cannot be
-#  included as options in launch()
-
 
 @typer_app.command()
 def restart_db(config: str = "dev"):
     """Restart with a blank database."""
+    # NOTE: Because of lazy loading, restarting db and uploading demo data cannot be
+    #  included as options in deploy()
     app = create_app(config)
     with app.app_context():
         init_db()
@@ -22,6 +20,8 @@ def restart_db(config: str = "dev"):
 @typer_app.command()
 def demo(config: str = "dev"):
     """Restart with a demo database."""
+    # NOTE: Because of lazy loading, restarting db and uploading demo data cannot be
+    #  included as options in deploy()
     app = create_app(config)
     with app.app_context():
         init_db()
@@ -29,13 +29,9 @@ def demo(config: str = "dev"):
 
 
 @typer_app.command()
-def launch(config: str = "dev"):
-    app = create_app(config)
-    app.run(debug=True, host="0.0.0.0", port=5000)
-
-
-@typer_app.command()
-def deploy(config: str = "dev"):
+def deploy(
+    config: str = "dev", no_gunicorn: bool = typer.Option(False, "--no-gunicorn")
+):
     # TODO: Implement HTTPS redirection
     # redirProc = Popen(["gunicorn", "-w", "5", "-b", "0.0.0.0:80", "webProd:reApp"])
     # TODO: Combine logging: https://www.linkedin.com/pulse/logs-flask-gunicorn-pedro-henrique-schleder/
@@ -44,10 +40,14 @@ def deploy(config: str = "dev"):
     if not config_class:
         raise ValueError("Invalid config")
 
+    if no_gunicorn:
+        app = create_app(config)
+        app.run(debug=config_class.DEBUG, host="0.0.0.0", port=config_class.PORT)
+
     # Start application:
     appProc = [
         "gunicorn",
-        "--workers=5",  # TODO: Configure number of workers from app config.
+        f"--workers={config_class.WORKERS}",
         f"--bind=0.0.0.0:{config_class.PORT}",
         f"forecast_app:create_app('{config_class.NAME}')",
         # "--certfile=omfDevCert.pem",  # SSL certificate file
