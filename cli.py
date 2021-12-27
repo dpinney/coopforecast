@@ -32,8 +32,7 @@ def demo(config: str = "dev"):
 def deploy(
     config: str = "dev", no_gunicorn: bool = typer.Option(False, "--no-gunicorn")
 ):
-    # TODO: Implement HTTPS redirection
-    # redirProc = Popen(["gunicorn", "-w", "5", "-b", "0.0.0.0:80", "webProd:reApp"])
+    Popen(["gunicorn", "--bind=0.0.0.0:80", "redirect:reApp"])
     # TODO: Combine logging: https://www.linkedin.com/pulse/logs-flask-gunicorn-pedro-henrique-schleder/
 
     config_class = config_map.get(config)

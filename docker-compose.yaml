@@ -5,6 +5,7 @@ services:
         image: requirements
         ports:
           - '5000:5000'
+          - '80:80'
         volumes:
           - '.:/code'
         restart: always
