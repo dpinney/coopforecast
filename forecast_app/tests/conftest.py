@@ -19,7 +19,7 @@ def db(app):
     with app.app_context():
         init_db()
         yield db
-    os.unlink(app.config["SQLALCHEMY_DATABASE_URI"].split("///")[1])
+    os.unlink("forecast_app/" + app.config["SQLALCHEMY_DATABASE_URI"].split("///")[1])
 
 
 @pytest.fixture
