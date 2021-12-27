@@ -25,7 +25,7 @@ pip install -r requirements.txt
 After installation, run the application by executing the run script:
 
 ```sh
-source run.sh
+python cli.py deploy --config dev
 ```
 
 ## Prepare database
@@ -33,11 +33,10 @@ source run.sh
 To initialize the database and fill with data run the following commands:
 
 ```sh
-export FLASK_APP=forecast_app
 # Remove existing database and create a new one
-flask init-db
-# Load CSV data into database
-flask upload-demo-data
+python cli.py restart-db --config dev
+# Load demo data into database
+python cli.py demo --config dev
 ```
 
 ## Development
