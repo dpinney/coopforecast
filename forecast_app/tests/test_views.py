@@ -7,7 +7,8 @@ from forecast_app.views import (
     HistoricalWeatherDataView,
     ForecastWeatherDataView,
 )
-
+from forecast_app.models import ForecastModel
+from forecast_app.utils import executor
 from forecast_app.commands import upload_demo_data
 
 
@@ -51,7 +52,7 @@ class TestDataViews:
         HistoricalLoadDataView,
     ]
 
-    def test_get_table(self):
+    def test_get_chart(self):
         pass
 
     def test_get_table(self, db):
@@ -67,8 +68,25 @@ class TestForecastView:
     def test_get(self):
         pass
 
-    def test_post(self):
-        pass
+    def test_post(self, db, client, auth):
+        auth.login()
+        upload_demo_data(models=False)
+        assert db.session.query(ForecastModel).count() == 0
+        client.post("/forecast", data={"mock": "true"})
+        assert db.session.query(ForecastModel).count() == 1
+        # TEST KILLING PROCESS
+        new_model = ForecastModel.query.first()
+
+        # Ensure expected behavior immediately after lengthy job
+        executor.futures._state(new_model.creation_date)
+        assert not executor.futures.done(new_model.creation_date)
+        assert new_model.is_running
+
+        # Kill the processes
+        executor.shutdown()
+        assert executor.futures.done(new_model.creation_date)
+        # TODO: Set callback to set is_running to False
+        # assert not new_model.is_running
 
     def test_get_chart(self):
         pass

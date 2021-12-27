@@ -3,6 +3,7 @@ from flask import render_template, redirect, url_for, request, current_app
 from flask.views import MethodView, View
 import flask_login
 from sqlalchemy import desc
+import time
 
 from forecast_app.models import ForecastData, HistoricalData, ForecastModel
 from forecast_app.utils import db
@@ -82,12 +83,16 @@ class ForecastView(MethodView):
         else:
             return None
 
-    def post(self):
+    def post(self, mock=False):
         new_model = ForecastModel()
         new_model.is_running = True
         new_model.save()
         print(f"Starting model {new_model.creation_date}")
-        executor.submit(new_model.launch_model)
+        # NOTE: For testing, send 'mock' as a parameter to avoid lengthy training
+        if request.values.get("mock") == "true":
+            executor.submit_stored(new_model.creation_date, time.sleep, 1000)
+        else:
+            executor.submit_stored(new_model.creation_date, new_model.launch_model)
         return self.get(messages=[{"level": "info", "text": "Forecast started"}])
 
     def get_running_models(self):

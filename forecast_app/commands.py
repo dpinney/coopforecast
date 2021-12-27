@@ -19,7 +19,7 @@ def init_db():
     print("Initialized the database.")
 
 
-def upload_demo_data():
+def upload_demo_data(models=True):
     """Uploads the demo data to the database."""
     demo_data = Path("forecast_app/static/demo-data")
 
@@ -48,17 +48,18 @@ def upload_demo_data():
     db.session.commit()
     print("Forecast data uploaded.")
 
-    mock_model = ForecastModel()
-    mock_model.loads = df["load"].tolist()
-    mock_model.exited_successfully = True
-    mock_model.accuracy = {"test": 96.5, "train": 98.5}
-    mock_model.save()
-    print("First forecast model uploaded.")
+    if models:
+        mock_model = ForecastModel()
+        mock_model.loads = df["load"].tolist()
+        mock_model.exited_successfully = True
+        mock_model.accuracy = {"test": 96.5, "train": 98.5}
+        mock_model.save()
+        print("First forecast model uploaded.")
 
-    time.sleep(1)
-    mock_model = ForecastModel()
-    mock_model.loads = df["load"].tolist()
-    mock_model.exited_successfully = False
-    mock_model.accuracy = None
-    mock_model.save()
-    print("Second forecast model uploaded.")
+        time.sleep(1)
+        mock_model = ForecastModel()
+        mock_model.loads = df["load"].tolist()
+        mock_model.exited_successfully = False
+        mock_model.accuracy = None
+        mock_model.save()
+        print("Second forecast model uploaded.")

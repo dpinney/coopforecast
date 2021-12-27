@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from forecast_app import create_app
+from forecast_app.config import TestingConfig
 from forecast_app.commands import init_db
 from flask_sqlalchemy import SQLAlchemy
 
@@ -36,8 +37,14 @@ class AuthActions:
     def __init__(self, client):
         self._client = client
 
-    def login(self, username="admin", password="admin"):
-        return self._client.post("/", data={"username": username, "password": password})
+    def login(self):
+        return self._client.post(
+            "/",
+            data={
+                "username": TestingConfig.ADMIN_USER,
+                "password": TestingConfig.ADMIN_PASSWORD,
+            },
+        )
 
     def logout(self):
         return self._client.get("/logout")
