@@ -1,13 +1,12 @@
 from flask import request, flash, current_app
 from werkzeug.utils import secure_filename
 import os
-from flask_executor import Executor
+
 from flask_login import LoginManager, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 
 import pandas as pd
 
-executor = Executor()
 db = SQLAlchemy()
 
 # SETUP LOGIN MANAGER ---------------------------------------------------------

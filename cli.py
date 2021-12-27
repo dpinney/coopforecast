@@ -32,7 +32,6 @@ def demo(config: str = "dev"):
 def deploy(
     config: str = "dev", no_gunicorn: bool = typer.Option(False, "--no-gunicorn")
 ):
-    Popen(["gunicorn", "--bind=0.0.0.0:80", "redirect:reApp"])
     # TODO: Combine logging: https://www.linkedin.com/pulse/logs-flask-gunicorn-pedro-henrique-schleder/
 
     config_class = config_map.get(config)
@@ -42,27 +41,28 @@ def deploy(
     if no_gunicorn:
         app = create_app(config)
         app.run(debug=config_class.DEBUG, host="0.0.0.0", port=config_class.PORT)
-
-    # Start application:
-    appProc = [
-        "gunicorn",
-        f"--workers={config_class.WORKERS}",
-        f"--bind=0.0.0.0:{config_class.PORT}",
-        f"forecast_app:create_app('{config_class.NAME}')",
-        # "--certfile=omfDevCert.pem",  # SSL certificate file
-        # "--ca-certs=certChain.ca-bundle",  # CA certificates file
-        # "--keyfile=omfDevKey.pem",  # SSL key file
-    ]
-    if config == "dev":
-        appProc.append("--reload")  # NOTE: This doesn't seem to be working.
-    if config == "prod":
-        appProc += [
-            "--error-logfile=forecaster.error.log",
-            "--capture-output",
-            "--access-logfile=forecaster.access.log",
-            "--preload",  # NOTE: This is incompatible with --reload
+    else:
+        Popen(["gunicorn", "--bind=0.0.0.0:80", "redirect:reApp"])
+        # Start application:
+        appProc = [
+            "gunicorn",
+            f"--workers={config_class.WORKERS}",
+            f"--bind=0.0.0.0:{config_class.PORT}",
+            f"forecast_app:create_app('{config_class.NAME}')",
+            # "--certfile=omfDevCert.pem",  # SSL certificate file
+            # "--ca-certs=certChain.ca-bundle",  # CA certificates file
+            # "--keyfile=omfDevKey.pem",  # SSL key file
         ]
-    Popen(appProc).wait()
+        if config == "dev":
+            appProc.append("--reload")  # NOTE: This doesn't seem to be working.
+        if config == "prod":
+            appProc += [
+                "--error-logfile=forecaster.error.log",
+                "--capture-output",
+                "--access-logfile=forecaster.access.log",
+                "--preload",  # NOTE: This is incompatible with --reload
+            ]
+        Popen(appProc).wait()
 
 
 if __name__ == "__main__":

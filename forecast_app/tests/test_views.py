@@ -8,7 +8,7 @@ from forecast_app.views import (
     ForecastWeatherDataView,
 )
 from forecast_app.models import ForecastModel
-from forecast_app.utils import executor
+from forecast_app.executor import executor
 from forecast_app.commands import upload_demo_data
 
 

@@ -7,7 +7,8 @@ import time
 
 from forecast_app.models import ForecastData, HistoricalData, ForecastModel
 from forecast_app.utils import db
-from forecast_app.utils import ADMIN_USER, upload_file, executor
+from forecast_app.utils import ADMIN_USER, upload_file
+from forecast_app.executor import executor
 
 
 class DataView(MethodView):
