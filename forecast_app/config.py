@@ -15,30 +15,33 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MODEL_OUTPUT_DIR = "forecast_app/static/output"
     UPLOAD_FOLDER = "forecast_app/static/uploads"
+    PORT = 5000
+    WORKERS = 5
 
 
 class ProductionConfig(Config):
+    NAME = "prod"
     ADMIN_USER = ADMIN_USER
     ADMIN_PASSWORD = ADMIN_PASSWORD
     SECRET_KEY = SECRET_KEY
     # TODO: Use better database location
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/prod.db"
+    PORT = 443
 
 
 class DevelopmentConfig(Config):
+    NAME = "dev"
     # TODO: Use better database location
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/dev.db"
 
 
 class TestingConfig(Config):
+    NAME = "test"
     # TODO: Use better database location
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/test.db"
     TESTING = True
     # TODO: set upload folder
 
 
-config_map = {
-    "test": TestingConfig,
-    "prod": ProductionConfig,
-    "dev": DevelopmentConfig,
-}
+configs = [TestingConfig, ProductionConfig, DevelopmentConfig]
+config_map = {config.NAME: config for config in configs}

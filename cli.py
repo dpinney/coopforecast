@@ -40,14 +40,16 @@ def deploy(config: str = "dev"):
     # redirProc = Popen(["gunicorn", "-w", "5", "-b", "0.0.0.0:80", "webProd:reApp"])
     # TODO: Combine logging: https://www.linkedin.com/pulse/logs-flask-gunicorn-pedro-henrique-schleder/
 
-    assert config in config_map.keys(), "Invalid config"
+    config_class = config_map.get(config)
+    if not config_class:
+        raise ValueError("Invalid config")
 
     # Start application:
     appProc = [
         "gunicorn",
         "--workers=5",  # TODO: Configure number of workers from app config.
-        "--bind=0.0.0.0:5000",
-        f"forecast_app:create_app('{config}')",
+        f"--bind=0.0.0.0:{config_class.PORT}",
+        f"forecast_app:create_app('{config_class.NAME}')",
         # "--certfile=omfDevCert.pem",  # SSL certificate file
         # "--ca-certs=certChain.ca-bundle",  # CA certificates file
         # "--keyfile=omfDevKey.pem",  # SSL key file

@@ -20,6 +20,11 @@ def create_app(config: str):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_map[config])
 
+    if None in [app.config.get("ADMIN_USER"), app.config.get("ADMIN_PASSWORD")]:
+        raise ValueError(
+            "ADMIN_USER and ADMIN_PASSWORD must be defined in secret_config.py"
+        )
+
     # Initialize database
     db.init_app(app)
 
