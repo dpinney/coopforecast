@@ -1,12 +1,13 @@
 black
 Flask
+flask-executor
+flask-login
 Flask-SQLAlchemy
+gunicorn
+numpy
 pandas
 pre-commit
 pytest
-tensorflow==2.7
 scipy
-numpy
-flask-executor
-flask-login
+tensorflow==2.7
 typer

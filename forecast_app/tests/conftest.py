@@ -5,13 +5,12 @@ import pytest
 
 from forecast_app import create_app
 from forecast_app.commands import init_db
-from forecast_app.config import TestingConfig
 from flask_sqlalchemy import SQLAlchemy
 
 
 @pytest.fixture
 def app():
-    return create_app(TestingConfig)
+    return create_app("test")
 
 
 @pytest.fixture

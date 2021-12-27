@@ -13,11 +13,18 @@ from forecast_app.views import (
     RenderTemplateView,
     ForecastModelListView,
 )
+from forecast_app.config import ProductionConfig, DevelopmentConfig, TestingConfig
+
+config_map = {
+    "test": TestingConfig,
+    "prod": ProductionConfig,
+    "dev": DevelopmentConfig,
+}
 
 
-def create_app(config):
+def create_app(config: str):
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_object(config)
+    app.config.from_object(config_map[config])
 
     # Initialize database
     db.init_app(app)
