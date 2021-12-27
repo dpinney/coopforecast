@@ -20,7 +20,8 @@ def create_app(config: str):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_map[config])
 
-    if None in [app.config.get("ADMIN_USER"), app.config.get("ADMIN_PASSWORD")]:
+    # Ensure that secret_config is set when deploying production
+    if app.config["ADMIN_USER"] is None or app.config["ADMIN_PASSWORD"] is None:
         raise ValueError(
             "ADMIN_USER and ADMIN_PASSWORD must be defined in secret_config.py"
         )
