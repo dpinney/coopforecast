@@ -22,16 +22,16 @@ class ProductionConfig(Config):
     ADMIN_PASSWORD = ADMIN_PASSWORD
     SECRET_KEY = SECRET_KEY
     # TODO: Use better database location
-    SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/dev.db"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///db/prod.db"
 
 
 class DevelopmentConfig(Config):
     # TODO: Use better database location
-    SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/dev.db"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///db/dev.db"
 
 
 class TestingConfig(Config):
     # TODO: Use better database location
-    SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/test.db"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///db/test.db"
     TESTING = True
     # TODO: set upload folder
