@@ -35,3 +35,10 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/test.db"
     TESTING = True
     # TODO: set upload folder
+
+
+config_map = {
+    "test": TestingConfig,
+    "prod": ProductionConfig,
+    "dev": DevelopmentConfig,
+}

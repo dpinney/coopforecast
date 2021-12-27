@@ -13,13 +13,7 @@ from forecast_app.views import (
     RenderTemplateView,
     ForecastModelListView,
 )
-from forecast_app.config import ProductionConfig, DevelopmentConfig, TestingConfig
-
-config_map = {
-    "test": TestingConfig,
-    "prod": ProductionConfig,
-    "dev": DevelopmentConfig,
-}
+from forecast_app.config import config_map
 
 
 def create_app(config: str):

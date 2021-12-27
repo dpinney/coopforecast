@@ -2,6 +2,7 @@ import typer
 from subprocess import Popen
 from forecast_app import create_app
 from forecast_app.commands import init_db, upload_demo_data
+from forecast_app.config import config_map
 
 typer_app = typer.Typer()
 
@@ -39,6 +40,8 @@ def deploy(config: str = "dev"):
     # redirProc = Popen(["gunicorn", "-w", "5", "-b", "0.0.0.0:80", "webProd:reApp"])
     # TODO: Combine logging: https://www.linkedin.com/pulse/logs-flask-gunicorn-pedro-henrique-schleder/
 
+    assert config in config_map.keys(), "Invalid config"
+
     # Start application:
     appProc = [
         "gunicorn",
@@ -48,15 +51,15 @@ def deploy(config: str = "dev"):
         # "--certfile=omfDevCert.pem",  # SSL certificate file
         # "--ca-certs=certChain.ca-bundle",  # CA certificates file
         # "--keyfile=omfDevKey.pem",  # SSL key file
-        "--preload",
     ]
     if config == "dev":
-        appProc.append("--reload")
+        appProc.append("--reload")  # NOTE: This doesn't seem to be working.
     if config == "prod":
         appProc += [
             "--error-logfile=forecaster.error.log",
             "--capture-output",
             "--access-logfile=forecaster.access.log",
+            "--preload",  # NOTE: This is incompatible with --reload
         ]
     Popen(appProc).wait()
 
