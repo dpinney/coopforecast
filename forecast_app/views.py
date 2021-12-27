@@ -91,9 +91,12 @@ class ForecastView(MethodView):
         print(f"Starting model {new_model.creation_date}")
         # NOTE: For testing, send 'mock' as a parameter to avoid lengthy training
         if request.values.get("mock") == "true":
-            executor.submit_stored(new_model.creation_date, time.sleep, 1000)
+            future = executor.submit_stored(new_model.creation_date, time.sleep, 10)
         else:
-            executor.submit_stored(new_model.creation_date, new_model.launch_model)
+            future = executor.submit_stored(
+                new_model.creation_date, new_model.launch_model
+            )
+        future.add_done_callback(new_model.done_callback)
         return self.get(messages=[{"level": "info", "text": "Forecast started"}])
 
     def get_running_models(self):

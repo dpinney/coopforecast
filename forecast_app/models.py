@@ -53,12 +53,6 @@ class ForecastModel(db.Model):
     def __repr__(self):
         return f"<ForecastModel {self.creation_date}>"
 
-    def long_job(self):
-        import time
-
-        time.sleep(10)
-        print("FINISHED")
-
     def launch_model(self):
         try:
             print("Executing forecast...")
@@ -112,6 +106,12 @@ class ForecastModel(db.Model):
         start_date = hd_end_date + datetime.timedelta(hours=1) if is_prepared else None
         end_date = hd_end_date + datetime.timedelta(hours=24) if is_prepared else None
         return is_prepared, start_date, end_date
+
+    def done_callback(self, future):
+        # TODO: see if future was cancelled
+        print("Exited with Future callback")
+        self.is_running = False
+        self.save()
 
 
 class HistoricalData(db.Model):

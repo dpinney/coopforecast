@@ -82,11 +82,11 @@ class TestForecastView:
         assert not executor.futures.done(new_model.creation_date)
         assert new_model.is_running
 
-        # Kill the processes
+        # Kill the processes / test ForecastModel.done_callback
         executor.shutdown()
         assert executor.futures.done(new_model.creation_date)
         # TODO: Set callback to set is_running to False
-        # assert not new_model.is_running
+        assert not new_model.is_running
 
     def test_get_chart(self):
         pass

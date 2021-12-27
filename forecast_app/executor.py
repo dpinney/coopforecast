@@ -7,6 +7,7 @@ executor = Executor()
 
 
 def close_running_threads():
+    print("Closing running threads on exit...")
     executor.shutdown(wait=False)
 
 
