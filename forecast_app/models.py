@@ -82,7 +82,6 @@ class ForecastModel(db.Model):
             self.save()
             print("Saving model before quitting.")
 
-    @property
     def df(self):
         df_h = HistoricalData.to_df().sort_values("dates")
         df_f = ForecastData.to_df().sort_values("dates")
@@ -91,25 +90,23 @@ class ForecastModel(db.Model):
         ]
         return pd.concat([df_h, df_f])
 
-    @property
-    def all_X(self):
-        return lf.makeUsefulDf(self.df, structure="3D")[0]
+    def train(self):
+        pass
 
-    @property
-    def all_y(self):
-        return lf.makeUsefulDf(self.df, structure="3D")[1]
+    def test(self):
+        pass
 
     def _execute_forecast(self):
         df = self.df
-        all_X, all_y = lf.makeUsefulDf(df, structure="3D")
+        self.all_X, self.all_y = lf.makeUsefulDf(df)  # structure = 3D
 
         tomorrow_load, _, tomorrow_accuracy = lf.neural_net_next_day(
-            all_X,
-            all_y,
+            self.all_X,
+            self.all_y,
             epochs=self.epochs,
             save_file=self.model_path,
             model=None,
-            structure="3D",
+            # structure="3D",
         )
 
         self.accuracy = tomorrow_accuracy

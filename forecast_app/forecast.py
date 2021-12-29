@@ -7,6 +7,8 @@ from datetime import datetime as dt
 from datetime import timedelta, date
 import pickle
 from scipy.stats import zscore
+import tensorflow as tf
+from tensorflow.keras import layers
 
 
 def makeUsefulDf(df, noise=2.5, hours_prior=24, structure=None):
@@ -124,9 +126,6 @@ def MAPE(predictions, answers):
 
 
 def train_neural_net(X_train, y_train, epochs, HOURS_AHEAD=24, structure=None):
-    import tensorflow as tf
-    from tensorflow.keras import layers
-
     if structure != "3D":
         model = tf.keras.Sequential(
             [
@@ -170,7 +169,7 @@ def train_neural_net(X_train, y_train, epochs, HOURS_AHEAD=24, structure=None):
         if structure != "3D"
         else (X_train, y_train)
     )
-    model.fit(x, y, epochs=epochs, verbose=0)
+    model.fit(x, y, epochs=epochs)
 
     return model
 
@@ -182,13 +181,9 @@ def neural_net_predictions(all_X, all_y, epochs=20, model=None, save_file=None):
         model = train_neural_net(X_train, y_train, epochs)
 
     predictions = [
-        float(f)
-        for f in model.predict(np.asarray(all_X[-8760:].values.tolist()), verbose=0)
+        float(f) for f in model.predict(np.asarray(all_X[-8760:].values.tolist()))
     ]
-    train = [
-        float(f)
-        for f in model.predict(np.asarray(all_X[:-8760].values.tolist()), verbose=0)
-    ]
+    train = [float(f) for f in model.predict(np.asarray(all_X[:-8760].values.tolist()))]
     accuracy = {
         "test": MAPE(predictions, all_y[-8760:]),
         "train": MAPE(train, all_y[:-8760]),
@@ -198,8 +193,7 @@ def neural_net_predictions(all_X, all_y, epochs=20, model=None, save_file=None):
         model.save(save_file)
 
     return [
-        float(f)
-        for f in model.predict(np.asarray(all_X[-8760:].values.tolist()), verbose=0)
+        float(f) for f in model.predict(np.asarray(all_X[-8760:].values.tolist()))
     ], accuracy
 
 
