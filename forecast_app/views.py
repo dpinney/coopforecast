@@ -199,9 +199,26 @@ class ForecastModelListView(MethodView):
     view_name = "forecast-model-list"
     view_url = "/forecast-models"
 
-    def get(self):
+    def post(self):
+        # Cancel all models
+        executor.shutdown(wait=False)
+        ForecastModel.query.filter_by(is_running=True).update({"is_running": False})
+        db.session.commit()
+        messages = [{"level": "info", "text": "All running models were terminated."}]
+        return self.get(messages=messages)
+
+    def get(self, messages=[]):
         models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()
-        return render_template("forecast-model-list.html", models=models)
+        is_prepared, start_date, end_date = ForecastModel.is_prepared()
+
+        return render_template(
+            "forecast-model-list.html",
+            models=models,
+            is_prepared=is_prepared,
+            start_date=start_date,
+            end_date=end_date,
+            messages=messages,
+        )
 
 
 class ForecastModelDetailView(MethodView):
@@ -225,7 +242,6 @@ class ForecastModelDetailView(MethodView):
             messages = []
         # breakpoint()
         forecast_model = ForecastModel.query.filter_by(slug=slug).first()
-        print(forecast_model)
 
         return render_template(
             "forecast-model-detail.html",
