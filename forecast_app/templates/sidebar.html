@@ -11,9 +11,14 @@
 
   <!-- Nav Item - Dashboard -->
   <li class="nav-item">
-    <a class="nav-link" href="forecast">
+    <a class="nav-link" href="{{ url_for( 'forecast' ) }}">
       <i class="fas fa-fw fa-binoculars"></i>
-      <span>Forecast</span></a>
+      <span>Forecast</span>
+    </a>
+    <a class="nav-link" href="{{ url_for( 'forecast-models' ) }}">
+      <i class="fas fa-fw fa-list"></i>
+      <span>All Models</span>
+    </a>
   </li>
 
   <!-- Divider -->
@@ -23,7 +28,7 @@
     Upload & Review Data
   </div>
   <li class="nav-item">
-    <a class="nav-link" href="historical-load-data">
+    <a class="nav-link" href="{{ url_for( 'historical-load-data' ) }}">
       <i class="fas fa-fw fa-bolt"></i>
       <span>Load Data</span></a>
   </li>
@@ -38,8 +43,8 @@
     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
       <div class="bg-white py-2 collapse-inner rounded">
         <!-- <h6 class="collapse-header">Custom Components:</h6> -->
-        <a class="collapse-item" href="historical-weather-data">Historical</a>
-        <a class="collapse-item" href="forecast-weather-data">Forecast</a>
+        <a class="collapse-item" href="{{ url_for( 'historical-weather-data' ) }}">Historical</a>
+        <a class="collapse-item" href="{{ url_for( 'forecast-weather-data' ) }}">Forecast</a>
       </div>
     </div>
   </li>
@@ -49,12 +54,12 @@
   <hr class="sidebar-divider">
 
   <li class="nav-item">
-    <a class="nav-link" href="/model-settings">
+    <a class="nav-link" href="{{ url_for( 'model-settings' ) }}">
       <i class="fas fa-fw fa-cogs"></i>
       <span>Model Settings</span></a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="instructions">
+    <a class="nav-link" href="{{ url_for( 'instructions' ) }}">
       <i class="fas fa-fw fa-book"></i>
       <span>Instructions</span></a>
   </li>
