@@ -1,0 +1,7 @@
+{% if model.status == 'Finished' %}
+<i class="fas fa-fw fa-check" style="color: green;"></i>
+{% elif model.status == 'Running' %}
+<i class="fas fa-fw fa-spinner" style="color: orange;"></i>
+{% else %}
+<i class="fas fa-fw fa-times" style="color: red;"></i>
+{% endif %}

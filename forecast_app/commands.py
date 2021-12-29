@@ -56,10 +56,16 @@ def upload_demo_data(models=True):
         mock_model.save()
         print("First forecast model uploaded.")
 
-        time.sleep(1)
         mock_model = ForecastModel()
         mock_model.loads = df["load"].tolist()
         mock_model.exited_successfully = False
         mock_model.accuracy = None
         mock_model.save()
         print("Second forecast model uploaded.")
+
+        mock_model = ForecastModel()
+        mock_model.exited_successfully = None
+        mock_model.accuracy = None
+        mock_model.is_running = True
+        mock_model.save()
+        print("Third forecast model uploaded.")

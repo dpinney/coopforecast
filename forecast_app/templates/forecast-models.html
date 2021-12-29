@@ -18,10 +18,10 @@
 {% for model in models %}
 <div class="card shadow mb-4" id="upload-forecast">
   <div class="card-header py-3">
-    <a href="/forecast-models/{{ model.slug }}">
-      <h6 class="m-0 font-weight-bold text-primary">MODEL: {{ model.creation_date.timestamp() }}</h6>
-    </a>
-    <div> <b>Status:</b> {{ model.status }}</div>
+
+    <h6 class="m-0 font-weight-bold text-primary"><a href="/forecast-models/{{ model.slug }}">MODEL: {{
+        model.creation_date.timestamp() }}</a> {% include
+      'partials/status.html' %}</h6>
     <div> <b>Created:</b> {{ model.creation_date.strftime('%Y-%m-%d %H:%M:%S') }} </div>
     <div><b>Forecast:</b> <b class="text-primary">{{ model.start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b
         class="text-primary">{{ model.end_date.strftime('%b %d, %Y %H:%M') }}</b></div>
