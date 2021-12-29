@@ -91,7 +91,7 @@ class ForecastView(MethodView):
         print(f"Starting model {new_model.creation_date}")
         # NOTE: For testing, send 'mock' as a parameter to avoid lengthy training
         if request.values.get("mock") == "true":
-            future = executor.submit_stored(new_model.creation_date, time.sleep, 10)
+            future = executor.submit_stored(new_model.creation_date, time.sleep, 3)
         else:
             future = executor.submit_stored(
                 new_model.creation_date, new_model.launch_model

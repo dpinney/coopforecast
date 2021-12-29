@@ -83,9 +83,13 @@ class TestForecastView:
         assert new_model.is_running
 
         # Kill the processes / test ForecastModel.done_callback
+        # TODO: This shutdown isn't effective (?), the tests wait for time.sleep
+        #       to finish before moving on. But done_callback works.
+        #       Using wait=False would probably solve this problem, but then we
+        #       have to deal with multiple db sessions.
+        #       https://www.pythoncentral.io/understanding-python-sqlalchemy-session/
         executor.shutdown()
         assert executor.futures.done(new_model.creation_date)
-        # TODO: Set callback to set is_running to False
         assert not new_model.is_running
 
     def test_get_chart(self):
