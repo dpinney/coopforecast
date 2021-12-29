@@ -82,6 +82,7 @@ class ForecastModel(db.Model):
             self.save()
             print("Saving model before quitting.")
 
+    @property
     def df(self):
         df_h = HistoricalData.to_df().sort_values("dates")
         df_f = ForecastData.to_df().sort_values("dates")

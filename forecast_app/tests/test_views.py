@@ -19,7 +19,7 @@ def test_templates(app, auth, client):
         "/historical-load-data": "Historical Load Data",
         "/forecast-weather-data": "Forecast Weather Data",
         "/historical-weather-data": "Historical Weather Data",
-        "/forecast": "Latest Forecast",
+        "/latest-forecast": "Latest Forecast",
         "/instructions": "Instructions",
         "/model-settings": "Model Settings",
         "/user-settings": "User Settings",
@@ -77,7 +77,7 @@ class TestForecastView:
         auth.login()
         upload_demo_data(models=False)
         assert db.session.query(ForecastModel).count() == 0
-        client.post("/forecast", data={"mock": "true"})
+        client.post("/latest-forecast", data={"mock": "true"})
         assert db.session.query(ForecastModel).count() == 1
         # TEST KILLING PROCESS
         new_model = ForecastModel.query.first()

@@ -90,7 +90,7 @@ class HistoricalWeatherDataView(DataView):
 
 
 class ForecastView(MethodView):
-    view_name = "forecast"
+    view_name = "latest-forecast"
     decorators = [flask_login.login_required]
     # TODO:
     # - make model downloadable
@@ -138,8 +138,8 @@ class ForecastView(MethodView):
         is_prepared, start_date, end_date = ForecastModel.is_prepared()
 
         return render_template(
-            "forecast.html",
-            name="forecast",
+            "latest-forecast.html",
+            name="latest-forecast",
             chart=self.get_chart(latest_successful_forecast),
             running_models=self.get_running_models(),
             forecast_model=latest_successful_forecast,
@@ -166,7 +166,7 @@ class LoginView(MethodView):
 
     def get(self):
         if flask_login.current_user.is_authenticated:
-            return redirect(url_for("forecast"))
+            return redirect(url_for("latest-forecast"))
         return render_template("login.html")
 
 
