@@ -46,6 +46,15 @@ class ForecastModel(db.Model):
         # TODO: Given start and end date, reconstruct the timestamps
         pass
 
+    @property
+    def status(self):
+        if self.is_running:
+            return "Running"
+        elif self.exited_successfully:
+            return "Finished"
+        else:
+            return "Failed"
+
     def save(self):
         db.session.add(self)
         db.session.commit()
