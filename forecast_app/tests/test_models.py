@@ -100,7 +100,7 @@ def test_is_prepared(app, db):
     # HISTORICAL DATA
     is_prepared, start_date, end_date = HistoricalData.is_prepared()
     assert is_prepared is True
-    assert start_date == datetime(2002, 1, 1, 0)
+    assert start_date == datetime(2014, 1, 1, 0)
     assert end_date == datetime(2018, 12, 31, 23)
 
 
