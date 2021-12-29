@@ -209,6 +209,6 @@ class ForecastModelDetailView(MethodView):
             "forecast-models-detail.html",
             name="forecast",
             chart=self.get_chart(forecast_model),
-            forecast=forecast_model,
+            forecast_model=forecast_model,
             messages=messages,
         )
