@@ -1,3 +1,4 @@
+test.ipynb
 forecast_app/static/uploads/*.csv
 forecast_app/secret_config.py
 forecast_app/static/output/*.h5
