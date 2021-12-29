@@ -175,15 +175,15 @@ class RenderTemplateView(View):
 
 class ForecastModelListView(MethodView):
     decorators = [flask_login.login_required]
-    view_name = "forecast-models"
+    view_name = "forecast-model-list"
 
     def get(self):
         models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()
-        return render_template("forecast-models.html", models=models)
+        return render_template("forecast-model-list.html", models=models)
 
 
 class ForecastModelDetailView(MethodView):
-    view_name = "forecast_model_detail_view"
+    view_name = "forecast-model-detail"
     view_url = "/forecast-models/<slug>"
     decorators = [flask_login.login_required]
     # TODO:
@@ -206,7 +206,7 @@ class ForecastModelDetailView(MethodView):
         print(forecast_model)
 
         return render_template(
-            "forecast-models-detail.html",
+            "forecast-model-detail.html",
             name="forecast",
             chart=self.get_chart(forecast_model),
             forecast_model=forecast_model,
