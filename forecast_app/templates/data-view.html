@@ -5,11 +5,7 @@
 
 {% block content %}
 
-{% for message in messages %}
-<div class="alert alert-{{ message.level }}">
-  {{ message.text }}
-</div>
-{% endfor %}
+{% include 'partials/messages.html' %}
 
 <h1>{{ title }}</h1>
 <ul>

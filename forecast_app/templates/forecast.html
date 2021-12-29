@@ -6,11 +6,7 @@
 {% block content %}
 <h1>Latest Forecast</h1>
 
-{% for message in messages %}
-<div class="alert alert-{{ message.level }}">
-  {{ message.text }}
-</div>
-{% endfor %}
+{% include 'partials/messages.html' %}
 
 {% for model in running_models %}
 <div class="alert alert-primary">
