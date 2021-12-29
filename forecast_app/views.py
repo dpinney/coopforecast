@@ -16,6 +16,10 @@ class DataView(MethodView):
     view = None
     view_key = None
     view_name = None
+    title = None
+    gist_example = None
+    instructions = None
+    hide_table = None
 
     def get_table(self):
         query = db.session.query(
@@ -40,12 +44,17 @@ class DataView(MethodView):
             messages = []
 
         return render_template(
-            f"{self.view_name}.html",
+            f"data-view.html",
             **{
                 "name": self.view_name,
                 "table": self.get_table(),
                 "chart": self.get_chart(),
                 "messages": messages,
+                "title": self.title,
+                "data_name": self.view_key,
+                "gist_example": self.gist_example,
+                "instructions": self.instructions,
+                "hide_table": self.hide_table,
             },
         )
 
@@ -54,18 +63,30 @@ class ForecastWeatherDataView(DataView):
     view = ForecastData
     view_key = "tempc"
     view_name = "forecast-weather-data"
+    title = "Forecast Weather Data"
+    gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
+    instructions = "/instructions#weather-forecast"
+    hide_table = False
 
 
 class HistoricalLoadDataView(DataView):
     view = HistoricalData
     view_key = "load"
     view_name = "historical-load-data"
+    title = "Historical Load Data"
+    gist_example = "https://gist.github.com/kmcelwee/ce163d8c9d2871ab4c652382431c7801"
+    instructions = "/instructions#historical-load-data"
+    hide_table = True
 
 
 class HistoricalWeatherDataView(DataView):
     view = HistoricalData
     view_key = "tempc"
     view_name = "historical-weather-data"
+    title = "Historical Weather Data"
+    gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
+    instructions = "/instructions#historical-data"
+    hide_table = True
 
 
 class ForecastView(MethodView):
@@ -176,6 +197,7 @@ class RenderTemplateView(View):
 class ForecastModelListView(MethodView):
     decorators = [flask_login.login_required]
     view_name = "forecast-model-list"
+    view_url = "/forecast-models"
 
     def get(self):
         models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()

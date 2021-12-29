@@ -1,6 +1,6 @@
 {% extends 'base-and-nav.html' %}
 
-{% block title %}Historical Weather Data{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 {% block head %}{% endblock %}
 
 {% block content %}
@@ -11,21 +11,21 @@
 </div>
 {% endfor %}
 
-<h1>Historical Weather Data</h1>
+<h1>{{ title }}</h1>
 <ul>
-  <li><a href="#upload-historical">Upload Historical Data</a></li>
+  <li><a href="#upload">Upload Data</a></li>
   <li><a href="#chart">Chart</a></li>
   <li><a href="#table">Table</a></li>
 </ul>
 
-<div class="card shadow mb-4" id="upload-historical">
+<div class="card shadow mb-4" id="upload">
   <div class="card-header py-3">
-    <h6 class="m-0 font-weight-bold text-primary">Upload Historical Data</h6>
+    <h6 class="m-0 font-weight-bold text-primary">Upload Data</h6>
   </div>
   <div class="card-body">
     <p>
-      <a href="/instructions#historical-data" class="btn btn-secondary btn-sm">Read data upload instructions</a>
-      <a href="https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4" class="btn btn-secondary btn-sm">View
+      <a href="{{ instructions }}" class="btn btn-secondary btn-sm">Read data upload instructions</a>
+      <a href="{{ gist_example }}" class="btn btn-secondary btn-sm">View
         an example dataset</a>
     </p>
 
@@ -40,7 +40,7 @@
 </div>
 
 {% if chart %}
-<div class="card shadow mb-4" id="charts">
+<div class="card shadow mb-4" id="chart">
   <!-- Card Header - Accordion -->
   <a href="#collapse-chart" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
     aria-controls="collapse-chart">
@@ -49,9 +49,9 @@
   <!-- Card Content - Collapse -->
   <div class="collapse show" id="collapse-chart">
     <div class="card-body">
-      <div id="historical-chart-container" style="height: 400px; min-width: 310px"></div>
+      <div id="chart-container" style="height: 400px; min-width: 310px"></div>
       <script type="text/javascript">
-        create_timeseries_chart(id = 'historical-chart-container', data = {{ chart | tojson }}, title = 'Historical Temperature Data', series_name = 'Temperature (°C)')
+        create_timeseries_chart(id = 'chart-container', data = {{ chart | tojson }}, title = 'Historical Load Data', series_name = 'Load')
       </script>
     </div>
   </div>
@@ -62,14 +62,15 @@
 
 <div class="card shadow mb-4" id="upload">
   <div class="card-body text-center ">
-    After data is uploaded, data will display here.
+    No data currently uploaded. Data will display here after uploading a CSV.
   </div>
 </div>
 
 {% endif %}
 
 {% if table %}
-<div class="card shadow mb-4" id="tables">
+{% if hide_table %}
+<div class="card shadow mb-4" id="table">
   <!-- Card Header - Accordion -->
   <a href="#collapse-table" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
     aria-controls="collapse-table">
@@ -78,18 +79,55 @@
   <!-- Card Content - Collapse -->
   <div class="collapse show" id="collapse-table">
     <div class="card-body">
-      <h3>Historical Data</h3>
       <p id="table-warning">This table has been hidden since it is very large and may slow down your webpage. If you're
         looking to further inspect your data, it may be more convenient to click on the menu in the chart above and
         click on the "Download CSV" prompt.
       </p>
+
       <p>
         <button id="table-button" class="btn-secondary btn-sm" onclick="toggle_table_visibility()">Show Table</button>
       </p>
+
       {% include 'partials/table.html' %}
     </div>
   </div>
 </div>
+{% else %}
+<div class="card shadow mb-4" id="table">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-table" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-table">
+    <h6 class="m-0 font-weight-bold text-primary">Table</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-table">
+    <div class="card-body">
+      <h3>Forecast Data</h3>
+      <!-- TODO: table.html assumes it's a big table. Allow variable to be passed?  -->
+      <div class="table-responsive" id="large-table">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              {% for key, value in table[0].items() %}
+              <th>{{ key }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in table %}
+            <tr>
+              {% for key, value in row.items() %}
+              <td>{{value}}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endif %}
 
 {% endblock %}

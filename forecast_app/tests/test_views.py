@@ -29,7 +29,7 @@ def test_templates(auth, client):
     auth.login()
     for route, page_name in pages.items():
         response = client.get(route)
-        assert response.status_code == 200
+        assert response.status_code == 200, f"{route} returned {response.status_code}"
         assert page_name in str(response.data)
 
     # Test again but with data
