@@ -46,8 +46,6 @@ def makeUsefulDf(df, noise=2.5, hours_prior=24, structure=None):
                     t[i, j] = y
         return t
 
-        # TODO: Point to holidays.pickle
-
     with open("forecast_app/static/holidays.pickle", "rb") as f:
         nerc6 = pickle.load(
             f, encoding="latin_1"
@@ -249,7 +247,7 @@ def add_day(df, weather):
     lr = df.iloc[-1]
     if "dates" in df.columns:
         last_day = lr.dates
-        # df.drop(["dates"], axis=1, inplace=True)  # TODO: WHY?!
+        df.drop(["dates"], axis=1, inplace=True)  # TODO: WHY?!
     else:
         last_day = date(int(lr.year), int(lr.month), int(lr.day))
     predicted_day = last_day + datetime.timedelta(days=1)

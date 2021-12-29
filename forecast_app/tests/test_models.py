@@ -1,5 +1,6 @@
 import pytest
 from datetime import datetime
+import pandas as pd
 
 from forecast_app.models import HistoricalData, ForecastData, ForecastModel
 
@@ -60,6 +61,13 @@ class TestForecastModel:
 
     def test_launch_model(self):
         pass
+
+    def test_df(self, app, db):
+        pytest.load_demo_db(app)
+        model = ForecastModel.query.first()
+        model_df = model.df
+        assert pd.isnull(model_df.tail(1).load.values[0])
+        assert model_df.shape[0] == HistoricalData.to_df().shape[0] + 24
 
 
 def test_is_prepared(app, db):

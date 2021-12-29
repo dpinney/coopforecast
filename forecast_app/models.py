@@ -25,6 +25,11 @@ class ForecastModel(db.Model):
     # TODO: Add elapsed time
 
     def __init__(self):
+        # First ensure that the environment is prepared to create a new model
+        is_prepared, self.start_date, self.end_date = self.is_prepared()
+        if not is_prepared:
+            raise Exception("Database is not prepared to create a model.")
+
         # NOTE: Object is initialized from state of the database
         OUTPUT_DIR = current_app.config["MODEL_OUTPUT_DIR"]
         self.creation_date = datetime.datetime.utcnow()
@@ -34,10 +39,8 @@ class ForecastModel(db.Model):
             row.tempc for row in ForecastData.query.all()
         ]  # Ensure length is appropriate
         # NOTE: Cannot JSON serialize datetime objects
-        timestamps = [row.timestamp for row in ForecastData.query.all()]
         self.milliseconds = [row.milliseconds for row in ForecastData.query.all()]
-        self.start_date = sorted(timestamps)[0]
-        self.end_date = sorted(timestamps)[-1]
+
         self.is_running = False
         self.exited_successfully = None
 
@@ -79,13 +82,29 @@ class ForecastModel(db.Model):
             self.save()
             print("Saving model before quitting.")
 
+    @property
+    def df(self):
+        df_h = HistoricalData.to_df().sort_values("dates")
+        df_f = ForecastData.to_df().sort_values("dates")
+        df_f = df_f[
+            (self.start_date <= df_f["dates"]) & (df_f["dates"] <= self.end_date)
+        ]
+        return pd.concat([df_h, df_f])
+
+    @property
+    def all_X(self):
+        return lf.makeUsefulDf(self.df, structure="3D")[0]
+
+    @property
+    def all_y(self):
+        return lf.makeUsefulDf(self.df, structure="3D")[1]
+
     def _execute_forecast(self):
-        df = (
-            HistoricalData.to_df()
-        )  # TODO: Should historical data be saved on the object?
-        df = df.sort_values("dates")
+        df = self.df
+
+        # TODO: Allow for different sized days
         d = dict(df.groupby(df.dates.dt.date)["dates"].count())
-        df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]  # find all non-24
+        df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]
 
         df, tomorrow = lf.add_day(df, self.tempcs[:24])
         all_X, all_y = lf.makeUsefulDf(df, structure="3D")
