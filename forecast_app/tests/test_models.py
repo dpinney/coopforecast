@@ -1,6 +1,5 @@
 import pytest
 from datetime import datetime
-from forecast_app.commands import upload_demo_data
 
 from forecast_app.models import HistoricalData, ForecastData, ForecastModel
 
@@ -63,7 +62,7 @@ class TestForecastModel:
         pass
 
 
-def test_is_prepared(db):
+def test_is_prepared(app, db):
     # Combine tests to make tests faster
     # FORECAST MODEL
     is_prepared, start_date, end_date = ForecastModel.is_prepared()
@@ -78,7 +77,7 @@ def test_is_prepared(db):
     assert is_prepared is False
     assert start_date is None and end_date is None
 
-    upload_demo_data()
+    pytest.load_demo_db(app)
 
     # FORECAST MODEL
     is_prepared, start_date, end_date = ForecastModel.is_prepared()
@@ -97,7 +96,7 @@ def test_is_prepared(db):
     assert end_date == datetime(2018, 12, 31, 23)
 
 
-def test_to_df(db):
+def test_to_df(app, db):
     # Combine tests to make tests faster
     # Works on an empty database
     # FORECAST DATA
@@ -108,7 +107,7 @@ def test_to_df(db):
     assert df.empty
 
     # ... and on a populated database
-    upload_demo_data()
+    pytest.load_demo_db(app)
 
     # FORECAST DATA
     df = ForecastData.to_df()

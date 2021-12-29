@@ -1,12 +1,39 @@
 import os
-import tempfile
+import shutil
 from pathlib import Path
 import pytest
 
 from forecast_app import create_app
 from forecast_app.config import TestingConfig
-from forecast_app.commands import init_db
+from forecast_app.commands import init_db, upload_demo_data
 from flask_sqlalchemy import SQLAlchemy
+
+
+BACKUP_DB_PATH = "forecast_app/db/backup.db"
+
+
+def load_demo_db(app):
+    test_path = db_path(app)
+    if os.path.exists(BACKUP_DB_PATH):
+        os.system(f"cp {BACKUP_DB_PATH} {test_path}")
+    else:
+        init_db()
+        upload_demo_data()
+        os.system(f"cp {test_path} {BACKUP_DB_PATH}")
+
+
+def db_path(app):
+    return "forecast_app/" + app.config["SQLALCHEMY_DATABASE_URI"].split("///")[1]
+
+
+@pytest.fixture(scope="session", autouse=True)
+def cleanup(request):
+    """Cleanup a database backup once we are finished."""
+
+    def remove_backup_db():
+        os.unlink(BACKUP_DB_PATH)
+
+    request.addfinalizer(remove_backup_db)
 
 
 @pytest.fixture
@@ -20,7 +47,7 @@ def db(app):
     with app.app_context():
         init_db()
         yield db
-    os.unlink("forecast_app/" + app.config["SQLALCHEMY_DATABASE_URI"].split("///")[1])
+    os.unlink(db_path(app))
 
 
 @pytest.fixture
@@ -31,6 +58,7 @@ def client(app, db):
 
 def pytest_configure():
     pytest.FIXTURE_DIR = Path(__file__).parent / "fixtures"
+    pytest.load_demo_db = load_demo_db
 
 
 class AuthActions:

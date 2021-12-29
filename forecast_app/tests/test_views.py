@@ -12,7 +12,7 @@ from forecast_app.executor import executor
 from forecast_app.commands import upload_demo_data
 
 
-def test_templates(auth, client):
+def test_templates(app, auth, client):
     """Test that all pages return 200 and have the expected content"""
 
     pages = {
@@ -33,7 +33,7 @@ def test_templates(auth, client):
         assert page_name in str(response.data)
 
     # Test again but with data
-    upload_demo_data()
+    pytest.load_demo_db(app)
     # Add model detail to pages to test
     for model in ForecastModel.query.all():
         pages[f"/forecast-models/{model.slug}"] = model.slug
@@ -73,7 +73,7 @@ class TestForecastView:
     def test_get(self):
         pass
 
-    def test_post(self, db, client, auth):
+    def test_post(self, app, db, client, auth):
         auth.login()
         upload_demo_data(models=False)
         assert db.session.query(ForecastModel).count() == 0
