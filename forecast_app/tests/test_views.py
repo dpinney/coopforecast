@@ -102,3 +102,20 @@ class TestForecastView:
 
     def test_check_data_preparation(self):
         pass
+
+
+class TestForecastListView:
+    def test_post(self):
+        pass
+        # TODO: Ensure that executor is stopped.
+
+    def test_get(self):
+        pass
+
+
+class TestForecastDetailView:
+    def test_get(self):
+        pass
+
+    def test_post(self):
+        pass
