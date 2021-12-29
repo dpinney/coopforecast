@@ -18,7 +18,7 @@
   </div>
   <div class="card-body">
     {% if is_prepared %}
-    <form action="/forecast" method="post" id="runModel"></form>
+    <form action="{{ url_for('latest-forecast') }}" method="post" id="runModel"></form>
     <div>
       <a onclick="document.forms['runModel'].submit(); return false;" class="btn btn-primary btn-icon-split">
         <span class="icon text-white-600">

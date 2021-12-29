@@ -8,14 +8,6 @@
 
 {% include 'partials/messages.html' %}
 
-{% for model in running_models %}
-<div class="alert alert-primary">
-  <i class="fa fa-circle text-warning Blink"></i> Currently training a model from <b class="text-primary">{{
-    model.start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b class="text-primary">{{ model.end_date.strftime('%b %d, %Y
-    %H:%M') }}</b>
-</div>
-{% endfor %}
-
 {% if not is_prepared %}
 <div class="alert alert-primary">
   Insufficient data has been provided to launch a new model. Please ensure that the proper load and temperature data has
@@ -23,7 +15,7 @@
 </div>
 {% endif %}
 
-{% if is_prepared and forecast and forecast.start_date != start_date and not running_models %}
+{% if is_prepared and forecast_model and forecast_model.start_date != start_date %}
 <form action="" method="post" id="runModel"></form>
 <div class="alert alert-primary">
   <a onclick="document.forms['runModel'].submit(); return false;" class="btn btn-primary btn-icon-split">

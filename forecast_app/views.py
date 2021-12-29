@@ -4,6 +4,7 @@ from flask.views import MethodView, View
 import flask_login
 from sqlalchemy import desc
 import time
+import datetime
 
 from forecast_app.models import ForecastData, HistoricalData, ForecastModel
 from forecast_app.utils import db
@@ -105,6 +106,7 @@ class ForecastView(MethodView):
         else:
             return None
 
+    # TODO: Move me to ForecastModelDetailView
     def post(self, mock=False):
         new_model = ForecastModel()
         new_model.is_running = True
@@ -118,12 +120,11 @@ class ForecastView(MethodView):
                 new_model.creation_date, new_model.launch_model
             )
         future.add_done_callback(new_model.done_callback)
-        return self.get(messages=[{"level": "info", "text": "Forecast started"}])
-
-    def get_running_models(self):
-        return db.session.query(ForecastModel).filter_by(is_running=True).all()
+        return redirect(url_for("forecast-model-list"))
 
     def get(self, messages=None):
+        # TODO: Replace this with session data
+        #  https://stackoverflow.com/questions/17057191/redirect-while-passing-arguments
         if not messages:
             messages = []
 
@@ -137,11 +138,15 @@ class ForecastView(MethodView):
 
         is_prepared, start_date, end_date = ForecastModel.is_prepared()
 
+        # FORCE is_prepared
+        # is_prepared = True
+        # start_date = datetime.datetime(2020, 1, 1, 1)
+        # end_date = datetime.datetime(2020, 1, 1, 23)
+
         return render_template(
             "latest-forecast.html",
             name="latest-forecast",
             chart=self.get_chart(latest_successful_forecast),
-            running_models=self.get_running_models(),
             forecast_model=latest_successful_forecast,
             # Is the data prepared for a new forecast?
             is_prepared=is_prepared,
@@ -201,13 +206,18 @@ class ForecastModelListView(MethodView):
 
     def post(self):
         # Cancel all models
-        executor.shutdown(wait=False)
-        ForecastModel.query.filter_by(is_running=True).update({"is_running": False})
+        # TODO: Turn this on, right now it just looks like it's working!
+        # executor.shutdown(wait=False)
+        for model in ForecastModel.query.filter_by(is_running=True).all():
+            model.is_running = False
+            db.session.add(model)
         db.session.commit()
         messages = [{"level": "info", "text": "All running models were terminated."}]
         return self.get(messages=messages)
 
-    def get(self, messages=[]):
+    def get(self, messages=None):
+        # messages = request.args.get("messages", [])
+        messages = [] if messages is None else messages
         models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()
         is_prepared, start_date, end_date = ForecastModel.is_prepared()
 

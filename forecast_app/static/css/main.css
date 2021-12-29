@@ -1,3 +1,4 @@
+/* .Blink is no longer in use */
 .Blink {
   animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;  
 }
