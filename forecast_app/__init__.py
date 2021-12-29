@@ -16,6 +16,7 @@ from forecast_app.views import (
     LogoutView,
     RenderTemplateView,
     ForecastModelListView,
+    ForecastModelDetailView,
 )
 from forecast_app.config import config_map
 
@@ -45,6 +46,7 @@ def create_app(config: str):
         ForecastWeatherDataView,
         HistoricalWeatherDataView,
         ForecastModelListView,
+        ForecastModelDetailView,
     ]
     for view in method_views:
         app.add_url_rule(

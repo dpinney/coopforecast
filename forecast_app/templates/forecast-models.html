@@ -18,7 +18,7 @@
 {% for model in models %}
 <div class="card shadow mb-4" id="upload-forecast">
   <div class="card-header py-3">
-    <a href="/forecast-models/{{ model.creation_date }}">
+    <a href="/forecast-models/{{ model.slug }}">
       <h6 class="m-0 font-weight-bold text-primary">MODEL: {{ model.creation_date.timestamp() }}</h6>
     </a>
     <div> <b>Status:</b> {{ model.status }}</div>

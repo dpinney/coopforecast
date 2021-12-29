@@ -180,3 +180,35 @@ class ForecastModelListView(MethodView):
     def get(self):
         models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()
         return render_template("forecast-models.html", models=models)
+
+
+class ForecastModelDetailView(MethodView):
+    view_name = "forecast_model_detail_view"
+    view_url = "/forecast-models/<slug>"
+    decorators = [flask_login.login_required]
+    # TODO:
+    # - make model downloadable
+
+    def get_chart(self, forecast):
+        if forecast:
+            return [
+                [timestamp, load]
+                for load, timestamp in zip(forecast.loads, forecast.milliseconds)
+            ]
+        else:
+            return None
+
+    def get(self, slug, messages=None):
+        if not messages:
+            messages = []
+        # breakpoint()
+        forecast_model = ForecastModel.query.filter_by(slug=slug).first()
+        print(forecast_model)
+
+        return render_template(
+            "forecast-models-detail.html",
+            name="forecast",
+            chart=self.get_chart(forecast_model),
+            forecast=forecast_model,
+            messages=messages,
+        )

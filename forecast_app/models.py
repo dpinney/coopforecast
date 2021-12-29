@@ -10,7 +10,8 @@ import forecast_app.forecast as lf
 
 class ForecastModel(db.Model):
     __tablename__ = "forecast_model"
-    creation_date = Column(DateTime, default=datetime.datetime.utcnow, primary_key=True)
+    creation_date = Column(DateTime, primary_key=True)
+    slug = Column(String, unique=True, nullable=False)
     milliseconds = Column(JSON, nullable=False)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
@@ -26,9 +27,9 @@ class ForecastModel(db.Model):
     def __init__(self):
         # NOTE: Object is initialized from state of the database
         OUTPUT_DIR = current_app.config["MODEL_OUTPUT_DIR"]
-        self.model_path = os.path.join(
-            OUTPUT_DIR, f"{datetime.datetime.utcnow().timestamp()}.h5"
-        )
+        self.creation_date = datetime.datetime.utcnow()
+        self.slug = str(self.creation_date.timestamp())
+        self.model_path = os.path.join(OUTPUT_DIR, f"{self.slug}.h5")
         self.tempcs = [
             row.tempc for row in ForecastData.query.all()
         ]  # Ensure length is appropriate

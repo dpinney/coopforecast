@@ -1,0 +1,56 @@
+{% extends 'base-and-nav.html' %}
+
+{% block title %}Forecast: {{ forecast.slug }} {% endblock %}
+{% block head %}
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/data.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/load-line-chart.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<h1>Forecast: {{ forecast.slug }}</h1>
+
+{% for message in messages %}
+<div class="alert alert-{{ message.level }}">
+  {{ message.text }}
+</div>
+{% endfor %}
+
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Latest Forecast</h6>
+  </div>
+  <div class="card-body">
+    <p>
+      Displaying a forecast of <b class="text-primary">{{ forecast.start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b
+        class="text-primary">{{
+        forecast.end_date.strftime('%b %d, %Y %H:%M') }}</b>.
+    </p>
+    <div id="chart-container" style="height: 400px; min-width: 310px"></div>
+    <script type="text/javascript">
+      create_timeseries_chart(id = 'chart-container', data = {{ chart | tojson }}, title = 'Load Forecast', series_name = 'Load')
+    </script>
+    <p>
+      <a href="#" class="btn btn-secondary btn-sm">Read about how this models works</a>
+      <a href="#" class="btn btn-secondary btn-sm">Download the model</a>
+    </p>
+  </div>
+</div>
+
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Accuracy</h6>
+  </div>
+  <div class="card-body">
+    <p>
+      <a href="#" class="btn btn-secondary btn-sm">Read about how accuracy is measured</a>
+    </p>
+    <div><b>Train</b>: {{ forecast.accuracy.train }} MAPE</div>
+    <div><b>Test</b>: {{ forecast.accuracy.test }} MAPE</div>
+  </div>
+</div>
+
+{% endblock %}
