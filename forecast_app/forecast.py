@@ -46,6 +46,10 @@ def makeUsefulDf(df, noise=2.5, hours_prior=24, structure=None):
                     t[i, j] = y
         return t
 
+    # TODO: Allow for different sized days
+    d = dict(df.groupby(df.dates.dt.date)["dates"].count())
+    df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]
+
     with open("forecast_app/static/holidays.pickle", "rb") as f:
         nerc6 = pickle.load(
             f, encoding="latin_1"

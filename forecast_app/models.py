@@ -101,12 +101,6 @@ class ForecastModel(db.Model):
 
     def _execute_forecast(self):
         df = self.df
-
-        # TODO: Allow for different sized days
-        d = dict(df.groupby(df.dates.dt.date)["dates"].count())
-        df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]
-
-        df, tomorrow = lf.add_day(df, self.tempcs[:24])
         all_X, all_y = lf.makeUsefulDf(df, structure="3D")
 
         tomorrow_load, _, tomorrow_accuracy = lf.neural_net_next_day(
