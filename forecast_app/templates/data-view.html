@@ -51,7 +51,7 @@
     <div class="card-body">
       <div id="chart-container" style="height: 400px; min-width: 310px"></div>
       <script type="text/javascript">
-        create_timeseries_chart(id = 'chart-container', data = {{ chart | tojson }}, title = 'Historical Load Data', series_name = 'Load')
+        create_timeseries_chart(id = 'chart-container', data = {{ chart | tojson }}, title = '{{ title }}', series_name = '{{ view_key }}')
       </script>
     </div>
   </div>
