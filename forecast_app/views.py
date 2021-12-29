@@ -121,7 +121,7 @@ class ForecastView(MethodView):
             name="forecast",
             chart=self.get_chart(latest_successful_forecast),
             running_models=self.get_running_models(),
-            forecast=latest_successful_forecast,
+            forecast_model=latest_successful_forecast,
             # Is the data prepared for a new forecast?
             is_prepared=is_prepared,
             start_date=start_date,

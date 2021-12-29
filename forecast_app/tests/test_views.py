@@ -19,10 +19,11 @@ def test_templates(auth, client):
         "/historical-load-data": "Historical Load Data",
         "/forecast-weather-data": "Forecast Weather Data",
         "/historical-weather-data": "Historical Weather Data",
-        "/forecast": "Forecast",
+        "/forecast": "Latest Forecast",
         "/instructions": "Instructions",
         "/model-settings": "Model Settings",
         "/user-settings": "User Settings",
+        "/forecast-models": "Forecast Models",
     }
 
     auth.login()
@@ -33,6 +34,10 @@ def test_templates(auth, client):
 
     # Test again but with data
     upload_demo_data()
+    # Add model detail to pages to test
+    for model in ForecastModel.query.all():
+        pages[f"/forecast-models/{model.slug}"] = model.slug
+
     for route, page_name in pages.items():
         response = client.get(route)
         assert response.status_code == 200
