@@ -117,7 +117,7 @@ class ForecastModel(db.Model):
 
     def cancel(self):
         pid = self.get_process_id()
-        os.kill(pid, e)
+        os.kill(pid, signal.SIGKILL)
 
     def _execute_forecast(self):
         df = self.df
