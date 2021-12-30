@@ -36,20 +36,14 @@ def cleanup(request):
     request.addfinalizer(remove_backup_db)
 
 
-def pytest_sessionstart(session):
-    """
-    Called after the Session object has been created and
-    before performing collection and entering the run test loop.
-    """
+@pytest.fixture(scope="session", autouse=True)
+def setup_and_cleanup(request):
+    # breakpoint()
     os.mkdir(TestingConfig.OUTPUT_DIR)
-
-
-def pytest_sessionfinish(session, exitstatus):
-    """
-    Called after whole test run finished, right before
-    returning the exit status to the system.
-    """
+    os.mkdir(TestingConfig.UPLOAD_DIR)
+    yield None
     shutil.rmtree(TestingConfig.OUTPUT_DIR)
+    shutil.rmtree(TestingConfig.UPLOAD_DIR)
 
 
 @pytest.fixture

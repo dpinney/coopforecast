@@ -41,7 +41,7 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/test.db"
     TESTING = True
     OUTPUT_DIR = "forecast_app/tests/tmp_output"
-    # TODO: set upload folder
+    UPLOAD_DIR = "forecast_app/tests/tmp_upload"
 
 
 configs = [TestingConfig, ProductionConfig, DevelopmentConfig]

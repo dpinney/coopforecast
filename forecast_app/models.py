@@ -128,7 +128,8 @@ class ForecastModel(db.Model):
         fd_is_prepared, fd_start_date, fd_end_date = ForecastData.is_prepared()
         is_prepared = True if hd_is_prepared and fd_is_prepared else False
         # TODO: This doesn't seem right. Is this being tested?
-        if hd_end_date - fd_end_date > datetime.timedelta(hours=24):
+        # NOTE: `is_prepared` is necessary to prevent null comparison
+        if is_prepared and hd_end_date - fd_end_date > datetime.timedelta(hours=24):
             is_prepared = False
 
         start_date = hd_end_date + datetime.timedelta(hours=1) if is_prepared else None
