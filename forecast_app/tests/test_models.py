@@ -1,6 +1,7 @@
 import pytest
 from datetime import datetime
 import pandas as pd
+import os
 
 from forecast_app.models import HistoricalData, ForecastData, ForecastModel
 
@@ -53,8 +54,14 @@ class TestForecastData:
 
 
 class TestForecastModel:
-    def test_init(self):
-        pass
+    def test_init(self, db, app):
+        # Raise an error if the model is created with an empty database
+        with pytest.raises(Exception):
+            ForecastModel()
+
+        pytest.load_demo_db(app)
+        model = ForecastModel()
+        assert os.path.exists(model.output_dir)
 
     def test_timestamps(self):
         pass

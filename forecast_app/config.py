@@ -40,6 +40,7 @@ class TestingConfig(Config):
     NAME = "test"
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/test.db"
     TESTING = True
+    OUTPUT_DIR = "forecast_app/tests/tmp_output"
     # TODO: set upload folder
 
 

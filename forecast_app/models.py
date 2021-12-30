@@ -18,6 +18,7 @@ class ForecastModel(db.Model):
     tempcs = Column(JSON, nullable=False)
     is_running = Column(Boolean, nullable=False)
     model_path = Column(String, nullable=False)
+    output_dir = Column(String, nullable=False)
     accuracy = Column(JSON)
     loads = Column(JSON)
     exited_successfully = Column(Boolean)
@@ -25,20 +26,26 @@ class ForecastModel(db.Model):
     # TODO: Add elapsed time
 
     def __init__(self):
+        # NOTE: Object is initialized from state of the database
         # First ensure that the environment is prepared to create a new model
         is_prepared, self.start_date, self.end_date = self.is_prepared()
         if not is_prepared:
             raise Exception("Database is not prepared to create a model.")
 
-        # NOTE: Object is initialized from state of the database
-        OUTPUT_DIR = current_app.config["MODEL_OUTPUT_DIR"]
         self.creation_date = datetime.datetime.utcnow()
         self.slug = str(self.creation_date.timestamp())
-        self.model_path = os.path.join(OUTPUT_DIR, f"{self.slug}.h5")
+        self.output_dir = os.path.join(
+            current_app.config["MODEL_OUTPUT_DIR"], self.slug
+        )
+        os.mkdir(self.output_dir)
+
+        self.model_path = os.path.join(self.output_dir, f"{self.slug}.h5")
+
         self.tempcs = [
             row.tempc for row in ForecastData.query.all()
         ]  # Ensure length is appropriate
         # NOTE: Cannot JSON serialize datetime objects
+        # TODO: This should span start_date to end_date
         self.milliseconds = [row.milliseconds for row in ForecastData.query.all()]
 
         self.is_running = False
@@ -112,16 +119,16 @@ class ForecastModel(db.Model):
 
         self.accuracy = tomorrow_accuracy
         self.loads = tomorrow_load
-        # TODO: Confirm that this can work from any hour
+        self.save()
         # TODO: Confirm that the zscore normalization is appropriate
-        # TODO: Add tomorrow's load and accuracy to database
 
     @classmethod
     def is_prepared(cls):
         hd_is_prepared, hd_start_date, hd_end_date = HistoricalData.is_prepared()
         fd_is_prepared, fd_start_date, fd_end_date = ForecastData.is_prepared()
         is_prepared = True if hd_is_prepared and fd_is_prepared else False
-        if is_prepared and hd_end_date - fd_end_date > datetime.timedelta(hours=24):
+        # TODO: This doesn't seem right. Is this being tested?
+        if hd_end_date - fd_end_date > datetime.timedelta(hours=24):
             is_prepared = False
 
         start_date = hd_end_date + datetime.timedelta(hours=1) if is_prepared else None
