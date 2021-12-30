@@ -3,6 +3,7 @@ import datetime
 import pandas as pd
 from sqlalchemy import Column, Integer, Float, String, DateTime, JSON, Boolean
 from flask import current_app
+import signal
 
 from forecast_app.utils import db
 import forecast_app.forecast as lf
@@ -34,9 +35,7 @@ class ForecastModel(db.Model):
 
         self.creation_date = datetime.datetime.utcnow()
         self.slug = str(self.creation_date.timestamp())
-        self.output_dir = os.path.join(
-            current_app.config["MODEL_OUTPUT_DIR"], self.slug
-        )
+        self.output_dir = os.path.join(current_app.config["OUTPUT_DIR"], self.slug)
         os.mkdir(self.output_dir)
 
         self.model_path = os.path.join(self.output_dir, f"{self.slug}.h5")
@@ -103,6 +102,22 @@ class ForecastModel(db.Model):
 
     def test(self):
         pass
+
+    @property
+    def process_file(self):
+        return os.path.join(self.output_dir, "PPID.txt")
+
+    def store_process_id(self, process_id):
+        with open(self.process_file, "w") as f:
+            f.write(str(process_id))
+
+    def get_process_id(self):
+        with open(self.process_file, "r") as f:
+            return int(f.read())
+
+    def cancel(self):
+        pid = self.get_process_id()
+        os.kill(pid, e)
 
     def _execute_forecast(self):
         df = self.df

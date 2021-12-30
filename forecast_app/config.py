@@ -13,7 +13,7 @@ class Config(object):
     ADMIN_PASSWORD = "admin"
     SECRET_KEY = "secret"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    MODEL_OUTPUT_DIR = "forecast_app/static/output"
+    OUTPUT_DIR = "forecast_app/static/output"
     UPLOAD_FOLDER = "forecast_app/static/uploads"
     PORT = 5000
     WORKERS = 1

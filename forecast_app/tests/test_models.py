@@ -2,6 +2,9 @@ import pytest
 from datetime import datetime
 import pandas as pd
 import os
+from multiprocessing import Process
+import signal
+from time import sleep
 
 from forecast_app.models import HistoricalData, ForecastData, ForecastModel
 
@@ -54,6 +57,8 @@ class TestForecastData:
 
 
 class TestForecastModel:
+    # NOTE: test_is_prepared is below
+
     def test_init(self, db, app):
         # Raise an error if the model is created with an empty database
         with pytest.raises(Exception):
@@ -65,6 +70,19 @@ class TestForecastModel:
 
     def test_timestamps(self):
         pass
+
+    def test_subprocessing(self, app, db):
+        pytest.load_demo_db(app)
+        new_model = ForecastModel()
+        assert not os.path.exists(new_model.process_file)
+        process = Process(target=new_model.launch_model)
+        process.start()
+        new_model.store_process_id(process.pid)
+        assert os.path.exists(new_model.process_file)
+        assert new_model.get_process_id() == process.pid
+        new_model.cancel()
+        sleep(2)  # Give the process time to cancel
+        assert process.exitcode == -signal.SIGKILL
 
     def test_launch_model(self):
         pass
