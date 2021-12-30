@@ -116,7 +116,9 @@ class ForecastView(MethodView):
         if request.values.get("mock") == "true":
             process = Process(target=time.sleep, args=(3,))
         else:
-            process = Process(target=new_model.launch_model)
+            process = Process(
+                target=new_model.launch_model, args=(current_app.config["NAME"],)
+            )
         process.start()
         new_model.store_process_id(process.pid)
         return redirect(url_for("forecast-model-list"))

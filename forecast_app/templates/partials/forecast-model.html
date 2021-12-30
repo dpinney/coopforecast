@@ -28,7 +28,7 @@
     <p>
       <a href="#" class="btn btn-secondary btn-sm">Read about how accuracy is measured</a>
     </p>
-    <div><b>Train</b>: {{ forecast_model.accuracy.train }} MAPE</div>
-    <div><b>Test</b>: {{ forecast_model.accuracy.test }} MAPE</div>
+    <div><b>Train</b>: {{ "%.2f"|format(forecast_model.accuracy.train) }} MAPE</div>
+    <div><b>Test</b>: {{ "%.2f"|format(forecast_model.accuracy.test) }} MAPE</div>
   </div>
 </div>

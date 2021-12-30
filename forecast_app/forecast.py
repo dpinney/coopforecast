@@ -64,7 +64,7 @@ def makeUsefulDf(df, noise=2.5, hours_prior=24, structure=None):
     r_df = pd.DataFrame()
 
     # LOAD
-    r_df["load_n"] = zscore(df["load"])
+    r_df["load_n"] = df["load"] / (df["load"].max() - df["load"].min())
     r_df["load_prev_n"] = r_df["load_n"].shift(hours_prior)
     r_df["load_prev_n"].bfill(inplace=True)
 
@@ -85,12 +85,18 @@ def makeUsefulDf(df, noise=2.5, hours_prior=24, structure=None):
     r_df.drop(["load_n"], axis=1, inplace=True)
 
     # DATE
+    # NOTE: zscore will be all nans if any are nans!
     r_df["years_n"] = zscore(df["dates"].dt.year)
-    r_df = pd.concat([r_df, pd.get_dummies(df.dates.dt.hour, prefix="hour")], axis=1)
     r_df = pd.concat(
-        [r_df, pd.get_dummies(df.dates.dt.dayofweek, prefix="day")], axis=1
+        [
+            r_df,
+            pd.get_dummies(df.dates.dt.hour, prefix="hour"),
+            pd.get_dummies(df.dates.dt.dayofweek, prefix="day"),
+            pd.get_dummies(df.dates.dt.month, prefix="month"),
+        ],
+        axis=1,
     )
-    r_df = pd.concat([r_df, pd.get_dummies(df.dates.dt.month, prefix="month")], axis=1)
+
     for holiday in [
         "New Year's Day",
         "Memorial Day",

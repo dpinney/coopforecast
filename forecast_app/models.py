@@ -104,17 +104,23 @@ class ForecastModel(db.Model):
     def __repr__(self):
         return f"<ForecastModel {self.creation_date}>"
 
-    def launch_model(self):
+    def launch_model(self, app_config):
         try:
+            # HACK: Because this is launched in another thread, we need to
+            #       recreate the app context (!) Please think of a better way
+            #       to do this.
+            # https://www.reddit.com/r/flask/comments/5jrrsu/af_appapp_context_in_thread_throws_working/
+            from forecast_app import create_app
+
+            app = create_app(app_config)
+            app.app_context().push()
             print("Executing forecast...")
             self._execute_forecast()
             print("Finished with forecast...")
             self.store_process_id("COMPLETED")
-        except:
-            raise Exception("Model failed.")
-        finally:
+        except Exception as e:
             self.store_process_id("FAILURE")
-            print("Saving model before quitting.")
+            raise Exception("Model failed: {}".format(e))
 
     @property
     def df(self):
