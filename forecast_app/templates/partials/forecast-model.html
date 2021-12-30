@@ -20,6 +20,7 @@
   </div>
 </div>
 
+{% if forecast_model.accuracy %}
 <div class="card shadow mb-4">
   <div class="card-header py-3">
     <h6 class="m-0 font-weight-bold text-primary">Accuracy</h6>
@@ -32,3 +33,4 @@
     <div><b>Test</b>: {{ "%.2f"|format(forecast_model.accuracy.test) }} MAPE</div>
   </div>
 </div>
+{% endif %}
