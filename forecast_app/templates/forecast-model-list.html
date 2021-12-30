@@ -14,7 +14,7 @@
 
 <div class="card shadow mb-4" id="upload">
   <div class="card-header py-3">
-    <h6 class="m-0 font-weight-bold text-primary">Create or End Models</h6>
+    <h6 class="m-0 font-weight-bold text-primary">Manage Models</h6>
   </div>
   <div class="card-body">
     {% if is_prepared %}
@@ -34,15 +34,6 @@
         </p>
       </span>
     </div>
-    {% else %}
-    <div>
-      <p>
-        Insufficient data has been provided to launch a new model. Please ensure that the proper load and temperature
-        data
-        has been uploaded.
-      </p>
-    </div>
-    {% endif %}
     <form action="" method="post" id="cancelAllModels"></form>
     <div>
       <a onclick="document.forms['cancelAllModels'].submit(); return false;" class="btn btn-danger btn-icon-split">
@@ -56,6 +47,15 @@
       Terminate running processes.
     </p>
   </div>
+  {% else %}
+  <div>
+    <p>
+      Insufficient data has been provided to launch a new model. Please ensure that the proper load and temperature
+      data
+      has been uploaded.
+    </p>
+  </div>
+  {% endif %}
 </div>
 
 {% for model in models %}
