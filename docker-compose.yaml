@@ -1,13 +1,13 @@
 version: '3.3'
 services:
-    web:
-        build: .
-        image: requirements
-        ports:
-          - '5000:5000'
-          - '80:80'
-        volumes:
-          - '.:/code'
-        restart: always
-        container_name: burt_forecaster
-        command: python cli.py deploy --config=dev
+  web:
+    build: .
+    image: requirements
+    ports:
+      - '5000:5000'
+      - '80:80'
+    volumes:
+      - '.:/code'
+    restart: always
+    container_name: burt_forecaster
+    command: python cli.py deploy --config=dev
