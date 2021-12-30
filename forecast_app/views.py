@@ -139,6 +139,8 @@ class ForecastView(MethodView):
             if model.exited_successfully:
                 latest_successful_forecast = model
                 break
+        else:
+            latest_successful_forecast = None
 
         is_prepared, start_date, end_date = ForecastModel.is_prepared()
 
