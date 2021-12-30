@@ -13,6 +13,7 @@ BACKUP_DB_PATH = "forecast_app/db/backup.db"
 
 
 def load_demo_db(app):
+    """Loading data via CSV is a lengthy process. Store a backup, and refresh when necessary."""
     test_path = db_path(app)
     if os.path.exists(BACKUP_DB_PATH):
         os.system(f"cp {BACKUP_DB_PATH} {test_path}")
@@ -27,16 +28,6 @@ def db_path(app):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def cleanup(request):
-    """Cleanup a database backup once we are finished."""
-
-    def remove_backup_db():
-        os.unlink(BACKUP_DB_PATH)
-
-    request.addfinalizer(remove_backup_db)
-
-
-@pytest.fixture(scope="session", autouse=True)
 def setup_and_cleanup(request):
     # breakpoint()
     os.mkdir(TestingConfig.OUTPUT_DIR)
@@ -44,6 +35,7 @@ def setup_and_cleanup(request):
     yield None
     shutil.rmtree(TestingConfig.OUTPUT_DIR)
     shutil.rmtree(TestingConfig.UPLOAD_DIR)
+    os.unlink(BACKUP_DB_PATH)
 
 
 @pytest.fixture
