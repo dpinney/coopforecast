@@ -1,7 +1,5 @@
-from flask import Flask
+from flask import Flask, current_app
 import atexit
-
-from forecast_app.executor import executor
 from forecast_app.utils import (
     login_manager,
     ADMIN_USER,
@@ -57,11 +55,5 @@ def create_app(config: str):
     static_views = ["instructions", "model-settings", "user-settings"]
     for view in static_views:
         app.add_url_rule(f"/{view}", view_func=RenderTemplateView.view(view))
-
-    # Initialize executor
-    executor.init_app(app)
-    from forecast_app.executor import close_running_threads
-
-    atexit.register(close_running_threads)
 
     return app

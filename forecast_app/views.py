@@ -5,11 +5,11 @@ import flask_login
 from sqlalchemy import desc
 import time
 import datetime
+from multiprocessing import Process
 
 from forecast_app.models import ForecastData, HistoricalData, ForecastModel
 from forecast_app.utils import db
 from forecast_app.utils import ADMIN_USER, upload_file
-from forecast_app.executor import executor
 
 
 class DataView(MethodView):
@@ -109,17 +109,16 @@ class ForecastView(MethodView):
     # TODO: Move me to ForecastModelDetailView
     def post(self, mock=False):
         new_model = ForecastModel()
-        new_model.is_running = True
         new_model.save()
         print(f"Starting model {new_model.creation_date}")
         # NOTE: For testing, send 'mock' as a parameter to avoid lengthy training
+        # NOTe: "submit_stored" doesn't seem to work as expected
         if request.values.get("mock") == "true":
-            future = executor.submit_stored(new_model.creation_date, time.sleep, 3)
+            process = Process(target=time.sleep, args=(3,))
         else:
-            future = executor.submit_stored(
-                new_model.creation_date, new_model.launch_model
-            )
-        future.add_done_callback(new_model.done_callback)
+            process = Process(target=new_model.launch_model)
+        process.start()
+        new_model.store_process_id(process.pid)
         return redirect(url_for("forecast-model-list"))
 
     def get(self, messages=None):
@@ -129,12 +128,17 @@ class ForecastView(MethodView):
             messages = []
 
         # Filter by exited_successfully
-        latest_successful_forecast = (
+        # NOTE: Need to do manually because of exited_successfully being a property
+        query = (
             db.session.query(ForecastModel)
-            .filter_by(exited_successfully=True)
             .order_by(desc(ForecastModel.creation_date))
-            .first()
+            .all()
         )
+
+        for model in query:
+            if model.exited_successfully:
+                latest_successful_forecast = model
+                break
 
         is_prepared, start_date, end_date = ForecastModel.is_prepared()
 
@@ -164,7 +168,7 @@ class LoginView(MethodView):
         if request.form.get("password") == current_app.config["ADMIN_PASSWORD"]:
             remember = request.form.get("remember-me") == "on"
             flask_login.login_user(ADMIN_USER, remember=remember)
-            return redirect("/forecast")
+            return redirect(url_for("latest-forecast"))
         # NOTE: Some kind of attribute error is preventing me from simply using
         #  self.get(error=error). It's not occuring in other pages.
         return redirect(url_for("login", error="Incorrect username and/or password."))
@@ -206,12 +210,9 @@ class ForecastModelListView(MethodView):
 
     def post(self):
         # Cancel all models
-        # TODO: Turn this on, right now it just looks like it's working!
-        # executor.shutdown(wait=False)
-        for model in ForecastModel.query.filter_by(is_running=True).all():
-            model.is_running = False
-            db.session.add(model)
-        db.session.commit()
+        for model in ForecastModel.query.all():
+            if model.is_running:
+                model.cancel()
         messages = [{"level": "info", "text": "All running models were terminated."}]
         return self.get(messages=messages)
 

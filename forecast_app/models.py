@@ -17,12 +17,11 @@ class ForecastModel(db.Model):
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
     tempcs = Column(JSON, nullable=False)
-    is_running = Column(Boolean, nullable=False)
-    model_path = Column(String, nullable=False)
+    model_file = Column(String, nullable=False)
+    process_file = Column(String, nullable=False)
     output_dir = Column(String, nullable=False)
     accuracy = Column(JSON)
     loads = Column(JSON)
-    exited_successfully = Column(Boolean)
     epochs = 1  # TODO: Config epochs
     # TODO: Add elapsed time
 
@@ -38,7 +37,8 @@ class ForecastModel(db.Model):
         self.output_dir = os.path.join(current_app.config["OUTPUT_DIR"], self.slug)
         os.mkdir(self.output_dir)
 
-        self.model_path = os.path.join(self.output_dir, f"{self.slug}.h5")
+        self.model_file = os.path.join(self.output_dir, f"{self.slug}.h5")
+        self.process_file = os.path.join(self.output_dir, "PID.txt")
 
         self.tempcs = [
             row.tempc for row in ForecastData.query.all()
@@ -46,9 +46,6 @@ class ForecastModel(db.Model):
         # NOTE: Cannot JSON serialize datetime objects
         # TODO: This should span start_date to end_date
         self.milliseconds = [row.milliseconds for row in ForecastData.query.all()]
-
-        self.is_running = False
-        self.exited_successfully = None
 
     @property
     def timestamps(self):
@@ -58,12 +55,47 @@ class ForecastModel(db.Model):
 
     @property
     def status(self):
-        if self.is_running:
-            return "Running"
-        elif self.exited_successfully:
+        # TODO: Manage strings with class variables
+        # TODO: Can I just make a status property and nothing else?
+        pid = self.get_process_id()
+        if pid is None:
+            return "Not started"
+        elif pid == "COMPLETED":
             return "Finished"
-        else:
+        elif pid == "FAILURE" or int(pid) == signal.SIGKILL:
             return "Failed"
+        else:
+            return "Running"
+
+    @property
+    def is_running(self):
+        return self.status == "Running"
+
+    @property
+    def exited_successfully(self):
+        if self.status in ["Not started", "Running"]:
+            return None
+        else:
+            return self.status == "Finished"
+
+    def store_process_id(self, process_id):
+        with open(self.process_file, "w") as f:
+            f.write(str(process_id))
+
+    def get_process_id(self):
+        if os.path.exists(self.process_file):
+            with open(self.process_file, "r") as f:
+                return f.read()
+        else:
+            return None
+
+    def cancel(self):
+        pid = self.get_process_id()
+        if self.is_running:
+            os.kill(int(pid), signal.SIGKILL)
+            self.store_process_id(int(signal.SIGKILL))
+        else:
+            raise Exception("Model is not running.")
 
     def save(self):
         db.session.add(self)
@@ -77,15 +109,11 @@ class ForecastModel(db.Model):
             print("Executing forecast...")
             self._execute_forecast()
             print("Finished with forecast...")
-            self.is_running = False
-            self.exited_successfully = True
-            self.save()
+            self.store_process_id("COMPLETED")
         except:
             raise Exception("Model failed.")
         finally:
-            self.is_running = False
-            self.exited_successfully = False
-            self.save()
+            self.store_process_id("FAILURE")
             print("Saving model before quitting.")
 
     @property
@@ -103,22 +131,6 @@ class ForecastModel(db.Model):
     def test(self):
         pass
 
-    @property
-    def process_file(self):
-        return os.path.join(self.output_dir, "PPID.txt")
-
-    def store_process_id(self, process_id):
-        with open(self.process_file, "w") as f:
-            f.write(str(process_id))
-
-    def get_process_id(self):
-        with open(self.process_file, "r") as f:
-            return int(f.read())
-
-    def cancel(self):
-        pid = self.get_process_id()
-        os.kill(pid, signal.SIGKILL)
-
     def _execute_forecast(self):
         df = self.df
         self.all_X, self.all_y = lf.makeUsefulDf(df)  # structure = 3D
@@ -127,7 +139,7 @@ class ForecastModel(db.Model):
             self.all_X,
             self.all_y,
             epochs=self.epochs,
-            save_file=self.model_path,
+            save_file=self.model_file,
             model=None,
             # structure="3D",
         )
@@ -151,11 +163,12 @@ class ForecastModel(db.Model):
         end_date = hd_end_date + datetime.timedelta(hours=24) if is_prepared else None
         return is_prepared, start_date, end_date
 
-    def done_callback(self, future):
-        # TODO: see if future was cancelled
-        print("Exited with Future callback")
-        self.is_running = False
-        self.save()
+    # TODO: This should be at the end of launch_model
+    # def done_callback(self, future):
+    #     # TODO: see if future was cancelled
+    #     print("Exited with Future callback")
+    #     self.is_running = False
+    #     self.save()
 
 
 class HistoricalData(db.Model):

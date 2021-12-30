@@ -51,22 +51,19 @@ def upload_demo_data(models=True):
     if models:
         mock_model = ForecastModel()
         mock_model.loads = df["load"].tolist()
-        mock_model.exited_successfully = True
         mock_model.accuracy = {"test": 96.5, "train": 98.5}
+        mock_model.store_process_id("COMPLETED")
         mock_model.save()
         print("First forecast model uploaded.")
 
         mock_model = ForecastModel()
         mock_model.loads = df["load"].tolist()
-        mock_model.exited_successfully = False
         mock_model.accuracy = None
         mock_model.save()
         print("Second forecast model uploaded.")
 
         mock_model = ForecastModel()
         mock_model.loads = df["load"].tolist()
-        mock_model.exited_successfully = None
         mock_model.accuracy = None
-        mock_model.is_running = True
         mock_model.save()
         print("Third forecast model uploaded.")

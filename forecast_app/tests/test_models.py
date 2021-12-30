@@ -74,15 +74,23 @@ class TestForecastModel:
     def test_subprocessing(self, app, db):
         pytest.load_demo_db(app)
         new_model = ForecastModel()
+        assert not new_model.is_running
+        assert new_model.exited_successfully is None
         assert not os.path.exists(new_model.process_file)
+
         process = Process(target=new_model.launch_model)
         process.start()
         new_model.store_process_id(process.pid)
+        assert new_model.is_running
+        assert new_model.exited_successfully is None
         assert os.path.exists(new_model.process_file)
-        assert new_model.get_process_id() == process.pid
+        assert new_model.get_process_id() == str(process.pid)
+
         new_model.cancel()
         sleep(2)  # Give the process time to cancel
         assert process.exitcode == -signal.SIGKILL
+        assert not new_model.is_running
+        assert new_model.exited_successfully is False
 
     def test_launch_model(self):
         pass

@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-
 from forecast_app.views import (
     ForecastView,
     HistoricalLoadDataView,
@@ -8,7 +7,6 @@ from forecast_app.views import (
     ForecastWeatherDataView,
 )
 from forecast_app.models import ForecastModel
-from forecast_app.executor import executor
 from forecast_app.commands import upload_demo_data
 
 
@@ -76,26 +74,10 @@ class TestForecastView:
     def test_post(self, app, db, client, auth):
         auth.login()
         upload_demo_data(models=False)
-        assert db.session.query(ForecastModel).count() == 0
+        assert ForecastModel.query.count() == 0
         client.post("/latest-forecast", data={"mock": "true"})
-        assert db.session.query(ForecastModel).count() == 1
-        # TEST KILLING PROCESS
-        new_model = ForecastModel.query.first()
-
-        # Ensure expected behavior immediately after lengthy job
-        executor.futures._state(new_model.creation_date)
-        assert not executor.futures.done(new_model.creation_date)
-        assert new_model.is_running
-
-        # Kill the processes / test ForecastModel.done_callback
-        # TODO: This shutdown isn't effective (?), the tests wait for time.sleep
-        #       to finish before moving on. But done_callback works.
-        #       Using wait=False would probably solve this problem, but then we
-        #       have to deal with multiple db sessions.
-        #       https://www.pythoncentral.io/understanding-python-sqlalchemy-session/
-        executor.shutdown()
-        assert executor.futures.done(new_model.creation_date)
-        assert not new_model.is_running
+        assert ForecastModel.query.count() == 1
+        # See test_subprocessing for more tests
 
     def test_get_chart(self):
         pass
@@ -107,7 +89,6 @@ class TestForecastView:
 class TestForecastListView:
     def test_post(self):
         pass
-        # TODO: Ensure that executor is stopped.
 
     def test_get(self):
         pass
