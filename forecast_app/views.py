@@ -28,14 +28,15 @@ class DataView(MethodView):
             getattr(self.view, self.view_key),
         )
         return [
-            {"timestamp": timestamp, self.view_key: temp} for timestamp, temp in query
+            {"timestamp": timestamp, self.view_key: value} for timestamp, value in query
         ]
 
     def get_chart(self):
         query = db.session.query(
             self.view.milliseconds, getattr(self.view, self.view_key)
         )
-        return [list(row) for row in query]
+        data = [list(row) for row in query]
+        return data if data and any([row[1] for row in query]) else None
 
     def post(self):
         filepath = upload_file("file")
