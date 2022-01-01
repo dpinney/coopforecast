@@ -10,4 +10,4 @@ services:
       - '.:/code'
     restart: always
     container_name: burt_forecaster
-    command: python cli.py deploy --config=dev
+    command: python3.8 cli.py deploy --config=dev

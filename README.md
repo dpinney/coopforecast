@@ -7,10 +7,19 @@ Electric Utility Load Forecaster Application
 ## Launch with docker
 
 ```sh
+docker image build -t requirements .
 docker compose up
 ```
 
 And view the application at http://localhost:5000/.
+
+**(M1 bug)** If you're building on M1, you'll need to build with a separate 
+Docker image.
+
+```sh
+docker image build -t requirements -f Dockerfile-arm64 .
+docker compose up
+```
 
 ## Launch without docker
 

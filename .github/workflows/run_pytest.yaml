@@ -14,5 +14,7 @@ jobs:
           python-version: 3.8
       - name: Install dependencies
         run: pip install -r requirements.lock
+      - name: Install tensorflow separately
+        run: pip install tensorflow==2.7.0
       - name: Run pytest
         run: pytest
