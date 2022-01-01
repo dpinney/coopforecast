@@ -58,7 +58,12 @@ class TestDataViews:
     def test_get_chart(self):
         pass
 
-    def test_get_table(self, db):
+    def test_get_table(self, db, app):
+        for cls in self.classes:
+            chart_array = cls().get_chart()
+            assert not chart_array
+
+        pytest.load_demo_db(app)
         for cls in self.classes:
             chart_array = cls().get_chart()
             assert type(chart_array) == list
