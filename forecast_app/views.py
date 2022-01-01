@@ -32,7 +32,9 @@ class DataView(MethodView):
         ]
 
     def get_chart(self):
-        query = db.session.query(self.view.milliseconds, self.view.tempc)
+        query = db.session.query(
+            self.view.milliseconds, getattr(self.view, self.view_key)
+        )
         return [list(row) for row in query]
 
     def post(self):
