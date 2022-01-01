@@ -27,7 +27,7 @@ class ProductionConfig(Config):
     SECRET_KEY = SECRET_KEY
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/prod.db"
     PORT = 443
-    WORKERS = 5
+    WORKERS = 4
     DEBUG = False
 
 
