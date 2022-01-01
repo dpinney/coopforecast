@@ -55,10 +55,10 @@ class TestDataViews:
         HistoricalLoadDataView,
     ]
 
-    def test_get_chart(self):
+    def test_get_table(self):
         pass
 
-    def test_get_table(self, db, app):
+    def test_get_chart(self, db, app):
         for cls in self.classes:
             chart_array = cls().get_chart()
             assert not chart_array
