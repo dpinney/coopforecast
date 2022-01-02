@@ -7,7 +7,7 @@ Electric Utility Load Forecaster Application
 ## Launch with docker
 
 ```sh
-docker image build -t requirements .
+docker image build .
 docker compose up
 ```
 
@@ -17,7 +17,7 @@ And view the application at http://localhost:5000/.
 Docker image.
 
 ```sh
-docker image build -t requirements -f Dockerfile-arm64 .
+docker image build -f Dockerfile-arm64 .
 docker compose up
 ```
 
