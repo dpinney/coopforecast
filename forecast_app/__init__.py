@@ -16,7 +16,7 @@ from forecast_app.views import (
     ForecastModelListView,
     ForecastModelDetailView,
 )
-from forecast_app.config import config_map
+from forecast_app.config import config_map, SECRET_VARS
 
 
 def create_app(config: str):
@@ -24,9 +24,10 @@ def create_app(config: str):
     app.config.from_object(config_map[config])
 
     # Ensure that secret_config is set when deploying production
-    if app.config["ADMIN_USER"] is None or app.config["ADMIN_PASSWORD"] is None:
+    if any([app.config[var] is None for var in SECRET_VARS]):
+        undefined = [var for var in SECRET_VARS if app.config[var] is None]
         raise ValueError(
-            "ADMIN_USER and ADMIN_PASSWORD must be defined in secret_config.py"
+            f"These secret vars must be defined in secret_config.py: {undefined}"
         )
 
     # Initialize database

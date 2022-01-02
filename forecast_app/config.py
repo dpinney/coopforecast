@@ -1,10 +1,22 @@
+# TODO: Figure a better way to handle these secrets
+
 try:
-    from forecast_app.secret_config import ADMIN_USER, ADMIN_PASSWORD, SECRET_KEY
+    from forecast_app.secret_config import (
+        ADMIN_USER,
+        ADMIN_PASSWORD,
+        SECRET_KEY,
+        DOMAIN,
+        EMAIL,
+    )
 except ImportError:
     # It's okay if this isn't defined for local development and testing
     ADMIN_USER = None
     ADMIN_PASSWORD = None
     SECRET_KEY = None
+    DOMAIN = None
+    EMAIL = None
+
+SECRET_VARS = ["ADMIN_USER", "ADMIN_PASSWORD", "SECRET_KEY", "DOMAIN", "EMAIL"]
 
 
 class abstract_attribute(object):
@@ -23,7 +35,9 @@ class Config(object):
     PORT = 5000
     WORKERS = 1
     DEBUG = True
-    CERT_DIR = abstract_attribute()
+    CERT_DIR = None
+    EMAIL = "test@email.com"
+    DOMAIN = "test.com"
 
 
 class ProductionConfig(Config):
@@ -36,7 +50,7 @@ class ProductionConfig(Config):
     WORKERS = 4
     DEBUG = False
     # TODO: set domain
-    CERT_DIR = f"/etc/letsencrypt/live/domain.name.tld"
+    CERT_DIR = f"/etc/letsencrypt/live/{DOMAIN}"
 
 
 class DevelopmentConfig(Config):
