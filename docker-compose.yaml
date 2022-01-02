@@ -4,10 +4,14 @@ services:
     build: .
     image: requirements
     ports:
+      # Ports as it would be exposed on production:
+      # - '5000:443'
+      # - '4000:80'
       - '5000:5000'
-      - '80:80'
+      - '4000:80'
     volumes:
-      - '.:/code'
+      - '.:/opt/burtForecaster'
     restart: always
     container_name: burt_forecaster
-    command: python3.8 cli.py deploy --config=dev
+    command: /usr/bin/python3 cli.py deploy --config=dev
+    # TODO: After setting up SSL certs, switch to config=prod and integrate /usr/bin/authbind --deep 
