@@ -7,6 +7,11 @@ except ImportError:
     SECRET_KEY = None
 
 
+class abstract_attribute(object):
+    def __get__(self, obj, type):
+        raise NotImplementedError("This attribute was not set in a subclass")
+
+
 class Config(object):
     TESTING = False
     ADMIN_USER = "admin"
@@ -18,6 +23,7 @@ class Config(object):
     PORT = 5000
     WORKERS = 1
     DEBUG = True
+    CERT_DIR = abstract_attribute()
 
 
 class ProductionConfig(Config):
@@ -29,6 +35,8 @@ class ProductionConfig(Config):
     PORT = 443
     WORKERS = 4
     DEBUG = False
+    # TODO: set domain
+    CERT_DIR = f"/etc/letsencrypt/live/domain.name.tld"
 
 
 class DevelopmentConfig(Config):

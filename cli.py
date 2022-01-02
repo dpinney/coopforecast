@@ -49,14 +49,14 @@ def deploy(
             f"--workers={config_class.WORKERS}",
             f"--bind=0.0.0.0:{config_class.PORT}",
             f"forecast_app:create_app('{config_class.NAME}')",
-            # "--certfile=omfDevCert.pem",  # SSL certificate file
-            # "--ca-certs=certChain.ca-bundle",  # CA certificates file
-            # "--keyfile=omfDevKey.pem",  # SSL key file
         ]
         if config == "dev":
             appProc.append("--reload")  # NOTE: This doesn't seem to be working.
         if config == "prod":
             appProc += [
+                f"--certfile={config_class.CERT_DIR}/cert.pem",
+                f"--ca-certs={config_class.CERT_DIR}/fullchain.pem",
+                f"--keyfile={config_class.CERT_DIR}/privkey.pem",
                 "--error-logfile=forecaster.error.log",
                 "--capture-output",
                 "--access-logfile=forecaster.access.log",
