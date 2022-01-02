@@ -1,0 +1,12 @@
+[Unit]
+Description=burt_forecaster
+After=syslog.target network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/burtForecaster
+ExecStart=/usr/bin/authbind --deep /usr/bin/python3 cli.py deploy --config=prod
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
