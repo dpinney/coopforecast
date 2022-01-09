@@ -48,7 +48,7 @@ class ProductionConfig(Config):
     WORKERS = 4
     DEBUG = False
     # TODO: set domain
-    CERT_DIR = f"/etc/letsencrypt/live/{super().DOMAIN}"
+    CERT_DIR = f"/etc/letsencrypt/live/{Config.DOMAIN}"
 
 
 class DevelopmentConfig(Config):
