@@ -40,6 +40,7 @@ class Config(object):
     CERT_DIR = None
     EMAIL = EMAIL
     DOMAIN = DOMAIN
+    GUNICORN_PATH = "gunicorn"
 
 
 class ProductionConfig(Config):
@@ -53,6 +54,7 @@ class ProductionConfig(Config):
     DEBUG = False
     # TODO: set domain
     CERT_DIR = f"/etc/letsencrypt/live/{DOMAIN}"
+    GUNICORN_PATH = "/home/ubuntu/.local/bin/gunicorn"
 
 
 class DevelopmentConfig(Config):

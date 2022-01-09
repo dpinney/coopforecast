@@ -42,10 +42,10 @@ def deploy(
         app = create_app(config)
         app.run(debug=config_class.DEBUG, host="0.0.0.0", port=config_class.PORT)
     else:
-        Popen(["gunicorn", "--bind=0.0.0.0:80", "redirect:reApp"])
+        Popen([config_class.GUNICORN_PATH, "--bind=0.0.0.0:80", "redirect:reApp"])
         # Start application:
         appProc = [
-            "gunicorn",
+            config_class.GUNICORN_PATH,
             f"--workers={config_class.WORKERS}",
             f"--bind=0.0.0.0:{config_class.PORT}",
             f"forecast_app:create_app('{config_class.NAME}')",
