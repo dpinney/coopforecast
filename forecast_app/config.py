@@ -16,6 +16,10 @@ except ImportError:
 
 SECRET_VARS = ["ADMIN_USER", "ADMIN_PASSWORD", "SECRET_KEY", "DOMAIN", "EMAIL"]
 
+# GLOBAL CONFIGS
+EMAIL = "kevinrmcelwee@gmail.com"
+DOMAIN = "coopforecast.com"
+
 
 class abstract_attribute(object):
     def __get__(self, obj, type):
@@ -34,8 +38,8 @@ class Config(object):
     WORKERS = 1
     DEBUG = True
     CERT_DIR = None
-    EMAIL = "kevinrmcelwee@gmail.com"
-    DOMAIN = "coopforecast.com"
+    EMAIL = EMAIL
+    DOMAIN = DOMAIN
 
 
 class ProductionConfig(Config):
@@ -48,7 +52,7 @@ class ProductionConfig(Config):
     WORKERS = 4
     DEBUG = False
     # TODO: set domain
-    CERT_DIR = f"/etc/letsencrypt/live/{Config.DOMAIN}"
+    CERT_DIR = f"/etc/letsencrypt/live/{DOMAIN}"
 
 
 class DevelopmentConfig(Config):
