@@ -5,7 +5,6 @@ try:
         ADMIN_USER,
         ADMIN_PASSWORD,
         SECRET_KEY,
-        DOMAIN,
         EMAIL,
     )
 except ImportError:
@@ -13,7 +12,6 @@ except ImportError:
     ADMIN_USER = None
     ADMIN_PASSWORD = None
     SECRET_KEY = None
-    DOMAIN = None
     EMAIL = None
 
 SECRET_VARS = ["ADMIN_USER", "ADMIN_PASSWORD", "SECRET_KEY", "DOMAIN", "EMAIL"]
@@ -36,8 +34,8 @@ class Config(object):
     WORKERS = 1
     DEBUG = True
     CERT_DIR = None
-    EMAIL = "test@email.com"
-    DOMAIN = "test.com"
+    EMAIL = "kevinrmcelwee@gmail.com"
+    DOMAIN = "coopforecast.com"
 
 
 class ProductionConfig(Config):
@@ -50,7 +48,7 @@ class ProductionConfig(Config):
     WORKERS = 4
     DEBUG = False
     # TODO: set domain
-    CERT_DIR = f"/etc/letsencrypt/live/{DOMAIN}"
+    CERT_DIR = f"/etc/letsencrypt/live/{super().DOMAIN}"
 
 
 class DevelopmentConfig(Config):
