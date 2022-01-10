@@ -69,7 +69,7 @@ class ForecastWeatherDataView(DataView):
     view_name = "forecast-weather-data"
     title = "Forecast Weather Data"
     gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
-    instructions = "/instructions#weather-forecast"
+    instructions = "/instructions#forecast-weather-data"
     hide_table = False
 
 
@@ -89,7 +89,7 @@ class HistoricalWeatherDataView(DataView):
     view_name = "historical-weather-data"
     title = "Historical Weather Data"
     gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
-    instructions = "/instructions#historical-data"
+    instructions = "/instructions#historical-weather-data"
     hide_table = True
 
 
