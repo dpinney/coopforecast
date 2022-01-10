@@ -42,6 +42,7 @@ class Config(object):
     DOMAIN = DOMAIN
     GUNICORN_PATH = "gunicorn"
     REDIRECT_PORT = 4000
+    EPOCHS = 1
 
 
 class ProductionConfig(Config):
@@ -57,6 +58,7 @@ class ProductionConfig(Config):
     CERT_DIR = f"/etc/letsencrypt/live/{DOMAIN}"
     GUNICORN_PATH = "/home/ubuntu/.local/bin/gunicorn"
     REDIRECT_PORT = 80
+    EPOCHS = 10
 
 
 class DevelopmentConfig(Config):

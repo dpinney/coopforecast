@@ -1,5 +1,4 @@
-from flask import Flask, current_app
-import atexit
+from flask import Flask
 from forecast_app.utils import (
     login_manager,
     ADMIN_USER,
@@ -53,7 +52,7 @@ def create_app(config: str):
             view_func=view.as_view(view.view_name),
         )
 
-    static_views = ["instructions", "model-settings", "user-settings"]
+    static_views = ["instructions", "user-settings", "model-settings"]
     for view in static_views:
         app.add_url_rule(f"/{view}", view_func=RenderTemplateView.view(view))
 

@@ -1,7 +1,7 @@
 import os
 import datetime
 import pandas as pd
-from sqlalchemy import Column, Integer, Float, String, DateTime, JSON, Boolean
+from sqlalchemy import Column, Integer, Float, String, DateTime, JSON
 from flask import current_app
 import signal
 
@@ -22,8 +22,7 @@ class ForecastModel(db.Model):
     output_dir = Column(String, nullable=False)
     accuracy = Column(JSON)
     loads = Column(JSON)
-    epochs = 1  # TODO: Config epochs
-    # TODO: Add elapsed time
+    epochs = Column(Integer, nullable=False)
 
     def __init__(self):
         # NOTE: Object is initialized from state of the database
@@ -46,12 +45,12 @@ class ForecastModel(db.Model):
         # NOTE: Cannot JSON serialize datetime objects
         # TODO: This should span start_date to end_date
         self.milliseconds = [row.milliseconds for row in ForecastData.query.all()]
+        self.epochs = current_app.config["EPOCHS"]
 
     @property
     def timestamps(self):
         raise Exception("Not implemented yet")
         # TODO: Given start and end date, reconstruct the timestamps
-        pass
 
     @property
     def status(self):
