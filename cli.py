@@ -42,7 +42,13 @@ def deploy(
         app = create_app(config)
         app.run(debug=config_class.DEBUG, host="0.0.0.0", port=config_class.PORT)
     else:
-        Popen([config_class.GUNICORN_PATH, "--bind=0.0.0.0:80", "redirect:reApp"])
+        Popen(
+            [
+                config_class.GUNICORN_PATH,
+                f"--bind=0.0.0.0:{config_class.REDIRECT_PORT}",
+                "redirect:reApp",
+            ]
+        )
         # Start application:
         appProc = [
             config_class.GUNICORN_PATH,
