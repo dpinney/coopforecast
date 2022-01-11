@@ -1,18 +1,14 @@
-# TODO: Figure a better way to handle these secrets
-
 try:
     from forecast_app.secret_config import (
         ADMIN_USER,
         ADMIN_PASSWORD,
         SECRET_KEY,
-        EMAIL,
     )
 except ImportError:
     # It's okay if this isn't defined for local development and testing
     ADMIN_USER = None
     ADMIN_PASSWORD = None
     SECRET_KEY = None
-    EMAIL = None
 
 SECRET_VARS = ["ADMIN_USER", "ADMIN_PASSWORD", "SECRET_KEY", "DOMAIN", "EMAIL"]
 
@@ -54,8 +50,8 @@ class ProductionConfig(Config):
     PORT = 443
     WORKERS = 4
     DEBUG = False
-    # TODO: set domain
     CERT_DIR = f"/etc/letsencrypt/live/{DOMAIN}"
+    # NOTE: systemctl wouldn't recognize gunicorn on the path
     GUNICORN_PATH = "/home/ubuntu/.local/bin/gunicorn"
     REDIRECT_PORT = 80
     EPOCHS = 10

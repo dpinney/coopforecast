@@ -14,4 +14,3 @@ services:
     restart: always
     container_name: coopforecast
     command: /usr/bin/python3 cli.py deploy --config=dev
-    # TODO: After setting up SSL certs, switch to config=prod and integrate /usr/bin/authbind --deep 
