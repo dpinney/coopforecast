@@ -26,7 +26,7 @@ The model will predict the 24 hours following the final hour that is provided.
 
 ## Historical Weather Data
 
-In order to ensure that the weather data can be properly collected, please first import load data for new dates before importing weather data. Weather data can be upload as a CSV or given a zipcode, a user can automatically collect temperature data. Similar to load data, ensuring the quality of weather data is very important, especially if it was collected automatically. Fill any zeros or empty values with best-guesses. A single approximate data point will not hurt the model, but a collection of absolutely wrong values could seriously hurt accuracy.
+In order to ensure that the weather data can be properly collected, please first import load data for new dates before importing weather data. Weather data can be upload as a CSV. Similar to load data, ensuring the quality of weather data is very important, especially if it was collected automatically. Fill any zeros or empty values with best-guesses. A single approximate data point will not hurt the model, but a collection of absolutely wrong values could seriously hurt accuracy.
 
 Two columns are expected: `timestamp` and `tempc`. The model and API expect users to input Celcius. Please use [ISO_8601](https://en.wikipedia.org/wiki/ISO_8601) formatting (`YYYY-MM-DD HH:00`). New timestamps will be added and timestamps with existing values will be overwritten.
 
