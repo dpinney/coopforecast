@@ -10,16 +10,22 @@
   <hr class="sidebar-divider my-0">
 
   <!-- Nav Item - Dashboard -->
-  <li class="nav-item">
+  {% with page='latest-forecast' %}
+  <li class="nav-item {% include 'partials/is-active.html' %}">
     <a class="nav-link" href="{{ url_for( 'latest-forecast' ) }}">
       <i class="fas fa-fw fa-binoculars"></i>
       <span>Forecast</span>
     </a>
+  </li>
+  {% endwith %}
+  {% with page='forecast-model-list' %}
+  <li class="nav-item {% include 'partials/is-active.html' %}">
     <a class="nav-link" href="{{ url_for( 'forecast-model-list' ) }}">
       <i class="fas fa-fw fa-list"></i>
       <span>All Models</span>
     </a>
   </li>
+  {% endwith %}
 
   <!-- Divider -->
   <hr class="sidebar-divider">
@@ -27,14 +33,17 @@
   <div class="sidebar-heading">
     Upload & Review Data
   </div>
-  <li class="nav-item">
+  {% with page='historical-load-data' %}
+  <li class="nav-item {% include 'partials/is-active.html' %}">
     <a class="nav-link" href="{{ url_for( 'historical-load-data' ) }}">
       <i class="fas fa-fw fa-bolt"></i>
       <span>Load Data</span></a>
   </li>
+  {% endwith %}
 
   <!-- Nav Item - Pages Collapse Menu -->
-  <li class="nav-item">
+  {% with parent_page='weather' %}
+  <li class="nav-item {% include 'partials/is-active.html' %}">
     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
       aria-controls="collapseTwo">
       <i class="fas fa-fw fa-cloud"></i>
@@ -48,21 +57,27 @@
       </div>
     </div>
   </li>
+  {% endwith %}
 
 
   <!-- Divider -->
   <hr class="sidebar-divider">
 
-  <li class="nav-item">
+  {% with page='model-settings' %}
+  <li class="nav-item {% include 'partials/is-active.html' %}">
     <a class="nav-link" href="{{ url_for( 'model-settings' ) }}">
       <i class="fas fa-fw fa-cogs"></i>
       <span>Model Settings</span></a>
   </li>
-  <li class="nav-item">
+  {% endwith %}
+
+  {% with page='instructions' %}
+  <li class="nav-item {% include 'partials/is-active.html' %}">
     <a class="nav-link" href="{{ url_for( 'instructions' ) }}">
       <i class="fas fa-fw fa-book"></i>
       <span>Instructions</span></a>
   </li>
+  {% endwith %}
 
   <!-- Sidebar Toggler (Sidebar) -->
   <div class="text-center d-none d-md-inline">

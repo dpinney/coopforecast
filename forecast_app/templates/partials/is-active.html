@@ -1,0 +1,7 @@
+{% if page %}
+{% if url_for(request.endpoint) == url_for(page) %}active{% endif %}
+{% endif %}
+
+{% if parent_page %}
+{% if parent_page in url_for(request.endpoint) %}active{% endif %}
+{% endif %}
