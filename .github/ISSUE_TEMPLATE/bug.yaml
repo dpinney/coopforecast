@@ -1,8 +1,6 @@
 # copying blindly from https://beyondco.de/blog/github-issue-forms
 name: Bug
 description: File a bug report
-assignees:
-  - kmcelwee
 labels:
   - bug
 body:
