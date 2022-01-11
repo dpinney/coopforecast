@@ -1,4 +1,4 @@
-(function ($) {
+$(document).ready(function () {
     "use strict"; // Start of use strict
 
     // Toggle the side navigation
@@ -53,4 +53,4 @@
         e.preventDefault();
     });
 
-})(jQuery); // End of use strict
+}); // End of use strict
