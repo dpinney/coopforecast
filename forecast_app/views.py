@@ -247,7 +247,7 @@ class ForecastModelDetailView(MethodView):
     # - make model downloadable
 
     def get_chart(self, forecast):
-        if forecast:
+        if forecast and forecast.loads:
             return [
                 [timestamp, load]
                 for load, timestamp in zip(forecast.loads, forecast.milliseconds)
