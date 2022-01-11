@@ -1,7 +1,8 @@
-{% if page %}
+{# NOTE: forecast-model-detail can't be built with url_for #}
+{% if page and request.endpoint != 'forecast-model-detail' %}
 {% if url_for(request.endpoint) == url_for(page) %}active{% endif %}
 {% endif %}
 
-{% if parent_page %}
+{% if parent_page and request.endpoint != 'forecast-model-detail' %}
 {% if parent_page in url_for(request.endpoint) %}active{% endif %}
 {% endif %}
