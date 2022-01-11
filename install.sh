@@ -1,7 +1,7 @@
 #!/bin/bash
 # TODO: Migrate to cli.py?
 
-export REPO="/opt/burtForecaster"
+export REPO="/opt/coopforecast"
 
 export EMAIL=$(python3 -c "from forecast_app.config import EMAIL; print(EMAIL)")
 export DOMAIN=$(python3 -c "from forecast_app.config import DOMAIN; print(DOMAIN)")
@@ -11,7 +11,7 @@ pip3 install tensorflow==2.7.0
 pip3 install -r $REPO/requirements.lock
 export PATH=/home/ubuntu/.local/bin:$PATH
 
-sudo ln -s $REPO/systemd/burt_forecaster.service /etc/systemd/system/burt_forecaster.service
+sudo ln -s $REPO/systemd/coopforecast.service /etc/systemd/system/coopforecast.service
 sudo ln -s $REPO/systemd/cert.service /etc/systemd/system/cert.service
 sudo ln -s $REPO/systemd/cert.timer /etc/systemd/system/cert.timer
 
@@ -36,7 +36,7 @@ sudo chmod 710 /etc/authbind/byport/443
 sudo mkdir -p $REPO/.well-known/acme-challenge
 
 # enable
-sudo systemctl enable /etc/systemd/system/burt_forecaster.service
-sudo systemctl start burt_forecaster
+sudo systemctl enable /etc/systemd/system/coopforecast.service
+sudo systemctl start coopforecast
 sudo systemctl enable /etc/systemd/system/cert.service
 sudo systemctl enable /etc/systemd/system/cert.timer

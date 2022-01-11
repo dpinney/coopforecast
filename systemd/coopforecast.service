@@ -1,10 +1,10 @@
 [Unit]
-Description=burt_forecaster
+Description=coopforecast
 After=syslog.target network.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/opt/burtForecaster
+WorkingDirectory=/opt/coopforecast
 ExecStart=/usr/bin/authbind --deep /usr/bin/python3 cli.py deploy --config=prod
 Restart=on-failure
 

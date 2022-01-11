@@ -44,4 +44,4 @@ You can create and terminate forecasts at the [All Models](/all-models) page. Th
 
 ## Read More
 
-Interested in the details of how this model works? Consider inspecting the [source code](https://www.github.com/dpinney/burtForecaster) or reading [more research.](https://www.kmcelwee.com/load-forecasting)
+Interested in the details of how this model works? Consider inspecting the [source code](https://www.github.com/dpinney/coopforecast) or reading [more research.](https://www.kmcelwee.com/load-forecasting)

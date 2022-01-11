@@ -1,5 +1,5 @@
 FROM --platform=linux/arm64/v8 ubuntu:20.04
-WORKDIR /opt/burtForecaster
+WORKDIR /opt/coopforecast
 ENV PYTHONUNBUFFERED 1
 
 # Install base utilities

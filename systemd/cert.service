@@ -2,7 +2,7 @@
 Description=Renews certificates
 
 [Service]
-ExecStart=/usr/bin/sudo /usr/bin/certbot --webroot --webroot-path=/opt/burtForecaster/forecast_app renew --force-renewal
+ExecStart=/usr/bin/sudo /usr/bin/certbot --webroot --webroot-path=/opt/coopforecast/forecast_app renew --force-renewal
 
 [Install]
 WantedBy=timers.target
