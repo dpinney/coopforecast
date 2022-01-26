@@ -14,6 +14,7 @@ from forecast_app.utils import ADMIN_USER, upload_file
 
 class DataView(MethodView):
     decorators = [flask_login.login_required]
+    # TODO: This should be named "model" not "view"
     view = None
     view_key = None
     view_name = None
@@ -265,7 +266,7 @@ class ForecastModelDetailView(MethodView):
     def get(self, slug, messages=None):
         if not messages:
             messages = []
-        # breakpoint()
+
         forecast_model = ForecastModel.query.filter_by(slug=slug).first()
 
         return render_template(
