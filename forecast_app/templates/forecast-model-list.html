@@ -15,49 +15,59 @@
   </div>
   <div class="card-body">
     <div>
-      <p>Historical load data is prepared from DATE to DATE.</p>
-      <p>Historical weather data is prepared from DATE to DATE.</p>
-      <p>Forecast weather data is prepared from DATE to DATE.</p>
+      {% if hd_is_prepared %}
+      <p>Historical data is prepared from <b class="text-primary">{{ hd_start_date.strftime('%b %d, %Y %H:%M')
+          }}</b> to <b class="text-primary">{{ hd_end_date.strftime('%b %d, %Y %H:%M') }}</b>.</p>
+      {% else %}
+      <p>Historical data is not prepared. Check that data is uploaded to both <a
+          href="{{ url_for('historical-load-data') }}">Load
+          Data</a>
+        and <a href="{{ url_for('historical-weather-data') }}">Historical Weather Data</a>.</p>
+      {% endif %}
+
+      {% if fd_is_prepared %}
+      <p>Forecast data is prepared from <b class="text-primary">{{ fd_start_date.strftime('%b %d, %Y %H:%M') }}</b>
+        to <b class="text-primary">{{ fd_end_date.strftime('%b %d, %Y %H:%M') }}</b>.</p>
+      {% else %}
+      <p>Forecast data is not prepared. Check that data is uploaded to <a
+          href="{{ url_for('forecast-weather-data')}}">Forecast Weather Data</a>.</p>
+      {% endif %}
+
+      {% if model_is_prepared %}
       <hr>
-      <p>A new model would be generated for DATE to DATE</p>
+      <p>A new model would be generated from <b class="text-primary">{{
+          model_start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b class="text-primary">
+          {{ model_end_date.strftime('%b %d, %Y %H:%M') }}</b>
+      </p>
+      {% else %}
+      <p>
+        Insufficient data has been provided to launch a new model. Please ensure that the proper load and temperature
+        data has been uploaded.
+      </p>
+      {% endif %}
     </div>
 
     {% if model_is_prepared %}
     <form action="{{ url_for('latest-forecast') }}" method="post" id="runModel"></form>
-    <div>
-      <a onclick="document.forms['runModel'].submit(); return false;" class="btn btn-primary btn-icon-split">
-        <span class="icon text-white-600">
-          <i class="fas fa-arrow-right"></i>
-        </span>
-        <span class="text">Generate new model</span>
-      </a>
-      <span>
-        <p>
-          Generate a new model from <b class="text-primary">{{
-            model_start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b class="text-primary">
-            {{ model_end_date.strftime('%b %d, %Y %H:%M') }}</b>
-        </p>
-      </span>
+    <div style="display: flex; justify-content: space-between;">
+      <div>
+        <a onclick="document.forms['runModel'].submit(); return false;" class="btn btn-primary btn-icon-split">
+          <span class="icon text-white-600">
+            <i class="fas fa-arrow-right"></i>
+          </span>
+          <span class="text">Generate new model</span>
+        </a>
+      </div>
+      <form action="" method="post" id="cancelAllModels"></form>
+      <div>
+        <a onclick="document.forms['cancelAllModels'].submit(); return false;" class="btn btn-danger btn-icon-split">
+          <span class="icon text-white-600">
+            <i class="fas fa-arrow-right"></i>
+          </span>
+          <span class="text">Cancel running models</span>
+        </a>
+      </div>
     </div>
-    <form action="" method="post" id="cancelAllModels"></form>
-    <div>
-      <a onclick="document.forms['cancelAllModels'].submit(); return false;" class="btn btn-danger btn-icon-split">
-        <span class="icon text-white-600">
-          <i class="fas fa-arrow-right"></i>
-        </span>
-        <span class="text">Cancel running models</span>
-      </a>
-    </div>
-    <p>
-      Terminate running processes.
-    </p>
-  </div>
-  {% else %}
-  <div>
-    <p>
-      Insufficient data has been provided to launch a new model. Please ensure that the proper load and temperature
-      data has been uploaded.
-    </p>
   </div>
   {% endif %}
 </div>

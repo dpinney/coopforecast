@@ -227,6 +227,8 @@ class ForecastModelListView(MethodView):
             model_start_date,
             model_end_date,
         ) = ForecastModel.is_prepared()
+        hd_is_prepared, hd_start_date, hd_end_date = HistoricalData.is_prepared()
+        fd_is_prepared, fd_start_date, fd_end_date = ForecastData.is_prepared()
 
         return render_template(
             "forecast-model-list.html",
@@ -234,6 +236,12 @@ class ForecastModelListView(MethodView):
             model_is_prepared=model_is_prepared,
             model_start_date=model_start_date,
             model_end_date=model_end_date,
+            hd_is_prepared=hd_is_prepared,
+            hd_start_date=hd_start_date,
+            hd_end_date=hd_end_date,
+            fd_is_prepared=fd_is_prepared,
+            fd_start_date=fd_start_date,
+            fd_end_date=fd_end_date,
             messages=messages,
         )
 
