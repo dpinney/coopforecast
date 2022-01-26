@@ -13,7 +13,7 @@ except ImportError:
 SECRET_VARS = ["ADMIN_USER", "ADMIN_PASSWORD", "SECRET_KEY", "DOMAIN", "EMAIL"]
 
 # GLOBAL CONFIGS
-EMAIL = "kevinrmcelwee@gmail.com"
+EMAIL = "admin@coopforecast.com"
 DOMAIN = "coopforecast.com"
 
 
