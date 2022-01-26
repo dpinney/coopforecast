@@ -25,45 +25,31 @@ def upload_demo_data(models=True):
 
     # Load historical data
     historical_data = demo_data / "demo-ncent-historical.csv"
-    df = pd.read_csv(historical_data, parse_dates=["timestamp"])
-    for _, row in df.iterrows():
-        new_row = HistoricalData(
-            timestamp=row["timestamp"],
-            load=row["load"],
-            tempc=row["tempc"],
-        )
-        db.session.add(new_row)
-    db.session.commit()
+    HistoricalData.load_data(historical_data)
     print("Historical data uploaded.")
 
     # Load forecast data
     forecast_data = demo_data / "demo-ncent-forecast.csv"
-    df = pd.read_csv(forecast_data, parse_dates=["timestamp"])
-    for _, row in df.iterrows():
-        new_row = ForecastData(
-            timestamp=row["timestamp"],
-            tempc=row["tempc"],
-        )
-        db.session.add(new_row)
-    db.session.commit()
+    ForecastData.load_data(forecast_data, columns=[current_app.config["TEMP_COL"]])
     print("Forecast data uploaded.")
 
     if models:
+        mock_load = pd.read_csv(forecast_data)[current_app.config["LOAD_COL"]].tolist()
         mock_model = ForecastModel()
-        mock_model.loads = df["load"].tolist()
+        mock_model.loads = mock_load
         mock_model.accuracy = {"test": 96.5, "train": 98.5}
         mock_model.store_process_id("COMPLETED")
         mock_model.save()
         print("First forecast model uploaded.")
 
         mock_model = ForecastModel()
-        mock_model.loads = df["load"].tolist()
+        mock_model.loads = mock_load
         mock_model.accuracy = None
         mock_model.save()
         print("Second forecast model uploaded.")
 
         mock_model = ForecastModel()
-        mock_model.loads = df["load"].tolist()
+        mock_model.loads = mock_load
         mock_model.accuracy = None
         mock_model.save()
         print("Third forecast model uploaded.")

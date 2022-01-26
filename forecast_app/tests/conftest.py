@@ -29,7 +29,6 @@ def db_path(app):
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_and_cleanup(request):
-    # breakpoint()
     os.mkdir(TestingConfig.OUTPUT_DIR)
     os.mkdir(TestingConfig.UPLOAD_DIR)
     yield None

@@ -267,25 +267,39 @@ def _load_data(cls, filepath, columns=None):
     #  Use columns var to ensure that only intended data is loaded?
     # TODO: validation should happen here
     messages = []
+    LOAD_COL = current_app.config["LOAD_COL"]
+    TEMP_COL = current_app.config["TEMP_COL"]
+    HOUR_COL = current_app.config["HOUR_COL"]
+    DATE_COL = current_app.config["DATE_COL"]
+
     try:
-        df = pd.read_csv(filepath, parse_dates=["timestamp"])
+        df = pd.read_csv(filepath, parse_dates=[DATE_COL])
+        df["timestamp"] = df.apply(
+            lambda row: datetime.datetime(
+                row[DATE_COL].year,
+                row[DATE_COL].month,
+                row[DATE_COL].day,
+                row[HOUR_COL],
+            ),
+            axis=1,
+        )
 
         for column in df.columns:
-            if column not in ["timestamp", "tempc", "load"]:
+            if column not in ["timestamp", LOAD_COL, TEMP_COL, HOUR_COL, DATE_COL]:
                 messages.append(
                     {"level": "warning", "text": f"Column {column} not recognized."}
                 )
 
         if columns:
-            df = df[columns]
+            df = df[set(columns + ["timestamp"])]
 
         # If uploading data for the first time, don't perform tens of thousands of queries
         if cls.query.count() == 0:
             for _, row in df.iterrows():
                 instance = cls(
                     timestamp=row["timestamp"],
-                    load=row.get("load"),
-                    tempc=row.get("tempc"),
+                    load=row.get(LOAD_COL),
+                    tempc=row.get(TEMP_COL),
                 )
                 db.session.add(instance)
             db.session.commit()
@@ -293,13 +307,13 @@ def _load_data(cls, filepath, columns=None):
             for _, row in df.iterrows():
                 instance = cls.query.get(row["timestamp"])
                 if instance:
-                    instance.load = row.get("load", instance.load)
-                    instance.tempc = row.get("tempc", instance.tempc)
+                    instance.load = row.get(LOAD_COL, instance.load)
+                    instance.tempc = row.get(TEMP_COL, instance.tempc)
                 else:
                     instance = cls(
                         timestamp=row["timestamp"],
-                        load=row.get("load"),
-                        tempc=row.get("tempc"),
+                        load=row.get(LOAD_COL),
+                        tempc=row.get(TEMP_COL),
                     )
                 db.session.add(instance)
             db.session.commit()

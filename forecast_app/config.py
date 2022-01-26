@@ -39,6 +39,10 @@ class Config(object):
     GUNICORN_PATH = "gunicorn"
     REDIRECT_PORT = 4000
     EPOCHS = 1
+    LOAD_COL = "KW"
+    TEMP_COL = "TEMPC"
+    HOUR_COL = "HOUR"
+    DATE_COL = "DATE"
 
 
 class ProductionConfig(Config):
