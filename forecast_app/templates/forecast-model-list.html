@@ -14,7 +14,15 @@
     <h6 class="m-0 font-weight-bold text-primary">Manage Models</h6>
   </div>
   <div class="card-body">
-    {% if is_prepared %}
+    <div>
+      <p>Historical load data is prepared from DATE to DATE.</p>
+      <p>Historical weather data is prepared from DATE to DATE.</p>
+      <p>Forecast weather data is prepared from DATE to DATE.</p>
+      <hr>
+      <p>A new model would be generated for DATE to DATE</p>
+    </div>
+
+    {% if model_is_prepared %}
     <form action="{{ url_for('latest-forecast') }}" method="post" id="runModel"></form>
     <div>
       <a onclick="document.forms['runModel'].submit(); return false;" class="btn btn-primary btn-icon-split">
@@ -26,8 +34,8 @@
       <span>
         <p>
           Generate a new model from <b class="text-primary">{{
-            start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b class="text-primary">
-            {{ end_date.strftime('%b %d, %Y %H:%M') }}</b>
+            model_start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b class="text-primary">
+            {{ model_end_date.strftime('%b %d, %Y %H:%M') }}</b>
         </p>
       </span>
     </div>
@@ -48,8 +56,7 @@
   <div>
     <p>
       Insufficient data has been provided to launch a new model. Please ensure that the proper load and temperature
-      data
-      has been uploaded.
+      data has been uploaded.
     </p>
   </div>
   {% endif %}

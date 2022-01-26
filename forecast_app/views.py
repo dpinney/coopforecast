@@ -149,11 +149,6 @@ class ForecastView(MethodView):
 
         is_prepared, start_date, end_date = ForecastModel.is_prepared()
 
-        # FORCE is_prepared
-        # is_prepared = True
-        # start_date = datetime.datetime(2020, 1, 1, 1)
-        # end_date = datetime.datetime(2020, 1, 1, 23)
-
         return render_template(
             "latest-forecast.html",
             name="latest-forecast",
@@ -227,14 +222,18 @@ class ForecastModelListView(MethodView):
         # messages = request.args.get("messages", [])
         messages = [] if messages is None else messages
         models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()
-        is_prepared, start_date, end_date = ForecastModel.is_prepared()
+        (
+            model_is_prepared,
+            model_start_date,
+            model_end_date,
+        ) = ForecastModel.is_prepared()
 
         return render_template(
             "forecast-model-list.html",
             models=models,
-            is_prepared=is_prepared,
-            start_date=start_date,
-            end_date=end_date,
+            model_is_prepared=model_is_prepared,
+            model_start_date=model_start_date,
+            model_end_date=model_end_date,
             messages=messages,
         )
 
