@@ -28,7 +28,7 @@ class TestAsosRequest:
         assert not df.empty
         assert df["station"].iloc[0] == app.config["ASOS_STATION"]
 
-    def mocked_requests_get(*args, **kwargs):
+    def mocked_asos_response(*args, **kwargs):
         # https://stackoverflow.com/questions/15753390/how-can-i-mock-requests-and-the-response
         class MockResponse:
             def __init__(self, mock_path, status_code):
@@ -39,7 +39,7 @@ class TestAsosRequest:
         mock_path = pytest.FIXTURE_DIR / "asos-response.csv"
         return MockResponse(mock_path, 200)
 
-    @patch("requests.get", side_effect=mocked_requests_get)
+    @patch("requests.get", side_effect=mocked_asos_response)
     def test_send_request(mock_get, app):
         # Mock request to https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?station=ALO&data=tmpc&year1=2022&month1=1&day1=1&year2=2022&month2=1&day2=14&tz=America%2FNew_York&format=onlycomma&latlon=no&elev=no&missing=M&trace=T&direct=no&report_type=1&report_type=2
         asos_request = AsosRequest(
@@ -52,21 +52,25 @@ class TestAsosRequest:
         assert request.status_code == 200
         assert request.text.startswith("station,valid,tmpc")
 
-    @patch("requests.get", side_effect=mocked_requests_get)
-    def test_create_df(self, mock_get, app):
+    @patch("requests.get", side_effect=mocked_asos_response)
+    def test_create_df(self, mock_get):
         asos_request = AsosRequest(
             start_date=date(2022, 1, 1), end_date=date(2022, 1, 14)
         )
 
-        request = asos_request.send_request()
+        asos_request.send_request()
         df = asos_request.create_df()
-        # breakpoint()
         assert not df.empty
-        assert df.index.name == "valid"
-        assert df["tmpc"].dtype == "float64"
+        assert df["tempc"].dtype == "float64"
         assert df.shape[0] == 361
+        assert df["timestamp"].dtype == "datetime64[ns]"
+        assert df["station"].iloc[0] == "ALO"
+        assert str(df["timestamp"].iloc[0]) == "2022-01-01 01:00:00"
+        assert df["tempc"].iloc[0] == -10.61
+        # TODO: drop duplicates
+        # assert df.timestamp.is_unique
 
-    @patch("requests.get", side_effect=mocked_requests_get)
+    @patch("requests.get", side_effect=mocked_asos_response)
     def test_write_response(self, mock_get, app):
         asos_request = AsosRequest(
             start_date=date(2022, 1, 1), end_date=date(2022, 1, 14)
@@ -77,6 +81,3 @@ class TestAsosRequest:
         asos_request.write_response(tmp_output_path)
         assert os.path.exists(tmp_output_path)
         assert filecmp.cmp(mock_path, tmp_output_path)
-
-    def test_round_hours(self):
-        pass

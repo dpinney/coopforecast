@@ -58,7 +58,7 @@ class AsosRequest:
 
     def write_response(self, filepath):
         self.filepath = filepath
-        if getattr(self, "request", None) is None:
+        if hasattr(self, "request") is None:
             raise Exception("No request has been sent yet.")
         if not self.request.text:
             raise Exception(f"No data found. {self.request.url}")
@@ -66,20 +66,16 @@ class AsosRequest:
             f.write(self.request.text)
 
     def create_df(self):
-        if getattr(self, "request", None) is None:
+        if hasattr(self, "request") is None:
             raise Exception("No request has been sent yet.")
-        df = pd.read_csv(
-            StringIO(self.request.text), parse_dates=["valid"], index_col="valid"
-        )
+        df = pd.read_csv(StringIO(self.request.text), parse_dates=["valid"])
+        df["timestamp"] = df.valid.dt.round("h")  # Round to nearest hour
+        # df = df.groupby("timestamp").mean()
+        # TODO: drop duplicates
         df = df[df["tmpc"] != self.missing_value]
-        df["tmpc"] = df["tmpc"].astype(float)
+        df["tempc"] = df["tmpc"].astype(float)  # rename column
+        df = df[["timestamp", "tempc", "station"]]
         return df
-
-    @classmethod
-    def round_hours(df):
-        """Given a dataframe of temperature data from asos, collect times to the nearest hour."""
-        # TODO: Set valid as index, interpolate and resample to nearest hour
-        return df.groupby(pd.Grouper(freq="H"))
 
 
 # def int_climate():
