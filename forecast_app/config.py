@@ -45,7 +45,8 @@ class Config(object):
     DATE_COL = "DATE"
     ASOS_STATION = "TQE"
     TIMEZONE = "America/Chicago"
-    # Get weather codes here: https://mesonet.agron.iastate.edu/request/download.phtml
+    # Get weather codes and stations here: https://mesonet.agron.iastate.edu/request/download.phtml
+    # Note for USA stations (beginning with a K) you must NOT include the 'K'
     #  WARNING: Ensure that both the station and timezone are updated. There's no indication
     #    otherwise when the timezone is incorrect
 
