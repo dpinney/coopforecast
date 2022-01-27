@@ -3,7 +3,6 @@ A collection of utilities to help collect and parse historical and forecast weat
 """
 
 import requests
-from datetime import date
 from io import StringIO
 import pandas as pd
 
