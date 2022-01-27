@@ -1,6 +1,8 @@
 from datetime import date
 from unittest.mock import patch
 import pytest
+import os
+import filecmp
 
 from forecast_app import create_app
 from forecast_app.weather import AsosRequest
@@ -53,10 +55,7 @@ class TestAsosRequest:
     @patch("requests.get", side_effect=mocked_requests_get)
     def test_create_df(self, mock_get, app):
         asos_request = AsosRequest(
-            start_date=date(2022, 1, 1),
-            end_date=date(2022, 1, 14),
-            tz=app.config["TIMEZONE"],
-            station=app.config["ASOS_STATION"],
+            start_date=date(2022, 1, 1), end_date=date(2022, 1, 14)
         )
 
         request = asos_request.send_request()
@@ -67,8 +66,17 @@ class TestAsosRequest:
         assert df["tmpc"].dtype == "float64"
         assert df.shape[0] == 361
 
-    def test_write_response(self):
-        pass
+    @patch("requests.get", side_effect=mocked_requests_get)
+    def test_write_response(self, mock_get, app):
+        asos_request = AsosRequest(
+            start_date=date(2022, 1, 1), end_date=date(2022, 1, 14)
+        )
+        request = asos_request.send_request()
+        tmp_output_path = app.config["OUTPUT_DIR"] + "/asos-response.csv"
+        mock_path = pytest.FIXTURE_DIR / "asos-response.csv"
+        asos_request.write_response(tmp_output_path)
+        assert os.path.exists(tmp_output_path)
+        assert filecmp.cmp(mock_path, tmp_output_path)
 
     def test_round_hours(self):
         pass

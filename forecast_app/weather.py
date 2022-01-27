@@ -58,7 +58,7 @@ class AsosRequest:
 
     def write_response(self, filepath):
         self.filepath = filepath
-        if not self.request:
+        if getattr(self, "request", None) is None:
             raise Exception("No request has been sent yet.")
         if not self.request.text:
             raise Exception(f"No data found. {self.request.url}")
@@ -66,7 +66,7 @@ class AsosRequest:
             f.write(self.request.text)
 
     def create_df(self):
-        if not self.request:
+        if getattr(self, "request", None) is None:
             raise Exception("No request has been sent yet.")
         df = pd.read_csv(
             StringIO(self.request.text), parse_dates=["valid"], index_col="valid"
