@@ -3,6 +3,7 @@ from subprocess import Popen
 from forecast_app import create_app
 from forecast_app.commands import init_db, upload_demo_data
 from forecast_app.config import config_map
+from forecast_app.tests.test_weather import test_asos_api
 
 typer_app = typer.Typer()
 
@@ -69,6 +70,12 @@ def deploy(
                 "--preload",  # NOTE: This is incompatible with --reload
             ]
         Popen(appProc).wait()
+
+
+@typer_app.command()
+def test_asos():
+    """Query the ASOS API without a mock to ensure that it works as intended."""
+    test_asos_api()
 
 
 if __name__ == "__main__":

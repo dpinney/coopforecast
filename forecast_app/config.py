@@ -43,6 +43,11 @@ class Config(object):
     TEMP_COL = "TEMPC"
     HOUR_COL = "HOUR"
     DATE_COL = "DATE"
+    ASOS_STATION = "TQE"
+    TIMEZONE = "America/Chicago"
+    # Get weather codes here: https://mesonet.agron.iastate.edu/request/download.phtml
+    #  WARNING: Ensure that both the station and timezone are updated. There's no indication
+    #    otherwise when the timezone is incorrect
 
 
 class ProductionConfig(Config):

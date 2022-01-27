@@ -7,14 +7,10 @@ from datetime import date
 from io import StringIO
 import pandas as pd
 
-# Given a zipcode, return the closest ASOS station and the timezone
-def get_asos_station(zipcode: str):
-    return "ALO", "Etc/UTC"
-
-
 # Given two datetimes and a zipcode, return all temperature data between them.
-def pull_asos(start_date: date, end_date: date, zipcode: str) -> list:
-    """Pulls hourly data for a specified year and ASOS station.
+def pull_asos(start_date=None, end_date=None, station=None, tz=None):
+    """Pulls hourly data for a specified year and ASOS station. Drawn heavily from
+    https://github.com/dpinney/omf
     * ASOS is the Automated Surface Observing System, a network of about 900
             weater stations, they collect data at hourly intervals, they're run by
             NWS, FAA, and DOD, and there is data going back to 1901 in some sites.
@@ -22,10 +18,9 @@ def pull_asos(start_date: date, end_date: date, zipcode: str) -> list:
     * For ASOS station code see https://www.faa.gov/air_traffic/weather/asos/
     * For datatypes see bottom of https://mesonet.agron.iastate.edu/request/download.phtml
     * Note for USA stations (beginning with a K) you must NOT include the 'K'
+    * ASOS User's Guide: https://www.weather.gov/media/asos/aum-toc.pdf
     """
     MISSING_VALUE = "M"
-
-    station, tz = get_asos_station(zipcode)
 
     base_url = "https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py"
     params = {
