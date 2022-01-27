@@ -34,7 +34,8 @@ def setup_and_cleanup(request):
     yield None
     shutil.rmtree(TestingConfig.OUTPUT_DIR)
     shutil.rmtree(TestingConfig.UPLOAD_DIR)
-    os.unlink(BACKUP_DB_PATH)
+    if os.path.exists(BACKUP_DB_PATH):
+        os.remove(BACKUP_DB_PATH)
 
 
 @pytest.fixture
