@@ -5,6 +5,7 @@ A collection of utilities to help collect and parse historical and forecast weat
 import requests
 from io import StringIO
 import pandas as pd
+import json
 
 
 class AsosRequest:
@@ -77,4 +78,56 @@ class AsosRequest:
         return pd.DataFrame(series)
 
 
-# Given a start datetime and a zipcode, collect the next 24 hours of forecasted temperature data.
+class NwsForecastRequest:
+    # TODO: Can this be an abstract class?
+    """Pulls hourly data from the National Weather Service
+    Docs: https://weather-gov.github.io/api/
+    Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly
+    * Timezone data is encoded in the response as UTC with offset. We strip it.
+    * The temperature is in Fahrenheit, we convert to Celsius.
+    * 6.5 days of forecast data is provided.
+    """
+
+    base_url = "https://api.weather.gov/gridpoints/"
+
+    def __init__(self, nws_code=""):
+        self.nws_code = nws_code
+
+    @classmethod
+    def fahrenheit_to_celcius(cls, fahrenheit):
+        # TODO: We should be using fahrenheit instead of celcius, but it's baked into
+        #  a lot of the structure. May not be worth switching back for a while.
+        return round((fahrenheit - 32) * 5 / 9, 2)
+
+    def send_request(self):
+        self.request = requests.get(self.base_url + self.nws_code + "/forecast/hourly")
+        if self.request.status_code == 404:
+            raise Exception(f"Dataset URL does not exist. {self.request.url}")
+        return self.request
+
+    def write_response(self, filepath):
+        self.filepath = filepath
+        if not hasattr(self, "request"):
+            raise Exception("No request has been sent yet.")
+        if not self.request.text:
+            raise Exception(f"No data found. {self.request.url}")
+        with open(filepath, "w") as f:
+            f.write(self.request.text)
+
+    def create_df(self):
+        if not hasattr(self, "request"):
+            raise Exception("No request has been sent yet.")
+        json_response = json.loads(self.request.text)
+        dict_list = []
+        for item in json_response["properties"]["periods"]:
+            item = {
+                # Removing tz info from timestamp. This makes the strong assumption
+                #  that NWS will always correctly provide data in the timezone of
+                #  the station we're pulling from.
+                "timestamp": pd.to_datetime(item["startTime"]).replace(tzinfo=None),
+                "tempc": self.fahrenheit_to_celcius(item["temperature"]),
+            }
+            dict_list.append(item)
+        df = pd.DataFrame(dict_list)
+        df.set_index("timestamp", inplace=True)
+        return df

@@ -6,7 +6,14 @@ import filecmp
 import pandas as pd
 
 from forecast_app import create_app
-from forecast_app.weather import AsosRequest
+from forecast_app.weather import AsosRequest, NwsForecastRequest
+
+# https://stackoverflow.com/questions/15753390/how-can-i-mock-requests-and-the-response
+class MockResponse:
+    def __init__(self, mock_path, status_code):
+        self.status_code = status_code
+        with open(mock_path, "r") as f:
+            self.text = f.read()
 
 
 class TestAsosRequest:
@@ -30,13 +37,6 @@ class TestAsosRequest:
         assert df["station"].iloc[0] == app.config["ASOS_STATION"]
 
     def mocked_asos_response(*args, **kwargs):
-        # https://stackoverflow.com/questions/15753390/how-can-i-mock-requests-and-the-response
-        class MockResponse:
-            def __init__(self, mock_path, status_code):
-                self.status_code = status_code
-                with open(mock_path, "r") as f:
-                    self.text = f.read()
-
         mock_path = pytest.FIXTURE_DIR / "asos-response.csv"
         return MockResponse(mock_path, 200)
 
@@ -79,3 +79,36 @@ class TestAsosRequest:
         asos_request.write_response(tmp_output_path)
         assert os.path.exists(tmp_output_path)
         assert filecmp.cmp(mock_path, tmp_output_path)
+
+
+class TestNwsForecastRequest:
+    def mocked_nws_response(*args, **kwargs):
+        mock_path = pytest.FIXTURE_DIR / "nws-response.json"
+        return MockResponse(mock_path, 200)
+
+    @patch("requests.get", side_effect=mocked_nws_response)
+    def test_send_request(self, mock_get):
+        nws_request = NwsForecastRequest().send_request()
+        assert nws_request.text.startswith("{")
+
+    @patch("requests.get", side_effect=mocked_nws_response)
+    def test_create_df(self, mock_get):
+        nws_request = NwsForecastRequest()
+        nws_request.send_request()
+        df = nws_request.create_df()
+        assert df.shape[0] == 156
+        assert df["tempc"].iloc[0] == 2.78
+
+    @patch("requests.get", side_effect=mocked_nws_response)
+    def test_write_response(self, mock_get, app):
+        nws_request = NwsForecastRequest()
+        nws_request.send_request()
+        tmp_output_path = app.config["OUTPUT_DIR"] + "/nws-response.json"
+        mock_path = pytest.FIXTURE_DIR / "nws-response.json"
+        nws_request.write_response(tmp_output_path)
+        assert os.path.exists(tmp_output_path)
+        assert filecmp.cmp(mock_path, tmp_output_path)
+
+    def test_fahrenheit_to_celcius(self):
+        assert NwsForecastRequest.fahrenheit_to_celcius(32) == 0
+        assert NwsForecastRequest.fahrenheit_to_celcius(14) == -10
