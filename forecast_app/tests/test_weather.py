@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pytest
 import os
 import filecmp
+import pandas as pd
 
 from forecast_app import create_app
 from forecast_app.weather import AsosRequest
@@ -62,13 +63,10 @@ class TestAsosRequest:
         df = asos_request.create_df()
         assert not df.empty
         assert df["tempc"].dtype == "float64"
-        assert df.shape[0] == 361
-        assert df["timestamp"].dtype == "datetime64[ns]"
-        assert df["station"].iloc[0] == "ALO"
-        assert str(df["timestamp"].iloc[0]) == "2022-01-01 01:00:00"
+        assert df.shape[0] == 312
+        assert str(df.iloc[0].name) == "2022-01-01 01:00:00"
         assert df["tempc"].iloc[0] == -10.61
-        # TODO: drop duplicates
-        # assert df.timestamp.is_unique
+        assert not any(pd.isna(df["tempc"]))
 
     @patch("requests.get", side_effect=mocked_asos_response)
     def test_write_response(self, mock_get, app):

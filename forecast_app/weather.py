@@ -66,16 +66,15 @@ class AsosRequest:
             f.write(self.request.text)
 
     def create_df(self):
-        if hasattr(self, "request"):
+        if not hasattr(self, "request"):
             raise Exception("No request has been sent yet.")
         df = pd.read_csv(StringIO(self.request.text), parse_dates=["valid"])
-        df["timestamp"] = df.valid.dt.round("h")  # Round to nearest hour
-        # df = df.groupby("timestamp").mean()
-        # TODO: drop duplicates
         df = df[df["tmpc"] != self.missing_value]
-        df["tempc"] = df["tmpc"].astype(float)  # rename column
-        df = df[["timestamp", "tempc", "station"]]
-        return df
+        df["tempc"] = df["tmpc"].astype(float)  # rename column and cast
+        df["timestamp"] = df.valid.dt.round("h")  # Round to nearest hour
+        df = df[["timestamp", "tempc"]]
+        series = df.groupby("timestamp")["tempc"].mean()
+        return pd.DataFrame(series)
 
 
 # def int_climate():
