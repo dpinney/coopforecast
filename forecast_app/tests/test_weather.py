@@ -21,7 +21,7 @@ class TestAsosRequest:
         reason="It's poor form to directly query API. Option to perform this in cli.py"
     )
     def test_asos_api():
-        app = create_app("dev")  # TODO: change to "test"
+        app = create_app("test")
         asos_request = AsosRequest(
             start_date=date(2022, 1, 1),
             end_date=date(2022, 1, 14),
@@ -34,7 +34,9 @@ class TestAsosRequest:
 
         df = asos_request.create_df()
         assert not df.empty
-        assert df["station"].iloc[0] == app.config["ASOS_STATION"]
+        print("Response from ASOS ----------------------")
+        print(df.head())
+        print("-----------------------------------------")
 
     def mocked_asos_response(*args, **kwargs):
         mock_path = pytest.FIXTURE_DIR / "asos-response.csv"
@@ -112,3 +114,19 @@ class TestNwsForecastRequest:
     def test_fahrenheit_to_celcius(self):
         assert NwsForecastRequest.fahrenheit_to_celcius(32) == 0
         assert NwsForecastRequest.fahrenheit_to_celcius(14) == -10
+
+    @pytest.mark.skip(
+        reason="It's poor form to directly query API. Option to perform this in cli.py"
+    )
+    def test_nws_api():
+        app = create_app("test")
+        nws_request = NwsForecastRequest(nws_code=app.config["NWS_CODE"])
+
+        request = nws_request.send_request()
+        assert request.status_code == 200
+
+        df = nws_request.create_df()
+        assert not df.empty
+        print("Response from NWS ----------------------")
+        print(df.head())
+        print("----------------------------------------")

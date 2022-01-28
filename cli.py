@@ -3,7 +3,7 @@ from subprocess import Popen
 from forecast_app import create_app
 from forecast_app.commands import init_db, upload_demo_data
 from forecast_app.config import config_map
-from forecast_app.tests.test_weather import TestAsosRequest
+from forecast_app.tests.test_weather import TestAsosRequest, TestNwsForecastRequest
 
 typer_app = typer.Typer()
 
@@ -73,9 +73,12 @@ def deploy(
 
 
 @typer_app.command()
-def test_asos():
+def test_apis():
     """Query the ASOS API without a mock to ensure that it works as intended."""
     TestAsosRequest.test_asos_api()
+    print("ASOS API test passed.")
+    TestNwsForecastRequest.test_nws_api()
+    print("NWS API test passed.")
 
 
 if __name__ == "__main__":

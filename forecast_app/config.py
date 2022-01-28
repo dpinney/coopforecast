@@ -49,6 +49,10 @@ class Config(object):
     # Note for USA stations (beginning with a K) you must NOT include the 'K'
     #  WARNING: Ensure that both the station and timezone are updated. There's no indication
     #    otherwise when the timezone is incorrect
+    NWS_CODE = "OAX/72,83"
+    # To get the NWS code, first use "https://api.weather.gov/points/{lat},{lon}" to get metadata
+    #  from there, the "forecastHourly" property contains the code you need.
+    #  Please use the form "STATION/##,##"
 
 
 class ProductionConfig(Config):
