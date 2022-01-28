@@ -77,18 +77,4 @@ class AsosRequest:
         return pd.DataFrame(series)
 
 
-# def int_climate():
-#     fname = "tekamah_hist_temp.csv"
-#     x = pd.read_csv(fname)
-#     print(x)
-#     y = x.interpolate()
-#     print(y)
-#     y["dt_index"] = pd.to_datetime(y["valid"])
-#     z = y.set_index("dt_index")
-#     print(z)
-#     w = z.resample("h").mean()
-#     print(w)
-#     v.to_csv("tekamah_hist_temp_hourly.csv")
-
-
 # Given a start datetime and a zipcode, collect the next 24 hours of forecasted temperature data.
