@@ -3,6 +3,7 @@ Electric Utility Load Forecaster Application
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![run_pytest](https://github.com/dpinney/coopforecast/actions/workflows/run_pytest.yaml/badge.svg)](https://github.com/dpinney/coopforecast/actions/workflows/run_pytest.yaml)
+[![codecov](https://codecov.io/gh/dpinney/coopforecast/branch/main/graph/badge.svg?token=MUTWHY0DJE)](https://codecov.io/gh/dpinney/coopforecast)
 
 ## Application Deployment
 
