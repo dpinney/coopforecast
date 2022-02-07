@@ -99,21 +99,33 @@ class TestDataViews:
             assert type(chart_array) == list
             assert all([len(datapoint) == 2 for datapoint in chart_array])
 
-    def test_data_post(self, db, app, client, auth):
-        src_path = pytest.FIXTURE_DIR / "weather-forecast.csv"
-
+    def post_data_view(self, cls, filename=None, final_count=None):
+        src_path = pytest.FIXTURE_DIR / filename
         # Ensure that there is no data in the db
-        assert ForecastData.query.count() == 0
+        cls.view.query.delete()
+        assert cls.view.query.count() == 0
         upload_file = FileStorage(
             stream=open(src_path, "rb"),
             filename=src_path.name,
             content_type="multipart/form-data",
         )
-        with app.test_request_context("/forecast-weather-data", method="POST"):
+        with self.app.test_request_context("/forecast-weather-data", method="POST"):
             request.files = {"file": upload_file}
-            ForecastWeatherDataView().post()
+            cls().post()
 
-        assert ForecastData.query.count() == 23
+        assert cls.view.query.count() == final_count
+
+    def test_data_post(self, db, app, client, auth):
+        self.app = app
+        self.post_data_view(
+            ForecastWeatherDataView, filename="weather-forecast.csv", final_count=23
+        )
+        self.post_data_view(
+            HistoricalWeatherDataView, filename="weather-forecast.csv", final_count=23
+        )
+        self.post_data_view(
+            HistoricalLoadDataView, filename="historical-load.csv", final_count=72
+        )
 
     # Tested more thoroughly via test_templates
 
