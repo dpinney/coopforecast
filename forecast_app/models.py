@@ -287,7 +287,7 @@ def _load_data(cls, filepath, columns=None):
         #  the hour column is formatted.
         df[HOUR_COL] = df[HOUR_COL].astype(str).str.replace("00", "").astype(int)
         # Some hours are in a different system and go up to 24 (?!)
-        if 24 in df[HOUR_COL]:
+        if any(24 == df[HOUR_COL]):
             df[HOUR_COL] -= 1
 
         df["timestamp"] = df.apply(
