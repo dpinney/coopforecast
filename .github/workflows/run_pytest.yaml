@@ -17,4 +17,6 @@ jobs:
       - name: Install tensorflow separately
         run: pip install tensorflow==2.7.0
       - name: Run pytest
-        run: pytest
+        run: pytest --cov --cov-report=xml
+      - name: Upload test coverage to Codecov
+        uses: codecov/codecov-action@v1

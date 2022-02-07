@@ -8,6 +8,7 @@ numpy
 pandas
 pre-commit
 pytest
+pytest-cov
 requests
 scipy
 tensorflow==2.7
