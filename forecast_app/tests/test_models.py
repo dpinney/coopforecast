@@ -106,6 +106,7 @@ class TestForecastModel:
 def test_is_prepared(app, db):
     # Combine tests to make tests faster
     # FORECAST MODEL
+
     is_prepared, start_date, end_date = ForecastModel.is_prepared()
     assert is_prepared is False
     assert start_date is None and end_date is None

@@ -22,7 +22,6 @@ def init_db():
 def upload_demo_data(models=True):
     """Uploads the demo data to the database."""
     demo_data = Path("forecast_app/static/demo-data")
-
     # Load historical data
     historical_data = demo_data / "demo-ncent-historical.csv"
     HistoricalData.load_data(historical_data)

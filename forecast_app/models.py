@@ -272,9 +272,9 @@ def _load_data(cls, filepath, columns=None):
     HOUR_COL = current_app.config["HOUR_COL"]
     DATE_COL = current_app.config["DATE_COL"]
     try:
-        if filepath.endswith(".csv"):
+        if str(filepath).endswith(".csv"):
             df = pd.read_csv(filepath)
-        elif filepath.endswith("xlsx"):
+        elif str(filepath).endswith("xlsx"):
             df = pd.read_excel(filepath)
         else:
             raise Exception("File extension not recognized")
@@ -350,4 +350,7 @@ def _load_data(cls, filepath, columns=None):
                 "text": f"Failed to load data. {e}",
             }
         )
+        # TODO: Add this logic to all try/excepts
+        if current_app.config["DEBUG"]:
+            raise e
     return messages
