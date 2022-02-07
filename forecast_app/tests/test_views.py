@@ -1,12 +1,14 @@
 import pandas as pd
+from flask import request
 import pytest
+from werkzeug.datastructures import FileStorage
 from forecast_app.views import (
     ForecastView,
     HistoricalLoadDataView,
     HistoricalWeatherDataView,
     ForecastWeatherDataView,
 )
-from forecast_app.models import ForecastModel
+from forecast_app.models import ForecastModel, ForecastData
 from forecast_app.commands import upload_demo_data
 
 
@@ -97,6 +99,22 @@ class TestDataViews:
             assert type(chart_array) == list
             assert all([len(datapoint) == 2 for datapoint in chart_array])
 
+    def test_data_post(self, db, app, client, auth):
+        src_path = pytest.FIXTURE_DIR / "weather-forecast.csv"
+
+        # Ensure that there is no data in the db
+        assert ForecastData.query.count() == 0
+        upload_file = FileStorage(
+            stream=open(src_path, "rb"),
+            filename=src_path.name,
+            content_type="multipart/form-data",
+        )
+        with app.test_request_context("/forecast-weather-data", method="POST"):
+            request.files = {"file": upload_file}
+            ForecastWeatherDataView().post()
+
+        assert ForecastData.query.count() == 23
+
     # Tested more thoroughly via test_templates
 
 
@@ -109,6 +127,7 @@ class TestForecastView:
         upload_demo_data(models=False)
         assert ForecastModel.query.count() == 0
         client.post("/latest-forecast", data={"mock": "true"})
+        # TODO: mock this instead
         assert ForecastModel.query.count() == 1
         # See test_subprocessing for more tests
 
