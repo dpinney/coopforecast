@@ -48,6 +48,34 @@ def test_templates(app, auth, client):
         assert response.status_code == 401, page_name
 
 
+class TestLoginView:
+    def test_get(self, auth, client):
+        # Test that logged in users are redirected to latest forecast
+        auth.login()
+        response = client.get("/")
+        assert response.status_code == 302
+        response = client.get("/", follow_redirects=True)
+        assert response.status_code == 200
+        assert "Latest Forecast" in str(response.data)
+
+        auth.logout()
+        response = client.get("/")
+        assert response.status_code == 200
+        assert "Enter Username" in str(response.data)
+
+
+class TestLogoutView:
+    def test_get(self, auth, client):
+        # Test that logged in users are redirected to latest forecast
+        auth.login()
+        response = client.get("/logout")
+        assert response.status_code == 302
+        auth.login()
+        response = client.get("/logout", follow_redirects=True)
+        assert response.status_code == 200
+        assert "Enter Username" in str(response.data)
+
+
 class TestDataViews:
     classes = [
         ForecastWeatherDataView,
