@@ -45,8 +45,8 @@ def allowed_file(filename):
 
 def upload_file(name):
     # check if the post request has the file part
-    if "file" not in request.files:
-        flash("No file part")
+    if name not in request.files:
+        flash("Cannot find a file with that name.")
         return None
     file = request.files[name]
     # If the user does not select a file, the browser submits an
@@ -56,6 +56,6 @@ def upload_file(name):
         return None
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+        filepath = os.path.join(current_app.config["UPLOAD_DIR"], filename)
         file.save(filepath)
         return filepath
