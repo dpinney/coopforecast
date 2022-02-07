@@ -39,10 +39,10 @@ class Config(object):
     GUNICORN_PATH = "gunicorn"
     REDIRECT_PORT = 4000
     EPOCHS = 1
-    LOAD_COL = "KW"
-    TEMP_COL = "TEMPC"
-    HOUR_COL = "HOUR"
-    DATE_COL = "DATE"
+    LOAD_COL = "kw"
+    TEMP_COL = "tempc"
+    HOUR_COL = "hour"
+    DATE_COL = "date"
     ASOS_STATION = "TQE"
     TIMEZONE = "America/Chicago"
     # Get weather codes and stations here: https://mesonet.agron.iastate.edu/request/download.phtml

@@ -101,8 +101,7 @@ def post_data(
     assert response.status_code == 200, "Login failed."
 
     # Upload data from the session
-    file_path = "forecast_app/tests/fixtures/historical-load-update.csv"
-    files = {"file": open(file_path, "rb")}
+    files = {"file": open(filepath, "rb")}
 
     # /forecast-load-data can handle both weather or load data, so we can simplify
     #  the cli and just intuiting what the user needs via the file they upload.
@@ -111,7 +110,9 @@ def post_data(
     )
 
     response = session.post(urljoin(BASE_URL, endpoint), files=files)
-    assert response.status_code == 200, "Upload failed."
+    assert (
+        response.status_code == 200
+    ), f"Upload failed. Status code: {response.status_code}"
 
 
 if __name__ == "__main__":

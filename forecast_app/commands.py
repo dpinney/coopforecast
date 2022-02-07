@@ -34,7 +34,7 @@ def upload_demo_data(models=True):
     print("Forecast data uploaded.")
 
     if models:
-        mock_load = pd.read_csv(forecast_data)[current_app.config["LOAD_COL"]].tolist()
+        mock_load = pd.read_csv(forecast_data)["KW"].tolist()
         mock_model = ForecastModel()
         mock_model.loads = mock_load
         mock_model.accuracy = {"test": 96.5, "train": 98.5}

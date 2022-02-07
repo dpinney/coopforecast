@@ -264,7 +264,7 @@ def _to_df(cls):
 
 def _load_data(cls, filepath, columns=None):
     # NOTE: Entering a csv with both weather and load will overwrite both.
-    #  Use columns var to ensure that only intended data is loaded?
+    #  The columns parameter can prevent this.
     # TODO: validation should happen here
     messages = []
     LOAD_COL = current_app.config["LOAD_COL"]
@@ -273,7 +273,19 @@ def _load_data(cls, filepath, columns=None):
     DATE_COL = current_app.config["DATE_COL"]
 
     try:
-        df = pd.read_csv(filepath, parse_dates=[DATE_COL])
+        df = pd.read_csv(filepath)
+
+        # Some columns have spaces and quotes in their names.
+        df.columns = [col.lower().strip(' "') for col in df.columns]
+        df[DATE_COL] = pd.to_datetime(df[DATE_COL])
+
+        # Hour column is in the form "HH00". This should work regardless of how
+        #  the hour column is formatted.
+        df[HOUR_COL] = df[HOUR_COL].astype(str).str.replace("00", "").astype(int)
+        # Some hours are in a different system and go up to 24 (?!)
+        if 24 in df[HOUR_COL]:
+            df[HOUR_COL] -= 1
+
         df["timestamp"] = df.apply(
             lambda row: datetime.datetime(
                 row[DATE_COL].year,
@@ -283,6 +295,9 @@ def _load_data(cls, filepath, columns=None):
             ),
             axis=1,
         )
+
+        # Ignoreing DST for now
+        df.drop_duplicates(subset=["timestamp"], inplace=True)
 
         for column in df.columns:
             if column not in ["timestamp", LOAD_COL, TEMP_COL, HOUR_COL, DATE_COL]:
