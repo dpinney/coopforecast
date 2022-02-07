@@ -271,9 +271,13 @@ def _load_data(cls, filepath, columns=None):
     TEMP_COL = current_app.config["TEMP_COL"]
     HOUR_COL = current_app.config["HOUR_COL"]
     DATE_COL = current_app.config["DATE_COL"]
-
     try:
-        df = pd.read_csv(filepath)
+        if filepath.endswith(".csv"):
+            df = pd.read_csv(filepath)
+        elif filepath.endswith("xlsx"):
+            df = pd.read_excel(filepath)
+        else:
+            raise Exception("File extension not recognized")
 
         # Some columns have spaces and quotes in their names.
         df.columns = [col.lower().strip(' "') for col in df.columns]
@@ -302,7 +306,7 @@ def _load_data(cls, filepath, columns=None):
         for column in df.columns:
             if column not in ["timestamp", LOAD_COL, TEMP_COL, HOUR_COL, DATE_COL]:
                 messages.append(
-                    {"level": "warning", "text": f"Column {column} not recognized."}
+                    {"level": "warning", "text": f'Column "{column}" not recognized.'}
                 )
 
         if columns:

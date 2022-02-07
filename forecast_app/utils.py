@@ -40,7 +40,7 @@ def request_loader(request):
 
 
 def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() == "csv"
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ["csv", "xlsx"]
 
 
 def upload_file(name):

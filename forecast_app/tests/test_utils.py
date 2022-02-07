@@ -47,4 +47,5 @@ def test_upload_file(app):
 def test_allowed_file():
     assert allowed_file("test.csv")
     assert allowed_file("test.CSV")
-    assert not allowed_file("test.xlsx")
+    assert not allowed_file("test.foo")
+    assert not allowed_file("test.txt")

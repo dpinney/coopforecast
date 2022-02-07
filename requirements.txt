@@ -5,6 +5,7 @@ flask-login
 Flask-SQLAlchemy
 gunicorn
 numpy
+openpyxl
 pandas
 pre-commit
 pytest
