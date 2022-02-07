@@ -41,6 +41,8 @@ class DataView(MethodView):
 
     def post(self):
         filepath = upload_file("file")
+        # NOTE: if you take advantage of the `columns` parameter, you must
+        #  update the cli.py::post_data
         messages = self.view.load_data(filepath)
         return self.get(messages=messages)  # NOTE: A redirect wouldn't work here
 

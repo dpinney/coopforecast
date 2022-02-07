@@ -1,5 +1,7 @@
 import typer
 from subprocess import Popen
+import requests
+from urllib.parse import urljoin
 from forecast_app import create_app
 from forecast_app.commands import init_db, upload_demo_data
 from forecast_app.config import config_map
@@ -79,6 +81,37 @@ def test_apis():
     print("ASOS API test passed.")
     TestNwsForecastRequest.test_nws_api()
     print("NWS API test passed.")
+
+
+@typer_app.command()
+def post_data(
+    filepath: str,
+    BASE_URL: str = typer.Option("http://localhost:5000", "--url"),
+    type: str = typer.Option(
+        "historical", "--type", help="Choices are `forecast` or `historical`"
+    ),
+    username: str = typer.Option("admin", "--username"),
+    password: str = typer.Option("admin", "--password"),
+):
+    session = requests.Session()
+    # Login to the site
+    response = session.post(
+        urljoin(BASE_URL, "/"), data={"username": "admin", "password": "admin"}
+    )
+    assert response.status_code == 200, "Login failed."
+
+    # Upload data from the session
+    file_path = "forecast_app/tests/fixtures/historical-load-update.csv"
+    files = {"file": open(file_path, "rb")}
+
+    # /forecast-load-data can handle both weather or load data, so we can simplify
+    #  the cli and just intuiting what the user needs via the file they upload.
+    endpoint = (
+        "/historical-load-data" if type == "historical" else "/forecast-load-data"
+    )
+
+    response = session.post(urljoin(BASE_URL, endpoint), files=files)
+    assert response.status_code == 200, "Upload failed."
 
 
 if __name__ == "__main__":

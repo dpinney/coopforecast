@@ -5,6 +5,7 @@
   - [Historical Weather Data](#historical-weather-data)
   - [Forecast Weather Data](#forecast-weather-data)
   - [Forecast Model](#forecast-model)
+  - [Posting Data Automatically](#posting-data-automatically)
   - [Read More](#read-more)
 
 ## Historical Load Data
@@ -41,6 +42,29 @@ In addition to historical data, the model requires a 24 hour forecast in order t
 ## Forecast Model
 
 You can create and terminate forecasts at the [All Models](/all-models) page. The [Forecast](/forecast) page will display the latest successful model. If all the data has been prepared as outlined above, then you can launch a forecast with the "Generate a model" button. If the model has been training for longer than 15 minutes, there may be an issue. In this case, you're welcome to click "Cancel running models" and try again.
+
+## Posting Data Automatically
+
+There doesn't exist a formal API for posting data to a server, but the CLI
+offers a few options.
+
+```
+Usage: cli.py post-data [OPTIONS] FILEPATH
+
+Arguments:
+  FILEPATH  [required]
+
+Options:
+  --url TEXT       [default: http://localhost:5000]
+  --type TEXT      Choices are `forecast` or `historical`  [default: historical]
+  --username TEXT  [default: admin]
+  --password TEXT  [default: admin]
+  --help           Show this message and exit.
+```
+
+You can write your own code by looking at the `post_data` in `cli.py` to inform your
+own script. Regardless, using `request.Session` to login, and posting a file to the data views
+will upload your file.
 
 ## Read More
 
