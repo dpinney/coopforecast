@@ -8,7 +8,7 @@ export DOMAIN=$(python3 -c "from forecast_app.config import DOMAIN; print(DOMAIN
 
 DEBIAN_FRONTEND=noninteractive sudo apt-get install -y systemd letsencrypt python3-pip authbind
 pip3 install tensorflow==2.7.0
-pip3 install -r $REPO/requirements.lock
+pip3 install -r $REPO/requirements.txt
 export PATH=/home/ubuntu/.local/bin:$PATH
 
 sudo ln -s $REPO/systemd/coopforecast.service /etc/systemd/system/coopforecast.service

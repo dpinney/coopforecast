@@ -17,6 +17,10 @@ Electric Utility Load Forecaster Application
 6. Export EMAIL and DOMAIN values to environment variables.
 7. Run the install script `install.sh`
 
+The install script is idempotent, so when updating the application, simply 
+run the `install.sh` again. Depending on the change, you may also have to 
+run `sudo systemctl restart coopforecast`.
+
 ## Launch with docker
 
 ```sh
