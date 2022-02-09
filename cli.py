@@ -96,7 +96,7 @@ def post_data(
     session = requests.Session()
     # Login to the site
     response = session.post(
-        urljoin(BASE_URL, "/"), data={"username": "admin", "password": "admin"}
+        urljoin(BASE_URL, "/"), data={"username": username, "password": password}
     )
     assert response.status_code == 200, "Login failed."
 
