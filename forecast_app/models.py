@@ -196,7 +196,11 @@ class HistoricalData(db.Model):
 
     @classmethod
     def load_data(cls, filepath, columns=None):
-        return _load_data(cls, filepath, columns)
+        return _load_data(cls, filepath, columns, df=None)
+
+    @classmethod
+    def load_df(cls, df):
+        return _load_data(cls, "", columns=None, df=df)
 
     @classmethod
     def to_df(cls):
@@ -238,6 +242,10 @@ class ForecastData(db.Model):
         return _load_data(cls, filepath, columns)
 
     @classmethod
+    def load_df(cls, df):
+        return _load_data(cls, "", columns=None, df=df)
+
+    @classmethod
     def to_df(cls):
         return _to_df(cls)
 
@@ -262,43 +270,48 @@ def _to_df(cls):
     )
 
 
-def _load_data(cls, filepath, columns=None):
+def _load_data(cls, filepath, columns=None, df=None):
     # NOTE: Entering a csv with both weather and load will overwrite both.
     #  The columns parameter can prevent this.
     # TODO: validation should happen here
+    # TODO: This is a mess.
     messages = []
     LOAD_COL = current_app.config["LOAD_COL"]
     TEMP_COL = current_app.config["TEMP_COL"]
     HOUR_COL = current_app.config["HOUR_COL"]
     DATE_COL = current_app.config["DATE_COL"]
     try:
-        if str(filepath).endswith(".csv"):
-            df = pd.read_csv(filepath)
-        elif str(filepath).endswith("xlsx"):
-            df = pd.read_excel(filepath)
-        else:
-            raise Exception("File extension not recognized")
+        if df is None:
+            if str(filepath).endswith(".csv"):
+                df = pd.read_csv(filepath)
+            elif str(filepath).endswith("xlsx"):
+                df = pd.read_excel(filepath)
+            else:
+                raise Exception("File extension not recognized")
 
         # Some columns have spaces and quotes in their names.
         df.columns = [col.lower().strip(' "') for col in df.columns]
-        df[DATE_COL] = pd.to_datetime(df[DATE_COL])
 
-        # Hour column is in the form "HH00". This should work regardless of how
-        #  the hour column is formatted.
-        df[HOUR_COL] = df[HOUR_COL].astype(str).str.replace("00", "").astype(int)
-        # Some hours are in a different system and go up to 24 (?!)
-        if any(24 == df[HOUR_COL]):
-            df[HOUR_COL] -= 1
+        if "timestamp" not in df.columns:
+            df[DATE_COL] = pd.to_datetime(df[DATE_COL])
 
-        df["timestamp"] = df.apply(
-            lambda row: datetime.datetime(
-                row[DATE_COL].year,
-                row[DATE_COL].month,
-                row[DATE_COL].day,
-                row[HOUR_COL],
-            ),
-            axis=1,
-        )
+            # Hour column is in the form "HH00". This should work regardless of how
+            #  the hour column is formatted.
+            df[HOUR_COL] = df[HOUR_COL].astype(str).str.replace("00", "").astype(int)
+            # Some hours are in a different system and go up to 24 (?!)
+            if any(24 == df[HOUR_COL]):
+                df[HOUR_COL] -= 1
+
+            df["timestamp"] = df.apply(
+                lambda row: datetime.datetime(
+                    row[DATE_COL].year,
+                    row[DATE_COL].month,
+                    row[DATE_COL].day,
+                    row[HOUR_COL],
+                ),
+                axis=1,
+            )
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
 
         # Ignoreing DST for now
         df.drop_duplicates(subset=["timestamp"], inplace=True)

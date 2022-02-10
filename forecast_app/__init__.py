@@ -4,17 +4,7 @@ from forecast_app.utils import (
     ADMIN_USER,
     db,
 )
-from forecast_app.views import (
-    HistoricalLoadDataView,
-    ForecastWeatherDataView,
-    HistoricalWeatherDataView,
-    ForecastView,
-    LoginView,
-    LogoutView,
-    RenderTemplateView,
-    ForecastModelListView,
-    ForecastModelDetailView,
-)
+from forecast_app import views
 from forecast_app.models import HistoricalData
 from forecast_app.config import config_map, SECRET_VARS
 
@@ -38,14 +28,16 @@ def create_app(config: str):
     ADMIN_USER.id = app.config["ADMIN_USER"]
 
     method_views = [
-        LoginView,
-        LogoutView,
-        ForecastView,
-        HistoricalLoadDataView,
-        ForecastWeatherDataView,
-        HistoricalWeatherDataView,
-        ForecastModelListView,
-        ForecastModelDetailView,
+        views.LoginView,
+        views.LogoutView,
+        views.ForecastView,
+        views.HistoricalLoadDataView,
+        views.ForecastWeatherDataView,
+        views.HistoricalWeatherDataView,
+        views.ForecastModelListView,
+        views.ForecastModelDetailView,
+        views.HistoricalWeatherDataSync,
+        views.ForecastWeatherDataSync,
     ]
     for view in method_views:
         app.add_url_rule(
@@ -55,11 +47,6 @@ def create_app(config: str):
 
     static_views = ["instructions", "user-settings", "model-settings"]
     for view in static_views:
-        app.add_url_rule(f"/{view}", view_func=RenderTemplateView.view(view))
-
-    # TODO: Put this in proper class
-    @app.route("/historical-weather-data/sync", methods=["POST"])
-    def sync_asos():
-        HistoricalData.query.first()
+        app.add_url_rule(f"/{view}", view_func=views.RenderTemplateView.view(view))
 
     return app

@@ -8,11 +8,14 @@ import datetime
 from multiprocessing import Process
 
 from forecast_app.models import ForecastData, HistoricalData, ForecastModel
-from forecast_app.utils import db
-from forecast_app.utils import ADMIN_USER, upload_file
+from forecast_app.utils import db, ADMIN_USER, upload_file
+from forecast_app.weather import AsosRequest, NwsForecastRequest
 
 
 class DataView(MethodView):
+    """Abstract class for handling the various views for uploading and
+    displaying historical and forecast data"""
+
     decorators = [flask_login.login_required]
     # TODO: This should be named "model" not "view"
     view = None
@@ -285,3 +288,40 @@ class ForecastModelDetailView(MethodView):
             forecast_model=forecast_model,
             messages=messages,
         )
+
+
+class DataSync(MethodView):
+    view_name = None
+    view_url = None
+    endpoint_class = None
+
+    def post(self):
+        return redirect(url_for(self.view_name.split("-sync")[0]))
+
+    def get(self):
+        return redirect(url_for(self.view_name.split("-sync")[0]))
+
+
+class HistoricalWeatherDataSync(DataSync):
+    view_name = "historical-weather-data-sync"
+    view_url = "/historical-weather-data/sync"
+    endpoint_class = AsosRequest
+
+    def post(self):
+        from datetime import date
+
+        asos_request = AsosRequest(
+            start_date=date(2000, 1, 1),
+            end_date=date(2022, 1, 14),
+            tz=current_app.config["TIMEZONE"],
+            station=current_app.config["ASOS_STATION"],
+        )
+        request = asos_request.send_request()
+        df = asos_request.create_df()
+        HistoricalData.load_df(df)
+        return super().post()
+
+
+class ForecastWeatherDataSync(DataSync):
+    view_name = "forecast-weather-data-sync"
+    view_url = "/forecast-weather-data/sync"

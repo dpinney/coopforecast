@@ -75,7 +75,11 @@ class AsosRequest:
         df["timestamp"] = df.valid.dt.round("h")  # Round to nearest hour
         df = df[["timestamp", "tempc"]]
         series = df.groupby("timestamp")["tempc"].mean()
-        return pd.DataFrame(series)
+
+        # Cast as a dataframe
+        df_n = pd.DataFrame(series)
+        df_n["timestamp"] = df_n.index
+        return df_n
 
 
 class NwsForecastRequest:
@@ -129,5 +133,5 @@ class NwsForecastRequest:
             }
             dict_list.append(item)
         df = pd.DataFrame(dict_list)
-        df.set_index("timestamp", inplace=True)
+
         return df
