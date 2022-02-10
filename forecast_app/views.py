@@ -6,6 +6,7 @@ from sqlalchemy import desc
 import time
 import datetime
 from multiprocessing import Process
+from datetime import date, timedelta
 
 from forecast_app.models import ForecastData, HistoricalData, ForecastModel
 from forecast_app.utils import db, ADMIN_USER, upload_file
@@ -308,11 +309,22 @@ class HistoricalWeatherDataSync(DataSync):
     endpoint_class = AsosRequest
 
     def post(self):
-        from datetime import date
+
+        temp_query = HistoricalData.query.filter(HistoricalData.tempc.isnot(None))
+        if temp_query.count() > 0:
+            # Get the latest sync timestamp as the start date
+            start_date = (
+                temp_query.order_by(HistoricalData.timestamp.desc())
+                .first()
+                .timestamp.date()
+            )
+        else:
+            # If the database is empty, use the start date provided by the config
+            start_date = current_app.config["EARLIEST_SYNC_DATE"]
 
         asos_request = AsosRequest(
-            start_date=date(2000, 1, 1),
-            end_date=date(2022, 1, 14),
+            start_date=start_date,
+            end_date=date.today() + timedelta(days=1),
             tz=current_app.config["TIMEZONE"],
             station=current_app.config["ASOS_STATION"],
         )

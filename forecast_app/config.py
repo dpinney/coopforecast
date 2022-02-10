@@ -1,3 +1,5 @@
+from datetime import datetime
+
 try:
     from forecast_app.secret_config import (
         ADMIN_USER,
@@ -53,6 +55,7 @@ class Config(object):
     # To get the NWS code, first use "https://api.weather.gov/points/{lat},{lon}" to get metadata
     #  from there, the "forecastHourly" property contains the code you need.
     #  Please use the form "STATION/##,##"
+    EARLIEST_SYNC_DATE = datetime(2016, 1, 1)
 
 
 class ProductionConfig(Config):
