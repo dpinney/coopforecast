@@ -2,9 +2,13 @@ import pandas as pd
 from flask import request
 import pytest
 from werkzeug.datastructures import FileStorage
+from datetime import date
+
 from forecast_app.views import (
     ForecastView,
+    ForecastWeatherDataSync,
     HistoricalLoadDataView,
+    HistoricalWeatherDataSync,
     HistoricalWeatherDataView,
     ForecastWeatherDataView,
 )
@@ -165,3 +169,20 @@ class TestForecastDetailView:
 
     def test_post(self):
         pass
+
+
+class TestHistoricalWeatherDataSync:
+    def test_build_request(self, app, db):
+        request = HistoricalWeatherDataSync().build_request()
+        assert request.start_date == app.config["EARLIEST_SYNC_DATE"]
+
+        pytest.load_demo_db(app)
+
+        request = HistoricalWeatherDataSync().build_request()
+        assert request.start_date == date(2018, 12, 31)
+
+
+class TestForecastWeatherDataSync:
+    def test_build_request(self, app, db):
+        request = ForecastWeatherDataSync().build_request()
+        assert request.nws_code == app.config["NWS_CODE"]
