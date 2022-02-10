@@ -4,10 +4,12 @@ import os
 from subprocess import Popen
 import requests
 from urllib.parse import urljoin
+
 from forecast_app import create_app
 from forecast_app.commands import init_db, upload_demo_data
 from forecast_app.config import config_map
 from forecast_app.models import ForecastData, HistoricalData
+from forecast_app.views import HistoricalWeatherDataSync, ForecastWeatherDataSync
 from forecast_app.tests.test_weather import TestAsosRequest, TestNwsForecastRequest
 
 typer_app = typer.Typer()
@@ -87,6 +89,16 @@ def test_apis():
     print("NWS API test passed.")
 
 
+def create_login_session(username, password, base_url):
+    session = requests.Session()
+    # Login to the site
+    response = session.post(
+        urljoin(base_url, "/"), data={"username": username, "password": password}
+    )
+    assert response.status_code == 200, "Login failed."
+    return session
+
+
 @typer_app.command()
 def post_data(
     filepath: str,
@@ -98,12 +110,8 @@ def post_data(
     password: str = typer.Option("admin", "--password"),
 ):
     """Post historical or forecast data to the site in lieu of going through the UI."""
-    session = requests.Session()
-    # Login to the site
-    response = session.post(
-        urljoin(BASE_URL, "/"), data={"username": username, "password": password}
-    )
-    assert response.status_code == 200, "Login failed."
+
+    session = create_login_session(username, password, BASE_URL)
 
     # Upload data from the session
     files = {"file": open(filepath, "rb")}
@@ -144,6 +152,21 @@ def shell(config: str = "dev"):
     with app.app_context():
         # Launch pdb
         breakpoint()
+
+
+@typer_app.command()
+def sync_weather_data(
+    BASE_URL: str = typer.Option("http://localhost:5000", "--url"),
+    type: str = typer.Option(
+        "historical", "--type", help="Choices are `forecast` or `historical`"
+    ),
+    username: str = typer.Option("admin", "--username"),
+    password: str = typer.Option("admin", "--password"),
+):
+    """Sync weather data from ASOS and NWS"""
+    session = create_login_session(username, password, BASE_URL)
+    session.post(urljoin(BASE_URL, "/historical-weather-data/sync"))
+    session.post(urljoin(BASE_URL, "/forecast-weather-data/sync"))
 
 
 if __name__ == "__main__":
