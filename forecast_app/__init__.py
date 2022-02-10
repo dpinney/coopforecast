@@ -15,6 +15,7 @@ from forecast_app.views import (
     ForecastModelListView,
     ForecastModelDetailView,
 )
+from forecast_app.models import HistoricalData
 from forecast_app.config import config_map, SECRET_VARS
 
 
@@ -55,5 +56,10 @@ def create_app(config: str):
     static_views = ["instructions", "user-settings", "model-settings"]
     for view in static_views:
         app.add_url_rule(f"/{view}", view_func=RenderTemplateView.view(view))
+
+    # TODO: Put this in proper class
+    @app.route("/historical-weather-data/sync", methods=["POST"])
+    def sync_asos():
+        HistoricalData.query.first()
 
     return app

@@ -30,6 +30,12 @@
       </form>
     </div>
 
+    {% if sync_request %}
+    <hr>
+    <form action="/{{ view_name }}/sync" method="POST">
+      <input type=submit value="Sync data with {{ sync_request }}">
+    </form>
+    {% endif %}
   </div>
 </div>
 

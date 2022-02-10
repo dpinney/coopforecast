@@ -22,6 +22,8 @@ class DataView(MethodView):
     gist_example = None
     instructions = None
     hide_table = None
+    # Variable for whether user can sync data with external API
+    sync_request = None
 
     def get_table(self):
         query = db.session.query(
@@ -51,6 +53,7 @@ class DataView(MethodView):
         if not messages:
             messages = []
 
+        # NOTE: Just pass self?
         return render_template(
             f"data-view.html",
             **{
@@ -63,6 +66,7 @@ class DataView(MethodView):
                 "gist_example": self.gist_example,
                 "instructions": self.instructions,
                 "hide_table": self.hide_table,
+                "sync_request": self.sync_request,
             },
         )
 
@@ -75,6 +79,7 @@ class ForecastWeatherDataView(DataView):
     gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
     instructions = "/instructions#forecast-weather-data"
     hide_table = False
+    sync_request = "The National Weather Service"
 
 
 class HistoricalLoadDataView(DataView):
@@ -95,6 +100,7 @@ class HistoricalWeatherDataView(DataView):
     gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
     instructions = "/instructions#historical-weather-data"
     hide_table = True
+    sync_request = "ASOS"
 
 
 class ForecastView(MethodView):
