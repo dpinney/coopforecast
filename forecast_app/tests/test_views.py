@@ -12,7 +12,7 @@ from forecast_app.views import (
     HistoricalWeatherDataView,
     ForecastWeatherDataView,
 )
-from forecast_app.models import ForecastModel, ForecastData
+from forecast_app.models import ForecastModel, ForecastData, HistoricalData
 from forecast_app.commands import upload_demo_data
 
 
@@ -56,6 +56,7 @@ def test_templates(app, auth, client):
 
 def test_permissions(app, client, auth):
     all_routes = set([rule_obj.rule for rule_obj in app.url_map.iter_rules()])
+    # TODO: Does this mean all files are open?
     all_routes -= set(["/", "/login", "/logout", "/static/<path:filename>"])
     for route in all_routes:
         response = client.get(route, follow_redirects=True)
@@ -179,11 +180,6 @@ class TestForecastDetailView:
         pass
 
 
-class TestDataSync:
-    def test_post(self):
-        pass
-
-
 class TestHistoricalWeatherDataSync:
     def test_build_request(self, app, db):
         request = HistoricalWeatherDataSync().build_request()
@@ -194,8 +190,22 @@ class TestHistoricalWeatherDataSync:
         request = HistoricalWeatherDataSync().build_request()
         assert request.start_date == date(2018, 12, 31)
 
+    def test_post(self, app, client, auth, db):
+        auth.login()
+        with pytest.asos_patch:
+            response = client.post(HistoricalWeatherDataSync.view_url)
+        assert response.status_code == 302
+        assert HistoricalData.query.count() == 312
+
 
 class TestForecastWeatherDataSync:
     def test_build_request(self, app, db):
         request = ForecastWeatherDataSync().build_request()
         assert request.nws_code == app.config["NWS_CODE"]
+
+    def test_post(self, app, client, auth, db):
+        auth.login()
+        with pytest.nws_patch:
+            response = client.post(ForecastWeatherDataSync.view_url)
+        assert response.status_code == 302
+        assert ForecastData.query.count() == 156
