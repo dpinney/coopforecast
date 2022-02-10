@@ -28,6 +28,7 @@ class DataView(MethodView):
             self.view.timestamp,
             getattr(self.view, self.view_key),
         )
+        query = query.order_by(desc(self.view.timestamp))
         return [
             {"timestamp": timestamp, self.view_key: value} for timestamp, value in query
         ]
