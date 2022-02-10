@@ -157,9 +157,6 @@ def shell(config: str = "dev"):
 @typer_app.command()
 def sync_weather_data(
     BASE_URL: str = typer.Option("http://localhost:5000", "--url"),
-    type: str = typer.Option(
-        "historical", "--type", help="Choices are `forecast` or `historical`"
-    ),
     username: str = typer.Option("admin", "--username"),
     password: str = typer.Option("admin", "--password"),
 ):
