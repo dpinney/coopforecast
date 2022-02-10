@@ -54,6 +54,14 @@ def test_templates(app, auth, client):
         assert response.status_code == 401, page_name
 
 
+def test_permissions(app, client, auth):
+    all_routes = set([rule_obj.rule for rule_obj in app.url_map.iter_rules()])
+    all_routes -= set(["/", "/login", "/logout", "/static/<path:filename>"])
+    for route in all_routes:
+        response = client.get(route, follow_redirects=True)
+        assert response.status_code == 401, route
+
+
 class TestLoginView:
     def test_get(self, auth, client):
         # Test that logged in users are redirected to latest forecast
@@ -167,6 +175,11 @@ class TestForecastDetailView:
     def test_get(self):
         pass
 
+    def test_post(self):
+        pass
+
+
+class TestDataSync:
     def test_post(self):
         pass
 
