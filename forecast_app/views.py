@@ -295,22 +295,24 @@ class DataSync(MethodView):
     view_name = None
     view_url = None
     endpoint_class = None
+    parent_view = None
 
     def post(self):
-        request = self.endpoint_class.build_request()
+        request = self.build_request()
         request.send_request()
         df = request.create_df()
-        self.endpoint_class.load_df(df)
-        return redirect(url_for(self.view_name.split("-sync")[0]))
+        self.parent_view.view.load_df(df)
+        return redirect(url_for(self.parent_view.view_name))
 
     def get(self):
-        return redirect(url_for(self.view_name.split("-sync")[0]))
+        return redirect(url_for(self.parent_view.view_name))
 
 
 class HistoricalWeatherDataSync(DataSync):
     view_name = "historical-weather-data-sync"
     view_url = "/historical-weather-data/sync"
     endpoint_class = AsosRequest
+    parent_view = HistoricalWeatherDataView
 
     def build_request(self):
         temp_query = HistoricalData.query.filter(HistoricalData.tempc.isnot(None))
@@ -337,6 +339,7 @@ class ForecastWeatherDataSync(DataSync):
     view_name = "forecast-weather-data-sync"
     view_url = "/forecast-weather-data/sync"
     endpoint_class = NwsForecastRequest
+    parent_view = ForecastWeatherDataView
 
     def build_request(self):
         return NwsForecastRequest(nws_code=current_app.config["NWS_CODE"])
