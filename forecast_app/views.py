@@ -297,6 +297,10 @@ class DataSync(MethodView):
     endpoint_class = None
 
     def post(self):
+        request = self.endpoint_class.build_request()
+        request.send_request()
+        df = request.create_df()
+        self.endpoint_class.load_df(df)
         return redirect(url_for(self.view_name.split("-sync")[0]))
 
     def get(self):
@@ -308,8 +312,7 @@ class HistoricalWeatherDataSync(DataSync):
     view_url = "/historical-weather-data/sync"
     endpoint_class = AsosRequest
 
-    def post(self):
-
+    def build_request(self):
         temp_query = HistoricalData.query.filter(HistoricalData.tempc.isnot(None))
         if temp_query.count() > 0:
             # Get the latest sync timestamp as the start date
@@ -322,18 +325,18 @@ class HistoricalWeatherDataSync(DataSync):
             # If the database is empty, use the start date provided by the config
             start_date = current_app.config["EARLIEST_SYNC_DATE"]
 
-        asos_request = AsosRequest(
+        return AsosRequest(
             start_date=start_date,
             end_date=date.today() + timedelta(days=1),
             tz=current_app.config["TIMEZONE"],
             station=current_app.config["ASOS_STATION"],
         )
-        request = asos_request.send_request()
-        df = asos_request.create_df()
-        HistoricalData.load_df(df)
-        return super().post()
 
 
 class ForecastWeatherDataSync(DataSync):
     view_name = "forecast-weather-data-sync"
     view_url = "/forecast-weather-data/sync"
+    endpoint_class = NwsForecastRequest
+
+    def build_request(self):
+        return NwsForecastRequest(nws_code=current_app.config["NWS_CODE"])
