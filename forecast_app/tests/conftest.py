@@ -58,9 +58,29 @@ def client(app, db):
         yield client
 
 
+# https://stackoverflow.com/questions/15753390/how-can-i-mock-requests-and-the-response
+class MockResponse:
+    def __init__(self, mock_path, status_code):
+        self.status_code = status_code
+        with open(mock_path, "r") as f:
+            self.text = f.read()
+
+
+def mocked_asos_response(*args, **kwargs):
+    mock_path = pytest.FIXTURE_DIR / "asos-response.csv"
+    return MockResponse(mock_path, 200)
+
+
+def mocked_nws_response(*args, **kwargs):
+    mock_path = pytest.FIXTURE_DIR / "nws-response.json"
+    return MockResponse(mock_path, 200)
+
+
 def pytest_configure():
     pytest.FIXTURE_DIR = Path(__file__).parent / "fixtures"
     pytest.load_demo_db = load_demo_db
+    pytest.mocked_asos_response = mocked_asos_response
+    pytest.mocked_nws_response = mocked_nws_response
 
 
 class AuthActions:
