@@ -1,10 +1,13 @@
 import typer
+import datetime
+import os
 from subprocess import Popen
 import requests
 from urllib.parse import urljoin
 from forecast_app import create_app
 from forecast_app.commands import init_db, upload_demo_data
 from forecast_app.config import config_map
+from forecast_app.models import ForecastData, HistoricalData
 from forecast_app.tests.test_weather import TestAsosRequest, TestNwsForecastRequest
 
 typer_app = typer.Typer()
@@ -35,6 +38,7 @@ def demo(config: str = "dev"):
 def deploy(
     config: str = "dev", no_gunicorn: bool = typer.Option(False, "--no-gunicorn")
 ):
+    """Launch the app"""
     # TODO: Combine logging: https://www.linkedin.com/pulse/logs-flask-gunicorn-pedro-henrique-schleder/
 
     config_class = config_map.get(config)
@@ -93,6 +97,7 @@ def post_data(
     username: str = typer.Option("admin", "--username"),
     password: str = typer.Option("admin", "--password"),
 ):
+    """Post historical or forecast data to the site in lieu of going through the UI."""
     session = requests.Session()
     # Login to the site
     response = session.post(
@@ -113,6 +118,32 @@ def post_data(
     assert (
         response.status_code == 200
     ), f"Upload failed. Status code: {response.status_code}"
+
+
+@typer_app.command()
+def export_data_to_csv(
+    export_dir: str = typer.Option(
+        ".", "--export-dir", help="Where should the data be exported?"
+    ),
+    config: str = "dev",
+):
+    """Export historical and forecast data to csv."""
+    export_id = datetime.datetime.now().timestamp()
+    app = create_app(config)
+    historical_data_path = os.path.join(export_dir, f"historical-data-{export_id}.csv")
+    forecast_data_path = os.path.join(export_dir, f"forecast-data-{export_id}.csv")
+    with app.app_context():
+        HistoricalData.to_df().to_csv(historical_data_path, index=False)
+        ForecastData.to_df().to_csv(forecast_data_path, index=False)
+
+
+@typer_app.command()
+def shell(config: str = "dev"):
+    """Launch pdb shell in the app context with common imports"""
+    app = create_app(config)
+    with app.app_context():
+        # Launch pdb
+        breakpoint()
 
 
 if __name__ == "__main__":
