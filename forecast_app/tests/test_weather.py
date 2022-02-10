@@ -32,7 +32,7 @@ class TestAsosRequest:
         print("-----------------------------------------")
 
     def test_send_request(self, app):
-        with patch("requests.get", side_effect=pytest.mocked_asos_response) as mock_get:
+        with pytest.asos_patch as mock_get:
             # Mock request to https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?station=ALO&data=tmpc&year1=2022&month1=1&day1=1&year2=2022&month2=1&day2=14&tz=America%2FNew_York&format=onlycomma&latlon=no&elev=no&missing=M&trace=T&direct=no&report_type=1&report_type=2
             asos_request = AsosRequest(
                 start_date=date(2022, 1, 1),
@@ -45,7 +45,7 @@ class TestAsosRequest:
             assert request.text.startswith("station,valid,tmpc")
 
     def test_create_df(self):
-        with patch("requests.get", side_effect=pytest.mocked_asos_response) as mock_get:
+        with pytest.asos_patch as mock_get:
             asos_request = AsosRequest(
                 start_date=date(2022, 1, 1), end_date=date(2022, 1, 14)
             )
@@ -60,7 +60,7 @@ class TestAsosRequest:
             assert not any(pd.isna(df["tempc"]))
 
     def test_write_response(self, app):
-        with patch("requests.get", side_effect=pytest.mocked_asos_response) as mock_get:
+        with pytest.asos_patch as mock_get:
             asos_request = AsosRequest(
                 start_date=date(2022, 1, 1), end_date=date(2022, 1, 14)
             )
@@ -74,12 +74,12 @@ class TestAsosRequest:
 
 class TestNwsForecastRequest:
     def test_send_request(self):
-        with patch("requests.get", side_effect=pytest.mocked_nws_response) as mock_get:
+        with pytest.nws_patch as mock_get:
             nws_request = NwsForecastRequest().send_request()
             assert nws_request.text.startswith("{")
 
     def test_create_df(self):
-        with patch("requests.get", side_effect=pytest.mocked_nws_response) as mock_get:
+        with pytest.nws_patch as mock_get:
             nws_request = NwsForecastRequest()
             nws_request.send_request()
             df = nws_request.create_df()
@@ -87,7 +87,7 @@ class TestNwsForecastRequest:
             assert df["tempc"].iloc[0] == 2.78
 
     def test_write_response(self, app):
-        with patch("requests.get", side_effect=pytest.mocked_nws_response) as mock_get:
+        with pytest.nws_patch as mock_get:
             nws_request = NwsForecastRequest()
             nws_request.send_request()
             tmp_output_path = app.config["OUTPUT_DIR"] + "/nws-response.json"
