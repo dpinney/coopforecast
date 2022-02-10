@@ -162,8 +162,12 @@ def sync_weather_data(
 ):
     """Sync weather data from ASOS and NWS"""
     session = create_login_session(username, password, BASE_URL)
+    print("Syncing historical weather data...")
     session.post(urljoin(BASE_URL, "/historical-weather-data/sync"))
+    print("Historical weather data completed ✓")
+    print("Syncing forecast weather data...")
     session.post(urljoin(BASE_URL, "/forecast-weather-data/sync"))
+    print("Forecast weather data completed ✓")
 
 
 if __name__ == "__main__":
