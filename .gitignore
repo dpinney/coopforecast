@@ -1,5 +1,6 @@
 test.ipynb
 forecast_app/secret_config.py
+backup/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
