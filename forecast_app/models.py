@@ -178,7 +178,7 @@ class ForecastModel(db.Model):
         )
         # TODO: This doesn't seem right. Is this being tested?
 
-        hd_end_date = min([hld_end_date, hwd_end_date])
+        hd_end_date = min([hld_end_date, hwd_end_date]) if is_prepared else None
         # NOTE: `is_prepared` is necessary to prevent null comparison
         if is_prepared and hd_end_date - fwd_end_date > datetime.timedelta(hours=24):
             is_prepared = False
