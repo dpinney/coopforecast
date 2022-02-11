@@ -211,7 +211,9 @@ class TrainingData:
             raise Exception("timestamp is a required field")
         self.timestamp = timestamp
         self.milliseconds = timestamp.timestamp() * 1000
-        self.value = value
+        # NOTE: Sqlalchemy doesn't like pandas's custom NaN / NaT values.
+        #  It's easiest to just cast them here.
+        self.value = None if pd.isna(value) else value
 
     def __repr__(self):
         return f"<{self.timestamp}: {self.friendly_name} {self.value}>"
