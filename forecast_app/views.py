@@ -23,9 +23,7 @@ class DataView(MethodView):
     displaying historical and forecast data"""
 
     decorators = [flask_login.login_required]
-    # TODO: This should be named "model" not "view"
-    view = None
-    view_key = "value"  # TODO: Update me!
+    model = None
     view_name = None
     title = None
     gist_example = None
@@ -36,26 +34,20 @@ class DataView(MethodView):
 
     def get_table(self):
         query = db.session.query(
-            self.view.timestamp,
-            getattr(self.view, self.view_key),
+            self.model.timestamp,
+            self.model.value,
         )
-        query = query.order_by(desc(self.view.timestamp))
-        return [
-            {"timestamp": timestamp, self.view_key: value} for timestamp, value in query
-        ]
+        query = query.order_by(desc(self.model.timestamp))
+        return [{"timestamp": timestamp, "value": value} for timestamp, value in query]
 
     def get_chart(self):
-        query = db.session.query(
-            self.view.milliseconds, getattr(self.view, self.view_key)
-        )
+        query = db.session.query(self.model.milliseconds, self.model.value)
         data = [list(row) for row in query]
         return data if data and any([row[1] for row in query]) else None
 
     def post(self):
         filepath = upload_file("file")
-        # NOTE: if you take advantage of the `columns` parameter, you must
-        #  update the cli.py::post_data
-        messages = self.view.load_data(filepath)
+        messages = self.model.load_data(filepath)
         return self.get(messages=messages)  # NOTE: A redirect wouldn't work here
 
     def get(self, messages=None):
@@ -71,7 +63,6 @@ class DataView(MethodView):
                 "chart": self.get_chart(),
                 "messages": messages,
                 "title": self.title,
-                "data_name": self.view_key,
                 "gist_example": self.gist_example,
                 "instructions": self.instructions,
                 "hide_table": self.hide_table,
@@ -81,7 +72,7 @@ class DataView(MethodView):
 
 
 class ForecastWeatherDataView(DataView):
-    view = ForecastWeatherData
+    model = ForecastWeatherData
     view_name = "forecast-weather-data"
     title = "Forecast Weather Data"
     gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
@@ -91,7 +82,7 @@ class ForecastWeatherDataView(DataView):
 
 
 class HistoricalLoadDataView(DataView):
-    view = HistoricalLoadData
+    model = HistoricalLoadData
     view_name = "historical-load-data"
     title = "Historical Load Data"
     gist_example = "https://gist.github.com/kmcelwee/ce163d8c9d2871ab4c652382431c7801"
@@ -100,7 +91,7 @@ class HistoricalLoadDataView(DataView):
 
 
 class HistoricalWeatherDataView(DataView):
-    view = HistoricalWeatherData
+    model = HistoricalWeatherData
     view_name = "historical-weather-data"
     title = "Historical Weather Data"
     gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
@@ -304,7 +295,7 @@ class DataSync(MethodView):
         request = self.build_request()
         request.send_request()
         df = request.create_df()
-        self.parent_view.view.load_df(df)
+        self.parent_view.model.load_df(df)
         return redirect(url_for(self.parent_view.view_name))
 
     def get(self):

@@ -120,8 +120,8 @@ class TestDataViews:
     def post_data_view(self, cls, filename=None, final_count=None):
         src_path = pytest.FIXTURE_DIR / filename
         # Ensure that there is no data in the db
-        cls.view.query.delete()
-        assert cls.view.query.count() == 0
+        cls.model.query.delete()
+        assert cls.model.query.count() == 0
         upload_file = FileStorage(
             stream=open(src_path, "rb"),
             filename=src_path.name,
@@ -131,7 +131,7 @@ class TestDataViews:
             request.files = {"file": upload_file}
             cls().post()
 
-        assert cls.view.query.count() == final_count
+        assert cls.model.query.count() == final_count
 
     def test_data_post(self, db, app, client, auth):
         self.app = app
