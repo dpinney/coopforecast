@@ -5,7 +5,12 @@ import time
 from flask import current_app
 
 from forecast_app.utils import db
-from forecast_app.models import ForecastData, ForecastModel, HistoricalData
+from forecast_app.models import (
+    ForecastWeatherData,
+    ForecastModel,
+    HistoricalLoadData,
+    HistoricalWeatherData,
+)
 
 
 def init_db():
@@ -23,17 +28,21 @@ def upload_demo_data(models=True):
     """Uploads the demo data to the database."""
     demo_data = Path("forecast_app/static/demo-data")
     # Load historical data
-    historical_data = demo_data / "demo-ncent-historical.csv"
-    HistoricalData.load_data(historical_data)
+    historical_load_data = demo_data / "demo-ncent-historical-load.csv"
+    HistoricalLoadData.load_data(historical_load_data)
+    historical_weather_data = demo_data / "demo-ncent-historical-temp.csv"
+    HistoricalWeatherData.load_data(historical_weather_data)
     print("Historical data uploaded.")
 
     # Load forecast data
-    forecast_data = demo_data / "demo-ncent-forecast.csv"
-    ForecastData.load_data(forecast_data, columns=[current_app.config["TEMP_COL"]])
+    forecast_weather_data = demo_data / "demo-ncent-forecast-temp.csv"
+    ForecastWeatherData.load_data(forecast_weather_data)
     print("Forecast data uploaded.")
 
     if models:
-        mock_load = pd.read_csv(forecast_data)["KW"].tolist()
+        return
+        forecast_load_data = demo_data / "demo-ncent-forecast-load.csv"
+        mock_load = pd.read_csv(forecast_load_data)["KW"].tolist()
         mock_model = ForecastModel()
         mock_model.loads = mock_load
         mock_model.accuracy = {"test": 96.5, "train": 98.5}

@@ -1,5 +1,5 @@
 from datetime import datetime
-from forecast_app.models import HistoricalData
+from forecast_app.models import HistoricalLoadData
 
 
 def test_db_init(db):
@@ -8,17 +8,17 @@ def test_db_init(db):
 
 
 def test_teardown(db):
-    HistoricalData.query.count() == 0
-    historical_data = HistoricalData(timestamp=datetime(2020, 1, 1), load=1)
+    HistoricalLoadData.query.count() == 0
+    historical_data = HistoricalLoadData(timestamp=datetime(2020, 1, 1), value=1)
     db.session.add(historical_data)
     db.session.commit()
-    assert HistoricalData.query.count() == 1
+    assert HistoricalLoadData.query.count() == 1
 
 
 def test_teardown2(db):
     """Ensure that the database is empty at the end of each test."""
-    HistoricalData.query.count() == 0
-    historical_data = HistoricalData(timestamp=datetime(2020, 1, 1), load=1)
+    HistoricalLoadData.query.count() == 0
+    historical_data = HistoricalLoadData(timestamp=datetime(2020, 1, 1), value=1)
     db.session.add(historical_data)
     db.session.commit()
-    assert HistoricalData.query.count() == 1
+    assert HistoricalLoadData.query.count() == 1

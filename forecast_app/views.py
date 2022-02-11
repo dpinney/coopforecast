@@ -8,7 +8,12 @@ import datetime
 from multiprocessing import Process
 from datetime import date, timedelta
 
-from forecast_app.models import ForecastData, HistoricalData, ForecastModel
+from forecast_app.models import (
+    ForecastWeatherData,
+    HistoricalLoadData,
+    HistoricalWeatherData,
+    ForecastModel,
+)
 from forecast_app.utils import db, ADMIN_USER, upload_file
 from forecast_app.weather import AsosRequest, NwsForecastRequest
 
@@ -20,7 +25,7 @@ class DataView(MethodView):
     decorators = [flask_login.login_required]
     # TODO: This should be named "model" not "view"
     view = None
-    view_key = None
+    view_key = "value"  # TODO: Update me!
     view_name = None
     title = None
     gist_example = None
@@ -76,8 +81,7 @@ class DataView(MethodView):
 
 
 class ForecastWeatherDataView(DataView):
-    view = ForecastData
-    view_key = "tempc"
+    view = ForecastWeatherData
     view_name = "forecast-weather-data"
     title = "Forecast Weather Data"
     gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
@@ -87,8 +91,7 @@ class ForecastWeatherDataView(DataView):
 
 
 class HistoricalLoadDataView(DataView):
-    view = HistoricalData
-    view_key = "load"
+    view = HistoricalLoadData
     view_name = "historical-load-data"
     title = "Historical Load Data"
     gist_example = "https://gist.github.com/kmcelwee/ce163d8c9d2871ab4c652382431c7801"
@@ -97,8 +100,7 @@ class HistoricalLoadDataView(DataView):
 
 
 class HistoricalWeatherDataView(DataView):
-    view = HistoricalData
-    view_key = "tempc"
+    view = HistoricalWeatherData
     view_name = "historical-weather-data"
     title = "Historical Weather Data"
     gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
@@ -241,8 +243,17 @@ class ForecastModelListView(MethodView):
             model_start_date,
             model_end_date,
         ) = ForecastModel.is_prepared()
-        hd_is_prepared, hd_start_date, hd_end_date = HistoricalData.is_prepared()
-        fd_is_prepared, fd_start_date, fd_end_date = ForecastData.is_prepared()
+        # TODO: Work through "is prepared" functionality
+        hd_is_prepared, hd_start_date, hd_end_date = (
+            False,
+            None,
+            None,
+        )  # HistoricalData.is_prepared()
+        fd_is_prepared, fd_start_date, fd_end_date = (
+            False,
+            None,
+            None,
+        )  # ForecastData.is_prepared()
 
         return render_template(
             "forecast-model-list.html",
@@ -315,11 +326,12 @@ class HistoricalWeatherDataSync(DataSync):
     parent_view = HistoricalWeatherDataView
 
     def build_request(self):
-        temp_query = HistoricalData.query.filter(HistoricalData.tempc.isnot(None))
-        if temp_query.count() > 0:
+        if HistoricalWeatherData.query.count() > 0:
             # Get the latest sync timestamp as the start date
             start_date = (
-                temp_query.order_by(HistoricalData.timestamp.desc())
+                HistoricalWeatherData.query.order_by(
+                    HistoricalWeatherData.timestamp.desc()
+                )
                 .first()
                 .timestamp.date()
             )

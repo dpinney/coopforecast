@@ -12,7 +12,11 @@ from forecast_app.views import (
     HistoricalWeatherDataView,
     ForecastWeatherDataView,
 )
-from forecast_app.models import ForecastModel, ForecastData, HistoricalData
+from forecast_app.models import (
+    ForecastModel,
+    ForecastWeatherData,
+    HistoricalWeatherData,
+)
 from forecast_app.commands import upload_demo_data
 
 
@@ -195,7 +199,7 @@ class TestHistoricalWeatherDataSync:
         with pytest.asos_patch:
             response = client.post(HistoricalWeatherDataSync.view_url)
         assert response.status_code == 302
-        assert HistoricalData.query.count() == 312
+        assert HistoricalWeatherData.query.count() == 312
 
 
 class TestForecastWeatherDataSync:
@@ -208,4 +212,4 @@ class TestForecastWeatherDataSync:
         with pytest.nws_patch:
             response = client.post(ForecastWeatherDataSync.view_url)
         assert response.status_code == 302
-        assert ForecastData.query.count() == 156
+        assert ForecastWeatherData.query.count() == 156

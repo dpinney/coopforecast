@@ -8,7 +8,11 @@ from urllib.parse import urljoin
 from forecast_app import create_app
 from forecast_app.commands import init_db, upload_demo_data
 from forecast_app.config import config_map
-from forecast_app.models import ForecastData, HistoricalData
+from forecast_app.models import (
+    ForecastWeatherData,
+    HistoricalLoadData,
+    HistoricalWeatherData,
+)
 from forecast_app.views import HistoricalWeatherDataSync, ForecastWeatherDataSync
 from forecast_app.tests.test_weather import TestAsosRequest, TestNwsForecastRequest
 
@@ -138,11 +142,13 @@ def export_data_to_csv(
     """Export historical and forecast data to csv."""
     export_id = datetime.datetime.now().timestamp()
     app = create_app(config)
-    historical_data_path = os.path.join(export_dir, f"historical-data-{export_id}.csv")
-    forecast_data_path = os.path.join(export_dir, f"forecast-data-{export_id}.csv")
+    historical_load_path = os.path.join(export_dir, f"historical-load-{export_id}.csv")
+    historical_temp_path = os.path.join(export_dir, f"historical-temp-{export_id}.csv")
+    forecast_temp_path = os.path.join(export_dir, f"forecast-data-{export_id}.csv")
     with app.app_context():
-        HistoricalData.to_df().to_csv(historical_data_path, index=False)
-        ForecastData.to_df().to_csv(forecast_data_path, index=False)
+        HistoricalLoadData.to_df().to_csv(historical_load_path, index=False)
+        HistoricalWeatherData.to_df().to_csv(historical_temp_path, index=False)
+        ForecastWeatherData.to_df().to_csv(forecast_temp_path, index=False)
 
 
 @typer_app.command()

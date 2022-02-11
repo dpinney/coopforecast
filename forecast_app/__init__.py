@@ -5,7 +5,6 @@ from forecast_app.utils import (
     db,
 )
 from forecast_app import views
-from forecast_app.models import HistoricalData
 from forecast_app.config import config_map, SECRET_VARS
 
 

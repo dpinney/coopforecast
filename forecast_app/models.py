@@ -14,6 +14,7 @@ class ForecastModel(db.Model):
     creation_date = Column(DateTime, primary_key=True)
     slug = Column(String, unique=True, nullable=False)
     milliseconds = Column(JSON, nullable=False)
+    # TODO: This is start_datetime and end_datetime
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
     tempcs = Column(JSON, nullable=False)
@@ -40,11 +41,14 @@ class ForecastModel(db.Model):
         self.process_file = os.path.join(self.output_dir, "PID.txt")
 
         self.tempcs = [
-            row.tempc for row in ForecastData.query.all()
+            row.value for row in ForecastWeatherData.query.all()
         ]  # Ensure length is appropriate
         # NOTE: Cannot JSON serialize datetime objects
         # TODO: This should span start_date to end_date
-        self.milliseconds = [row.milliseconds for row in ForecastData.query.all()]
+        self.milliseconds = [
+            (self.start_date + datetime.timedelta(hours=i)).timestamp() * 1000
+            for i in range(24)
+        ]
         self.epochs = current_app.config["EPOCHS"]
 
     @property
@@ -123,8 +127,9 @@ class ForecastModel(db.Model):
 
     @property
     def df(self):
-        df_h = HistoricalData.to_df().sort_values("dates")
-        df_f = ForecastData.to_df().sort_values("dates")
+        # TODO: MAKE SURE THIS WORKS
+        df_h = HistoricalLoadData.to_df().sort_values("dates")
+        df_f = ForecastWeatherData.to_df().sort_values("dates")
         df_f = df_f[
             (self.start_date <= df_f["dates"]) & (df_f["dates"] <= self.end_date)
         ]
@@ -156,8 +161,16 @@ class ForecastModel(db.Model):
 
     @classmethod
     def is_prepared(cls):
-        hd_is_prepared, hd_start_date, hd_end_date = HistoricalData.is_prepared()
-        fd_is_prepared, fd_start_date, fd_end_date = ForecastData.is_prepared()
+        hd_is_prepared, hd_start_date, hd_end_date = (
+            False,
+            None,
+            None,
+        )  # HistoricalData.is_prepared()
+        fd_is_prepared, fd_start_date, fd_end_date = (
+            False,
+            None,
+            None,
+        )  # ForecastData.is_prepared()
         is_prepared = True if hd_is_prepared and fd_is_prepared else False
         # TODO: This doesn't seem right. Is this being tested?
         # NOTE: `is_prepared` is necessary to prevent null comparison
@@ -176,122 +189,41 @@ class ForecastModel(db.Model):
     #     self.save()
 
 
-class HistoricalData(db.Model):
-    __tablename__ = "historical_data"
-    milliseconds = Column(Integer)
-    load = Column(Float)
+class TrainingData:
+    __tablename__ = None
+    friendly_name = None
+    column_name = None
     timestamp = Column(DateTime, primary_key=True)
-    tempc = Column(Float)
+    milliseconds = Column(Integer)
+    value = Column(Float)
 
-    def __init__(self, timestamp=None, load=None, tempc=None):
+    def __init__(self, timestamp=None, value=None):
         if not timestamp:
             raise Exception("timestamp is a required field")
-        self.load = load
         self.timestamp = timestamp
         self.milliseconds = timestamp.timestamp() * 1000
-        self.tempc = tempc
+        self.value = value
 
     def __repr__(self):
-        return f"<Historical {self.timestamp}: Load {self.load}, Temperature (°C) {self.tempc}>"
-
-    @classmethod
-    def load_data(cls, filepath, columns=None):
-        return _load_data(cls, filepath, columns, df=None)
+        return f"<{self.timestamp}: {self.friendly_name} {self.value}>"
 
     @classmethod
     def load_df(cls, df):
-        return _load_data(cls, "", columns=None, df=df)
+        return cls.load_data("", df=df)
 
     @classmethod
     def to_df(cls):
-        return _to_df(cls)
+        return pd.DataFrame(
+            [
+                # TODO: Rename dates to timestamp, or just make a universal var
+                {"dates": row.timestamp, cls.column_name: row.value}
+                for row in cls.query.all()
+            ]
+        )
 
     @classmethod
-    def is_prepared(cls):
-        is_prepared = True
-        df = cls.to_df().dropna()
-        if df.shape[0] < 24 * 365 * 3:
-            is_prepared = False
-        if is_prepared:
-            start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
-        else:
-            start_date, end_date = None, None
-        return is_prepared, start_date, end_date
-
-
-class ForecastData(db.Model):
-    __tablename__ = "forecast_data"
-    milliseconds = Column(Integer)
-    load = Column(Float)
-    timestamp = Column(DateTime, primary_key=True)
-    tempc = Column(Float)
-
-    def __init__(self, timestamp=None, load=None, tempc=None):
-        if not timestamp:
-            raise Exception("timestamp is a required field")
-        self.load = load
-        self.timestamp = timestamp
-        self.milliseconds = timestamp.timestamp() * 1000
-        self.tempc = tempc
-
-    def __repr__(self):
-        return f"<Forecast {self.timestamp}: Load {self.load}, Temperature (°C) {self.tempc}>"
-
-    @classmethod
-    def load_data(cls, filepath, columns=None):
-        return _load_data(cls, filepath, columns)
-
-    @classmethod
-    def load_df(cls, df):
-        return _load_data(cls, "", columns=None, df=df)
-
-    @classmethod
-    def to_df(cls):
-        return _to_df(cls)
-
-    @classmethod
-    def is_prepared(cls):
-        df = cls.to_df()
-        if df.shape[0] < 24:
-            return False, None, None
-        else:
-            df = df.dropna(subset=["tempc"])
-            start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
-            return True, start_date, end_date
-
-
-def _to_df(cls):
-    return pd.DataFrame(
-        [
-            # TODO: Rename dates to timestamp, or just make a universal var
-            {"dates": row.timestamp, "load": row.load, "tempc": row.tempc}
-            for row in cls.query.all()
-        ]
-    )
-
-
-def _load_data(cls, filepath, columns=None, df=None):
-    # NOTE: Entering a csv with both weather and load will overwrite both.
-    #  The columns parameter can prevent this.
-    # TODO: validation should happen here
-    # TODO: This is a mess.
-    messages = []
-    LOAD_COL = current_app.config["LOAD_COL"]
-    TEMP_COL = current_app.config["TEMP_COL"]
-    HOUR_COL = current_app.config["HOUR_COL"]
-    DATE_COL = current_app.config["DATE_COL"]
-    try:
-        if df is None:
-            if str(filepath).endswith(".csv"):
-                df = pd.read_csv(filepath)
-            elif str(filepath).endswith("xlsx"):
-                df = pd.read_excel(filepath)
-            else:
-                raise Exception("File extension not recognized")
-
-        # Some columns have spaces and quotes in their names.
-        df.columns = [col.lower().strip(' "') for col in df.columns]
-
+    def _parse_dates(cls, df, DATE_COL, HOUR_COL):
+        # TODO: Test me!
         if "timestamp" not in df.columns:
             df[DATE_COL] = pd.to_datetime(df[DATE_COL])
 
@@ -316,54 +248,138 @@ def _load_data(cls, filepath, columns=None, df=None):
         # Ignoreing DST for now
         df.drop_duplicates(subset=["timestamp"], inplace=True)
 
-        for column in df.columns:
-            if column not in ["timestamp", LOAD_COL, TEMP_COL, HOUR_COL, DATE_COL]:
-                messages.append(
-                    {"level": "warning", "text": f'Column "{column}" not recognized.'}
-                )
+        return df
 
-        if columns:
-            df = df[set(columns + ["timestamp"])]
+    @classmethod
+    def load_data(cls, filepath, df=None):
+        # NOTE: Entering a csv with both weather and load will overwrite both.
+        #  The columns parameter can prevent this.
+        # TODO: validation should happen here
+        # TODO: This is a mess.
+        messages = []
+        LOAD_COL = current_app.config["LOAD_COL"]
+        TEMP_COL = current_app.config["TEMP_COL"]
+        HOUR_COL = current_app.config["HOUR_COL"]
+        DATE_COL = current_app.config["DATE_COL"]
 
-        # If uploading data for the first time, don't perform tens of thousands of queries
-        if cls.query.count() == 0:
-            for _, row in df.iterrows():
-                instance = cls(
-                    timestamp=row["timestamp"],
-                    load=row.get(LOAD_COL),
-                    tempc=row.get(TEMP_COL),
-                )
-                db.session.add(instance)
-            db.session.commit()
-        else:
-            for _, row in df.iterrows():
-                instance = cls.query.get(row["timestamp"])
-                if instance:
-                    instance.load = row.get(LOAD_COL, instance.load)
-                    instance.tempc = row.get(TEMP_COL, instance.tempc)
+        VAL_COL = LOAD_COL if cls.column_name == "load" else TEMP_COL
+
+        try:
+            if df is None:
+                if str(filepath).endswith(".csv"):
+                    df = pd.read_csv(filepath)
+                elif str(filepath).endswith("xlsx"):
+                    df = pd.read_excel(filepath)
+                elif str(filepath) == "":
+                    raise Exception("Please attach a file before uploading.")
                 else:
+                    raise Exception("File extension not recognized.")
+
+            # Some columns have spaces and quotes in their names.
+            df.columns = [col.lower().strip(' "') for col in df.columns]
+
+            df = cls._parse_dates(df, DATE_COL, HOUR_COL)
+
+            for column in df.columns:
+                if column not in ["timestamp", VAL_COL, HOUR_COL, DATE_COL]:
+                    messages.append(
+                        {
+                            "level": "warning",
+                            "text": f'Warning: column "{column}" will not be imported.',
+                        }
+                    )
+
+            # Select only the columns relevant for this class
+            df = df[[VAL_COL, "timestamp"]]
+
+            # If uploading data for the first time, don't perform tens of thousands of queries
+            if cls.query.count() == 0:
+                for _, row in df.iterrows():
                     instance = cls(
                         timestamp=row["timestamp"],
-                        load=row.get(LOAD_COL),
-                        tempc=row.get(TEMP_COL),
+                        value=row.get(VAL_COL),
                     )
-                db.session.add(instance)
-            db.session.commit()
+                    db.session.add(instance)
+                db.session.commit()
+            else:
+                for _, row in df.iterrows():
+                    instance = cls.query.get(row["timestamp"])
+                    if instance:
+                        instance.value = row.get(VAL_COL, instance.value)
+                    else:
+                        instance = cls(
+                            timestamp=row["timestamp"],
+                            value=row.get(VAL_COL),
+                        )
+                    db.session.add(instance)
+                db.session.commit()
 
-        messages.append(
-            {
-                "level": "success",
-                "text": f"Success! Loaded {len(df)} historical data points",
-            }
-        )
-    except Exception as e:
-        messages.append(
-            {
-                "level": "danger",
-                "text": f"Failed to load data. {e}",
-            }
-        )
-        # TODO: Add this logic to all try/excepts
-        if current_app.config["DEBUG"]:
-            raise e
-    return messages
+            messages.append(
+                {
+                    "level": "success",
+                    "text": f"Success! Loaded {len(df)} historical data points",
+                }
+            )
+        except Exception as e:
+            messages.append(
+                {
+                    "level": "danger",
+                    "text": f"Failed to load data. {e}",
+                }
+            )
+            # TODO: Add this logic to all try/excepts
+            if current_app.config["DEBUG"]:
+                raise e
+        return messages
+
+
+class ForecastWeatherData(TrainingData, db.Model):
+    __tablename__ = "forecast_weather_data"
+    friendly_name = "Forecast Temperature"
+    column_name = "tempc"
+
+    @classmethod
+    def is_prepared(cls):
+        df = cls.to_df()
+        if df.shape[0] < 24:
+            return False, None, None
+        else:
+            df = df.dropna(subset=["tempc"])
+            start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
+            return True, start_date, end_date
+
+
+class HistoricalWeatherData(TrainingData, db.Model):
+    __tablename__ = "historical_weather_data"
+    friendly_name = "Historical Temperature"
+    column_name = "tempc"
+
+    @classmethod
+    def is_prepared(cls):
+        is_prepared = True
+        df = cls.to_df().dropna()
+        if df.shape[0] < 24 * 365 * 3:
+            is_prepared = False
+        if is_prepared:
+            start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
+        else:
+            start_date, end_date = None, None
+        return is_prepared, start_date, end_date
+
+
+class HistoricalLoadData(TrainingData, db.Model):
+    __tablename__ = "historical_load_data"
+    friendly_name = "Historical Load"
+    column_name = "load"
+
+    @classmethod
+    def is_prepared(cls):
+        is_prepared = True
+        df = cls.to_df().dropna()
+        if df.shape[0] < 24 * 365 * 3:
+            is_prepared = False
+        if is_prepared:
+            start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
+        else:
+            start_date, end_date = None, None
+        return is_prepared, start_date, end_date
