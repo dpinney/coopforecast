@@ -40,7 +40,6 @@ def upload_demo_data(models=True):
     print("Forecast data uploaded.")
 
     if models:
-        return
         forecast_load_data = demo_data / "demo-ncent-forecast-load.csv"
         mock_load = pd.read_csv(forecast_load_data)["KW"].tolist()
         mock_model = ForecastModel()

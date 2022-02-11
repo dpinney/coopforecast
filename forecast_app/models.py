@@ -161,24 +161,31 @@ class ForecastModel(db.Model):
 
     @classmethod
     def is_prepared(cls):
-        hd_is_prepared, hd_start_date, hd_end_date = (
-            False,
-            None,
-            None,
-        )  # HistoricalData.is_prepared()
-        fd_is_prepared, fd_start_date, fd_end_date = (
-            False,
-            None,
-            None,
-        )  # ForecastData.is_prepared()
-        is_prepared = True if hd_is_prepared and fd_is_prepared else False
+        hld_is_prepared, hld_start_date, hld_end_date = HistoricalLoadData.is_prepared()
+        (
+            hwd_is_prepared,
+            hwd_start_date,
+            hwd_end_date,
+        ) = HistoricalWeatherData.is_prepared()
+        (
+            fwd_is_prepared,
+            fwd_start_date,
+            fwd_end_date,
+        ) = ForecastWeatherData.is_prepared()
+
+        is_prepared = (
+            True if all([hld_is_prepared, hwd_is_prepared, fwd_is_prepared]) else False
+        )
         # TODO: This doesn't seem right. Is this being tested?
+
+        hd_end_date = min([hld_end_date, hwd_end_date])
         # NOTE: `is_prepared` is necessary to prevent null comparison
-        if is_prepared and hd_end_date - fd_end_date > datetime.timedelta(hours=24):
+        if is_prepared and hd_end_date - fwd_end_date > datetime.timedelta(hours=24):
             is_prepared = False
 
         start_date = hd_end_date + datetime.timedelta(hours=1) if is_prepared else None
         end_date = hd_end_date + datetime.timedelta(hours=24) if is_prepared else None
+
         return is_prepared, start_date, end_date
 
     # TODO: This should be at the end of launch_model

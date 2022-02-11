@@ -243,17 +243,9 @@ class ForecastModelListView(MethodView):
             model_start_date,
             model_end_date,
         ) = ForecastModel.is_prepared()
-        # TODO: Work through "is prepared" functionality
-        hd_is_prepared, hd_start_date, hd_end_date = (
-            False,
-            None,
-            None,
-        )  # HistoricalData.is_prepared()
-        fd_is_prepared, fd_start_date, fd_end_date = (
-            False,
-            None,
-            None,
-        )  # ForecastData.is_prepared()
+        # TODO: Add historical weather data to view
+        hd_is_prepared, hd_start_date, hd_end_date = HistoricalLoadData.is_prepared()
+        fd_is_prepared, fd_start_date, fd_end_date = ForecastWeatherData.is_prepared()
 
         return render_template(
             "forecast-model-list.html",
