@@ -127,8 +127,10 @@ class ForecastModel(db.Model):
 
     @property
     def df(self):
-        # TODO: MAKE SURE THIS WORKS
-        df_h = HistoricalLoadData.to_df().sort_values("dates")
+        df_hl = HistoricalLoadData.to_df().sort_values("dates")
+        df_hw = HistoricalWeatherData.to_df().sort_values("dates")
+        df_h = pd.merge(df_hl, df_hw, on="dates", how="outer")
+
         df_f = ForecastWeatherData.to_df().sort_values("dates")
         df_f = df_f[
             (self.start_date <= df_f["dates"]) & (df_f["dates"] <= self.end_date)
