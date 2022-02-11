@@ -108,7 +108,9 @@ def post_data(
     filepath: str,
     BASE_URL: str = typer.Option("http://localhost:5000", "--url"),
     type: str = typer.Option(
-        "historical", "--type", help="Choices are `forecast` or `historical`"
+        "historical-load",
+        "--type",
+        help="Choices are `forecast-weather`, `historical-weather`, or `historical-load`",
     ),
     username: str = typer.Option("admin", "--username"),
     password: str = typer.Option("admin", "--password"),
@@ -122,11 +124,15 @@ def post_data(
 
     # /forecast-load-data can handle both weather or load data, so we can simplify
     #  the cli and just intuiting what the user needs via the file they upload.
-    endpoint = (
-        "/historical-load-data" if type == "historical" else "/forecast-load-data"
-    )
+    endpoint_map = {
+        "forecast-weather": "/forecast-weather-data",
+        "historical-weather": "/historical-weather-data",
+        "historical-load": "/historical-load-data",
+    }
+    if type not in endpoint_map:
+        raise ValueError(f"Invalid data type: {type}. See --help for options.")
 
-    response = session.post(urljoin(BASE_URL, endpoint), files=files)
+    response = session.post(urljoin(BASE_URL, endpoint_map[type]), files=files)
     assert (
         response.status_code == 200
     ), f"Upload failed. Status code: {response.status_code}"
