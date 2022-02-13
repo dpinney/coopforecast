@@ -32,6 +32,23 @@ class DataView(MethodView):
     # Variable for whether user can sync data with external API
     sync_request = None
 
+    def get_summary(self):
+        if self.model.query.count() == 0:
+            return None
+
+        return {
+            "count": self.model.query.count(),
+            "start_datetime": self.model.query.order_by(self.model.timestamp)
+            .first()
+            .timestamp,
+            "end_datetime": self.model.query.order_by(self.model.timestamp.desc())
+            .first()
+            .timestamp,
+            "missing_values": self.model.query.filter(
+                pd.isna(self.model.value)
+            ).count(),
+        }
+
     def get_table(self):
         query = db.session.query(
             self.model.timestamp,
@@ -67,6 +84,7 @@ class DataView(MethodView):
                 "instructions": self.instructions,
                 "hide_table": self.hide_table,
                 "sync_request": self.sync_request,
+                "summary": self.get_summary(),
             },
         )
 

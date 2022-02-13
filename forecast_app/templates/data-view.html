@@ -39,6 +39,31 @@
   </div>
 </div>
 
+{% if summary %}
+<div class="card shadow mb-4" id="chart">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-chart" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-chart">
+    <h6 class="m-0 font-weight-bold text-primary">Data summary</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-chart">
+    <div class="card-body">
+      <dl>
+        <dt>Number of data points</dt>
+        <dd>{{ summary.count }}</dd>
+        <dt>First timestamp</dt>
+        <dd>{{ summary.start_datetime }}</dd>
+        <dt>Latest timestamp</dt>
+        <dd>{{ summary.end_datetime }}</dd>
+        <dt>Missing data points</dt>
+        <dd>{{ summary.missing_values }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {% if chart %}
 <div class="card shadow mb-4" id="chart">
   <!-- Card Header - Accordion -->

@@ -2,7 +2,7 @@ import pandas as pd
 from flask import request
 import pytest
 from werkzeug.datastructures import FileStorage
-from datetime import date
+from datetime import date, datetime
 
 from forecast_app.views import (
     ForecastView,
@@ -105,6 +105,20 @@ class TestDataViews:
     def test_get_table(self):
         # TODO: Test that descending order
         pass
+
+    def test_get_summary(self, db, app):
+        for cls in self.classes:
+            summary = cls().get_summary()
+            assert summary is None
+
+        pytest.load_demo_db(app)
+        forecast_summary = ForecastWeatherDataView().get_summary()
+        assert forecast_summary["count"] == 24
+        assert forecast_summary["start_datetime"] == datetime(2019, 1, 1, 0, 0, 0)
+        assert forecast_summary["end_datetime"] == datetime(2019, 1, 1, 23, 0, 0)
+        assert forecast_summary["missing_values"] == 0
+
+        # TODO: Test that missing values are counted
 
     def test_get_chart(self, db, app):
         for cls in self.classes:
