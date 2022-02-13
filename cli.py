@@ -139,15 +139,19 @@ def post_data(
 
 
 @typer_app.command()
-def export_data_to_csv(
+def backup(
     export_dir: str = typer.Option(
-        ".", "--export-dir", help="Where should the data be exported?"
+        "backup", "--export-dir", help="Where should the data be exported?"
     ),
     config: str = "dev",
 ):
     """Export historical and forecast data to csv."""
-    export_id = datetime.datetime.now().timestamp()
+    export_id = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     app = create_app(config)
+
+    export_dir = os.path.join(export_dir, str(export_id))
+    os.makedirs(export_dir)
+
     historical_load_path = os.path.join(export_dir, f"historical-load-{export_id}.csv")
     historical_temp_path = os.path.join(export_dir, f"historical-temp-{export_id}.csv")
     forecast_temp_path = os.path.join(export_dir, f"forecast-data-{export_id}.csv")
@@ -155,6 +159,14 @@ def export_data_to_csv(
         HistoricalLoadData.to_df().to_csv(historical_load_path, index=False)
         HistoricalWeatherData.to_df().to_csv(historical_temp_path, index=False)
         ForecastWeatherData.to_df().to_csv(forecast_temp_path, index=False)
+
+    local_db = app.config["SQLALCHEMY_DATABASE_URI"].split("///")[1]
+    # TODO: If db is not stored locally, this won't work.
+    db_path = os.path.join("forecast_app", local_db)
+    backup_db_path = os.path.join(
+        export_dir, f"{local_db.split('/')[-1]}-{export_id}.db"
+    )
+    os.popen(f"cp {db_path} {backup_db_path}")
 
 
 @typer_app.command()
