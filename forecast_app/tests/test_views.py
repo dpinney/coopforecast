@@ -16,8 +16,9 @@ from forecast_app.models import (
     ForecastModel,
     ForecastWeatherData,
     HistoricalWeatherData,
+    HistoricalLoadData,
 )
-from forecast_app.commands import upload_demo_data
+from forecast_app.commands import upload_demo_data, init_db
 
 
 def test_templates(app, auth, client):
@@ -119,6 +120,10 @@ class TestDataViews:
         assert forecast_summary["missing_values"] == 0
 
         # TODO: Test that missing values are counted
+        init_db()
+        HistoricalLoadData.load_data(pytest.FIXTURE_DIR / "uncontinuous.csv")
+        load_summary = HistoricalLoadDataView().get_summary()
+        assert load_summary["missing_values"] == 6
 
     def test_get_chart(self, db, app):
         for cls in self.classes:

@@ -80,6 +80,7 @@ def mocked_nws_response(*args, **kwargs):
 def pytest_configure():
     pytest.FIXTURE_DIR = Path(__file__).parent / "fixtures"
     pytest.load_demo_db = load_demo_db
+    pytest.init_db = init_db
     pytest.asos_patch = patch("requests.get", side_effect=mocked_asos_response)
     pytest.nws_patch = patch("requests.get", side_effect=mocked_nws_response)
 

@@ -2,7 +2,7 @@ import pandas as pd
 from flask import render_template, redirect, url_for, request, current_app
 from flask.views import MethodView, View
 import flask_login
-from sqlalchemy import desc
+from sqlalchemy import desc, null
 import time
 import datetime
 from multiprocessing import Process
@@ -45,7 +45,7 @@ class DataView(MethodView):
             .first()
             .timestamp,
             "missing_values": self.model.query.filter(
-                pd.isna(self.model.value)
+                self.model.value == null()
             ).count(),
         }
 
