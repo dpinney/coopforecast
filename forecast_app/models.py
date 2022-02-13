@@ -207,7 +207,7 @@ class TrainingData:
     value = Column(Float)
 
     def __init__(self, timestamp=None, value=None):
-        if not timestamp:
+        if pd.isna(timestamp):
             raise Exception("timestamp is a required field")
         self.timestamp = timestamp
         self.milliseconds = timestamp.timestamp() * 1000
@@ -217,6 +217,9 @@ class TrainingData:
 
     def __repr__(self):
         return f"<{self.timestamp}: {self.friendly_name} {self.value}>"
+
+    def update_value(self, value):
+        self.value = None if pd.isna(value) else value
 
     @classmethod
     def load_df(cls, df):
@@ -321,7 +324,7 @@ class TrainingData:
                 for _, row in df.iterrows():
                     instance = cls.query.get(row["timestamp"])
                     if instance:
-                        instance.value = row.get(VAL_COL, instance.value)
+                        instance.update_value(row.get(VAL_COL, instance.value))
                     else:
                         instance = cls(
                             timestamp=row["timestamp"],
