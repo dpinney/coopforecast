@@ -21,6 +21,9 @@ class AsosRequest:
     * ASOS User's Guide: https://www.weather.gov/media/asos/aum-toc.pdf
     """
 
+    # TODO: The user should be able to access the request url before sending the request
+    #  both this and the Nws API should be changed
+
     base_url = "https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py"
 
     def __init__(
@@ -76,8 +79,9 @@ class AsosRequest:
         df = df[["timestamp", "tempc"]]
         series = df.groupby("timestamp")["tempc"].mean()
 
-        # Cast as a dataframe
+        # Cast as a dataframe and ensure a continuous index
         df_n = pd.DataFrame(series)
+        df_n = df_n.resample("h").last()
         df_n["timestamp"] = df_n.index
         return df_n
 

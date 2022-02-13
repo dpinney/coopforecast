@@ -17,8 +17,13 @@ from forecast_app.models import (
 
 
 class TestHistoricalLoadData:
-    def test_load_data(self, db):
-        assert HistoricalLoadData.query.get(datetime(2002, 1, 1)) is None
+    def test_load_data(self, db, app):
+        # NOTE: If this is placed after the next code block, the test will fail (?)
+        fixture_path = pytest.FIXTURE_DIR / "uncontinuous.csv"
+        HistoricalLoadData.load_data(fixture_path)
+        assert pd.isna(HistoricalLoadData.query.get(datetime(2002, 1, 1, 6)).value)
+        assert HistoricalLoadData.query.count() == 72
+
         fixture_path = pytest.FIXTURE_DIR / "historical-load.csv"
         HistoricalLoadData.load_data(fixture_path)
         obj = HistoricalLoadData.query.get(datetime(2002, 1, 1, 3))
@@ -29,11 +34,12 @@ class TestHistoricalLoadData:
         assert obj.value == 13319
 
         # Ensure that a user can update the data
-        fixture_path2 = pytest.FIXTURE_DIR / "historical-load-update.csv"
-        HistoricalLoadData.load_data(fixture_path2)
-        obj = HistoricalLoadData.query.get(datetime(2002, 1, 2, 12))
-        assert obj
-        assert obj.value == 43
+        # FEATURE CURRENTLY DISABLED
+        # fixture_path2 = pytest.FIXTURE_DIR / "historical-load-update.csv"
+        # HistoricalLoadData.load_data(fixture_path2)
+        # obj = HistoricalLoadData.query.get(datetime(2002, 1, 2, 12))
+        # assert obj
+        # assert obj.value == 43
 
     def test_init(self, db):
         obj = HistoricalLoadData(timestamp=datetime(2020, 1, 1), value=42.0)

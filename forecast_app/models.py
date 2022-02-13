@@ -259,6 +259,11 @@ class TrainingData:
         # Ignoreing DST for now
         df.drop_duplicates(subset=["timestamp"], inplace=True)
 
+        # Make datetime continuous. Don't fill with values right now.
+        df = df.set_index("timestamp")
+        df = df.resample("h").last()
+        df["timestamp"] = df.index
+
         return df
 
     @classmethod

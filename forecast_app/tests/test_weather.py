@@ -1,5 +1,5 @@
 from datetime import date
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import pytest
 import os
 import filecmp
@@ -58,6 +58,15 @@ class TestAsosRequest:
         assert str(df.iloc[0].name) == "2022-01-01 01:00:00"
         assert df["tempc"].iloc[0] == -10.61
         assert not any(pd.isna(df["tempc"]))
+
+        # Test that it appropriately handles uncontinuous hourly timestamps
+        mock_request = Mock()
+        asos_request.request = mock_request
+        with open(pytest.FIXTURE_DIR / "uncontinuous-asos-response.csv") as f:
+            mock_request.text = f.read()
+        df = asos_request.create_df()
+        assert df.shape[0] == 24
+        assert pd.isna(df.loc["2022-02-10 13:00:00", "tempc"])
 
     def test_write_response(self, app):
         asos_request = AsosRequest(
