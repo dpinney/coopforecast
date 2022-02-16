@@ -15,29 +15,22 @@
   </div>
   <div class="card-body">
     <div>
-      {% if hd_is_prepared %}
-      <p>Historical data is prepared from <b class="text-primary">{{ hd_start_date.strftime('%b %d, %Y %H:%M')
-          }}</b> to <b class="text-primary">{{ hd_end_date.strftime('%b %d, %Y %H:%M') }}</b>.</p>
+      {% for data_name, prepared in data_is_prepared.items() %}
+      {% if prepared %}
+      <p><a href="{{ url_for(data_name|lower|replace(' ', '-')) }}">{{ data_name }}</a> is prepared from <b
+          class="text-primary">{{ prepared.start_date.strftime('%b %d, %Y
+          %H:%M')
+          }}</b> to <b class="text-primary">{{ prepared.end_date.strftime('%b %d, %Y %H:%M') }}</b>.</p>
       {% else %}
-      <p>Historical data is not prepared. Check that data is uploaded to both <a
-          href="{{ url_for('historical-load-data') }}">Load
-          Data</a>
-        and <a href="{{ url_for('historical-weather-data') }}">Historical Weather Data</a>.</p>
+      <p>{{ data_name }} is not prepared. Check that data is uploaded properly.</p>
       {% endif %}
-
-      {% if fd_is_prepared %}
-      <p>Forecast data is prepared from <b class="text-primary">{{ fd_start_date.strftime('%b %d, %Y %H:%M') }}</b>
-        to <b class="text-primary">{{ fd_end_date.strftime('%b %d, %Y %H:%M') }}</b>.</p>
-      {% else %}
-      <p>Forecast data is not prepared. Check that data is uploaded to <a
-          href="{{ url_for('forecast-weather-data')}}">Forecast Weather Data</a>.</p>
-      {% endif %}
+      {% endfor %}
 
       {% if model_is_prepared %}
       <hr>
       <p>A new model would be generated from <b class="text-primary">{{
-          model_start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b class="text-primary">
-          {{ model_end_date.strftime('%b %d, %Y %H:%M') }}</b>
+          model_is_prepared.start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b class="text-primary">
+          {{ model_is_prepared.end_date.strftime('%b %d, %Y %H:%M') }}</b>
       </p>
       {% else %}
       <p>

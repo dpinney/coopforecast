@@ -229,27 +229,18 @@ class ForecastModelListView(MethodView):
         # messages = request.args.get("messages", [])
         messages = [] if messages is None else messages
         models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()
-        (
-            model_is_prepared,
-            model_start_date,
-            model_end_date,
-        ) = ForecastModel.is_prepared()
-        # TODO: Add historical weather data to view
-        hd_is_prepared, hd_start_date, hd_end_date = HistoricalLoadData.is_prepared()
-        fd_is_prepared, fd_start_date, fd_end_date = ForecastWeatherData.is_prepared()
+        model_is_prepared = ForecastModel.is_prepared()
+        data_is_prepared = {
+            "Historical load data": HistoricalLoadData.is_prepared(),
+            "Historical weather data": HistoricalWeatherData.is_prepared(),
+            "Forecast weather data": ForecastWeatherData.is_prepared(),
+        }
 
         return render_template(
             "forecast-model-list.html",
             models=models,
             model_is_prepared=model_is_prepared,
-            model_start_date=model_start_date,
-            model_end_date=model_end_date,
-            hd_is_prepared=hd_is_prepared,
-            hd_start_date=hd_start_date,
-            hd_end_date=hd_end_date,
-            fd_is_prepared=fd_is_prepared,
-            fd_start_date=fd_start_date,
-            fd_end_date=fd_end_date,
+            data_is_prepared=data_is_prepared,
             messages=messages,
         )
 

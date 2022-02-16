@@ -144,31 +144,30 @@ def test_is_prepared(app, db):
     # FORECAST MODEL
 
     for cls in [ForecastWeatherData, HistoricalWeatherData, HistoricalLoadData]:
-        is_prepared, start_date, end_date = cls.is_prepared()
-        assert is_prepared is False
-        assert start_date is None and end_date is None
+        is_prepared = cls.is_prepared()
+        assert not is_prepared
 
     pytest.load_demo_db(app)
 
     # FORECAST MODEL
-    is_prepared, start_date, end_date = ForecastModel.is_prepared()
-    assert is_prepared is True
-    assert start_date == datetime(2019, 1, 1, 0)
-    assert end_date == datetime(2019, 1, 1, 23)
+    is_prepared = ForecastModel.is_prepared()
+    assert is_prepared
+    assert is_prepared["start_date"] == datetime(2019, 1, 1, 0)
+    assert is_prepared["end_date"] == datetime(2019, 1, 1, 23)
     # FORECAST DATA
-    is_prepared, start_date, end_date = ForecastWeatherData.is_prepared()
-    assert is_prepared is True
-    assert start_date == datetime(2019, 1, 1, 0)
-    assert end_date == datetime(2019, 1, 1, 23)
+    is_prepared = ForecastWeatherData.is_prepared()
+    assert is_prepared
+    assert is_prepared["start_date"] == datetime(2019, 1, 1, 0)
+    assert is_prepared["end_date"] == datetime(2019, 1, 1, 23)
     # HISTORICAL DATA
-    is_prepared, start_date, end_date = HistoricalLoadData.is_prepared()
-    assert is_prepared is True
-    assert start_date == datetime(2014, 1, 1, 0)
-    assert end_date == datetime(2018, 12, 31, 23)
-    is_prepared, start_date, end_date = HistoricalWeatherData.is_prepared()
-    assert is_prepared is True
-    assert start_date == datetime(2014, 1, 1, 0)
-    assert end_date == datetime(2018, 12, 31, 23)
+    is_prepared = HistoricalLoadData.is_prepared()
+    assert is_prepared
+    assert is_prepared["start_date"] == datetime(2014, 1, 1, 0)
+    assert is_prepared["end_date"] == datetime(2018, 12, 31, 23)
+    is_prepared = HistoricalWeatherData.is_prepared()
+    assert is_prepared
+    assert is_prepared["start_date"] == datetime(2014, 1, 1, 0)
+    assert is_prepared["end_date"] == datetime(2018, 12, 31, 23)
 
 
 def test_to_df(app, db):

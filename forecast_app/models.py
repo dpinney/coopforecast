@@ -28,7 +28,9 @@ class ForecastModel(db.Model):
     def __init__(self):
         # NOTE: Object is initialized from state of the database
         # First ensure that the environment is prepared to create a new model
-        is_prepared, self.start_date, self.end_date = self.is_prepared()
+        is_prepared = self.is_prepared()
+        self.start_date = is_prepared.get("start_date")
+        self.end_date = is_prepared.get("end_date")
         if not is_prepared:
             raise Exception("Database is not prepared to create a model.")
 
@@ -163,32 +165,22 @@ class ForecastModel(db.Model):
 
     @classmethod
     def is_prepared(cls):
-        hld_is_prepared, hld_start_date, hld_end_date = HistoricalLoadData.is_prepared()
-        (
-            hwd_is_prepared,
-            hwd_start_date,
-            hwd_end_date,
-        ) = HistoricalWeatherData.is_prepared()
-        (
-            fwd_is_prepared,
-            fwd_start_date,
-            fwd_end_date,
-        ) = ForecastWeatherData.is_prepared()
+        hld_is_prepared = HistoricalLoadData.is_prepared()
+        hwd_is_prepared = HistoricalWeatherData.is_prepared()
+        fwd_is_prepared = ForecastWeatherData.is_prepared()
 
-        is_prepared = (
-            True if all([hld_is_prepared, hwd_is_prepared, fwd_is_prepared]) else False
-        )
-        # TODO: This doesn't seem right. Is this being tested?
+        if not all([hld_is_prepared, hwd_is_prepared, fwd_is_prepared]):
+            return {}
 
-        hd_end_date = min([hld_end_date, hwd_end_date]) if is_prepared else None
-        # NOTE: `is_prepared` is necessary to prevent null comparison
-        if is_prepared and hd_end_date - fwd_end_date > datetime.timedelta(hours=24):
-            is_prepared = False
+        # Ensure that there are at least 24 hours of forecast data
+        hd_end_date = min([hld_is_prepared["end_date"], hwd_is_prepared["end_date"]])
+        if hd_end_date - fwd_is_prepared["end_date"] > datetime.timedelta(hours=24):
+            return {}
 
-        start_date = hd_end_date + datetime.timedelta(hours=1) if is_prepared else None
-        end_date = hd_end_date + datetime.timedelta(hours=24) if is_prepared else None
-
-        return is_prepared, start_date, end_date
+        return {
+            "start_date": hd_end_date + datetime.timedelta(hours=1),
+            "end_date": hd_end_date + datetime.timedelta(hours=24),
+        }
 
     # TODO: This should be at the end of launch_model
     # def done_callback(self, future):
@@ -361,11 +353,14 @@ class ForecastWeatherData(TrainingData, db.Model):
     def is_prepared(cls):
         df = cls.to_df()
         if df.shape[0] < 24:
-            return False, None, None
-        else:
-            df = df.dropna(subset=["tempc"])
-            start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
-            return True, start_date, end_date
+            return {}
+
+        df = df.dropna(subset=["tempc"])
+        start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
+        return {
+            "start_date": start_date,
+            "end_date": end_date,
+        }
 
 
 class HistoricalWeatherData(TrainingData, db.Model):
@@ -375,15 +370,15 @@ class HistoricalWeatherData(TrainingData, db.Model):
 
     @classmethod
     def is_prepared(cls):
-        is_prepared = True
         df = cls.to_df().dropna()
         if df.shape[0] < 24 * 365 * 3:
-            is_prepared = False
-        if is_prepared:
-            start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
-        else:
-            start_date, end_date = None, None
-        return is_prepared, start_date, end_date
+            return {}
+
+        start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
+        return {
+            "start_date": start_date,
+            "end_date": end_date,
+        }
 
 
 class HistoricalLoadData(TrainingData, db.Model):
@@ -393,12 +388,11 @@ class HistoricalLoadData(TrainingData, db.Model):
 
     @classmethod
     def is_prepared(cls):
-        is_prepared = True
         df = cls.to_df().dropna()
         if df.shape[0] < 24 * 365 * 3:
-            is_prepared = False
-        if is_prepared:
-            start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
-        else:
-            start_date, end_date = None, None
-        return is_prepared, start_date, end_date
+            return {}
+        start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
+        return {
+            "start_date": start_date,
+            "end_date": end_date,
+        }
