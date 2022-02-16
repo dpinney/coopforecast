@@ -140,12 +140,21 @@ class ForecastModel(db.Model):
         df_f = df_f[
             (self.start_date <= df_f["dates"]) & (df_f["dates"] <= self.end_date)
         ]
+
+        # Fill Nans for training data
+        # TODO: Have configuration to set the maximum number of missing values filled
+        #  this is configured via the pandas "limit" parameter
+        # TODO: This would ideally be replaced with interpolation
+        df_h = df_h.fillna(method="ffill").fillna(method="bfill")
+
         df = pd.concat([df_h, df_f])
         df.to_csv(os.path.join(self.output_dir, self.df_filename), index=False)
 
     @property
     def df(self):
-        return pd.read_csv(os.path.join(self.output_dir, self.df_filename))
+        return pd.read_csv(
+            os.path.join(self.output_dir, self.df_filename), parse_dates=["dates"]
+        )
 
     def train(self):
         pass
