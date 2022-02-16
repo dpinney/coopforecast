@@ -194,5 +194,18 @@ def sync_weather_data(
     print("Forecast weather data completed ✓")
 
 
+@typer_app.command()
+def launch_new_model(
+    BASE_URL: str = typer.Option("http://localhost:5000", "--url"),
+    username: str = typer.Option("admin", "--username"),
+    password: str = typer.Option("admin", "--password"),
+):
+    """Generate a new model"""
+    session = create_login_session(username, password, BASE_URL)
+    print("Posting request to launch new model...")
+    session.post(urljoin(BASE_URL, "/forecast-models"))
+    print("Forecast model has begun training ✓")
+
+
 if __name__ == "__main__":
     typer_app()
