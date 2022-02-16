@@ -29,7 +29,7 @@ def create_app(config: str):
     method_views = [
         views.LoginView,
         views.LogoutView,
-        views.ForecastView,
+        views.LatestForecastView,
         views.HistoricalLoadDataView,
         views.ForecastWeatherDataView,
         views.HistoricalWeatherDataView,

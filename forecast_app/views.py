@@ -118,46 +118,13 @@ class HistoricalWeatherDataView(DataView):
     sync_request = "ASOS"
 
 
-class ForecastView(MethodView):
+class LatestForecastView(MethodView):
+    """Masked redirect to the latest successful forecast model"""
+
     view_name = "latest-forecast"
     decorators = [flask_login.login_required]
-    # TODO:
-    # - make model downloadable
-    # - display messages about why data is not prepared
 
-    def get_chart(self, forecast):
-        if forecast:
-            return [
-                [timestamp, load]
-                for load, timestamp in zip(forecast.loads, forecast.milliseconds)
-            ]
-        else:
-            return None
-
-    # TODO: Move me to ForecastModelDetailView
-    def post(self, mock=False):
-        new_model = ForecastModel()
-        new_model.save()
-        print(f"Starting model {new_model.creation_date}")
-        # NOTE: For testing, send 'mock' as a parameter to avoid lengthy training
-        # NOTe: "submit_stored" doesn't seem to work as expected
-        if request.values.get("mock") == "true":
-            process = Process(target=time.sleep, args=(3,))
-        else:
-            process = Process(
-                target=new_model.launch_model, args=(current_app.config["NAME"],)
-            )
-        process.start()
-        new_model.store_process_id(process.pid)
-        return redirect(url_for("forecast-model-list"))
-
-    def get(self, messages=None):
-        # TODO: Replace this with session data
-        #  https://stackoverflow.com/questions/17057191/redirect-while-passing-arguments
-        if not messages:
-            messages = []
-
-        # Filter by exited_successfully
+    def get_latest_successful_model(self):
         # NOTE: Need to do manually because of exited_successfully being a property
         query = (
             db.session.query(ForecastModel)
@@ -172,19 +139,16 @@ class ForecastView(MethodView):
         else:
             latest_successful_forecast = None
 
-        is_prepared, start_date, end_date = ForecastModel.is_prepared()
+        return latest_successful_forecast
 
-        return render_template(
-            "latest-forecast.html",
-            name="latest-forecast",
-            chart=self.get_chart(latest_successful_forecast),
-            forecast_model=latest_successful_forecast,
-            # Is the data prepared for a new forecast?
-            is_prepared=is_prepared,
-            start_date=start_date,
-            end_date=end_date,
-            messages=messages,
-        )
+    def get(self):
+        model = self.get_latest_successful_model()
+        if model:
+            return ForecastModelDetailView().get(slug=model.slug, model=model)
+        else:
+            return render_template(
+                "latest-forecast.html",
+            )
 
 
 class LoginView(MethodView):
@@ -235,13 +199,31 @@ class ForecastModelListView(MethodView):
     view_name = "forecast-model-list"
     view_url = "/forecast-models"
 
-    def post(self):
-        # Cancel all models
-        for model in ForecastModel.query.all():
-            if model.is_running:
-                model.cancel()
-        messages = [{"level": "info", "text": "All running models were terminated."}]
-        return self.get(messages=messages)
+    # TODO: Create a boolean to split post requests or shift to cancelling specific models
+    # def post(self):
+    #     # Cancel all models
+    #     for model in ForecastModel.query.all():
+    #         if model.is_running:
+    #             model.cancel()
+    #     messages = [{"level": "info", "text": "All running models were terminated."}]
+    #     return self.get(messages=messages)
+
+    # TODO: mock=False is a hack
+    def post(self, mock=False):
+        new_model = ForecastModel()
+        new_model.save()
+        print(f"Starting model {new_model.creation_date}")
+        # NOTE: For testing, send 'mock' as a parameter to avoid lengthy training
+        # NOTE: "submit_stored" doesn't seem to work as expected
+        if request.values.get("mock") == "true":
+            process = Process(target=time.sleep, args=(3,))
+        else:
+            process = Process(
+                target=new_model.launch_model, args=(current_app.config["NAME"],)
+            )
+        process.start()
+        new_model.store_process_id(process.pid)
+        return redirect(url_for("forecast-model-list"))
 
     def get(self, messages=None):
         # messages = request.args.get("messages", [])
@@ -288,11 +270,14 @@ class ForecastModelDetailView(MethodView):
         else:
             return None
 
-    def get(self, slug, messages=None):
+    def get(self, slug, messages=None, model=None):
         if not messages:
             messages = []
 
-        forecast_model = ForecastModel.query.filter_by(slug=slug).first()
+        if model:
+            forecast_model = model
+        else:
+            forecast_model = ForecastModel.query.filter_by(slug=slug).first()
 
         return render_template(
             "forecast-model-detail.html",

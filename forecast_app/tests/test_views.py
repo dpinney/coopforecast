@@ -5,7 +5,7 @@ from werkzeug.datastructures import FileStorage
 from datetime import date, datetime
 
 from forecast_app.views import (
-    ForecastView,
+    LatestForecastView,
     ForecastWeatherDataSync,
     HistoricalLoadDataView,
     HistoricalWeatherDataSync,
@@ -46,6 +46,9 @@ def test_templates(app, auth, client):
     # Add model detail to pages to test
     for model in ForecastModel.query.all():
         pages[f"/forecast-models/{model.slug}"] = model.slug
+
+    # latest-forecast page has a different format after adding data
+    pages["/latest-forecast"] = "Forecast"
 
     for route, page_name in pages.items():
         response = client.get(route)
@@ -171,15 +174,6 @@ class TestForecastView:
     def test_get(self):
         pass
 
-    def test_post(self, app, db, client, auth):
-        auth.login()
-        upload_demo_data(models=False)
-        assert ForecastModel.query.count() == 0
-        client.post("/latest-forecast", data={"mock": "true"})
-        # TODO: mock this instead
-        assert ForecastModel.query.count() == 1
-        # See test_subprocessing for more tests
-
     def test_get_chart(self):
         pass
 
@@ -188,8 +182,14 @@ class TestForecastView:
 
 
 class TestForecastListView:
-    def test_post(self):
-        pass
+    def test_post(self, app, db, client, auth):
+        auth.login()
+        upload_demo_data(models=False)
+        assert ForecastModel.query.count() == 0
+        client.post("/forecast-models", data={"mock": "true"})
+        # TODO: mock this instead
+        assert ForecastModel.query.count() == 1
+        # See test_subprocessing for more tests
 
     def test_get(self):
         pass

@@ -48,7 +48,7 @@
     </div>
 
     {% if model_is_prepared %}
-    <form action="{{ url_for('latest-forecast') }}" method="post" id="runModel"></form>
+    <form method="post" id="runModel"></form>
     <div style="display: flex; justify-content: space-between;">
       <div>
         <a onclick="document.forms['runModel'].submit(); return false;" class="btn btn-primary btn-icon-split">
@@ -58,7 +58,8 @@
           <span class="text">Generate new model</span>
         </a>
       </div>
-      <form action="" method="post" id="cancelAllModels"></form>
+      <!-- Deactivated until Issue #80 is handled -->
+      {# <form action="" method="post" id="cancelAllModels"></form>
       <div>
         <a onclick="document.forms['cancelAllModels'].submit(); return false;" class="btn btn-danger btn-icon-split">
           <span class="icon text-white-600">
@@ -67,6 +68,7 @@
           <span class="text">Cancel running models</span>
         </a>
       </div>
+      #}
     </div>
   </div>
   {% endif %}
