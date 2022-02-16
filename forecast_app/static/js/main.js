@@ -1,4 +1,5 @@
 function create_timeseries_chart(id = null, data = null, title = null, series_name = null) {
+  Highcharts.setOptions({ lang: { thousandsSep: ',' } });
   // Create the chart
   Highcharts.stockChart(id, {
     rangeSelector: {
