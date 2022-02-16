@@ -25,6 +25,8 @@ class ForecastModel(db.Model):
     loads = Column(JSON)
     epochs = Column(Integer, nullable=False)
 
+    df_filename = "cached-dataframe.csv"
+
     def __init__(self):
         # NOTE: Object is initialized from state of the database
         # First ensure that the environment is prepared to create a new model
@@ -52,6 +54,8 @@ class ForecastModel(db.Model):
             for i in range(24)
         ]
         self.epochs = current_app.config["EPOCHS"]
+
+        self.store_df()
 
     @property
     def timestamps(self):
@@ -127,8 +131,7 @@ class ForecastModel(db.Model):
             self.store_process_id("FAILURE")
             raise Exception("Model failed: {}".format(e))
 
-    @property
-    def df(self):
+    def store_df(self):
         df_hl = HistoricalLoadData.to_df().sort_values("dates")
         df_hw = HistoricalWeatherData.to_df().sort_values("dates")
         df_h = pd.merge(df_hl, df_hw, on="dates", how="outer")
@@ -137,7 +140,12 @@ class ForecastModel(db.Model):
         df_f = df_f[
             (self.start_date <= df_f["dates"]) & (df_f["dates"] <= self.end_date)
         ]
-        return pd.concat([df_h, df_f])
+        df = pd.concat([df_h, df_f])
+        df.to_csv(os.path.join(self.output_dir, self.df_filename), index=False)
+
+    @property
+    def df(self):
+        return pd.read_csv(os.path.join(self.output_dir, self.df_filename))
 
     def train(self):
         pass

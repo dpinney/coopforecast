@@ -133,6 +133,13 @@ class TestForecastModel:
 
     def test_df(self, app, db):
         pytest.load_demo_db(app)
+        model = ForecastModel()
+        assert os.path.exists(os.path.join(model.output_dir, ForecastModel.df_filename))
+        df = model.df
+        assert not any(["Unnamed" in col for col in df.columns])
+
+    def test_store_df(self, app, db):
+        pytest.load_demo_db(app)
         model = ForecastModel.query.first()
         model_df = model.df
         assert pd.isnull(model_df.tail(1).load.values[0])
