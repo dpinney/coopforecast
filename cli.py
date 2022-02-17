@@ -146,7 +146,7 @@ def backup(
     config: str = "dev",
 ):
     """Export historical and forecast data to csv."""
-    export_id = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    export_id = datetime.datetime.now().strftime("%Y-%m-%d.%H-%M-%S")
     app = create_app(config)
 
     export_dir = os.path.join(export_dir, str(export_id))
