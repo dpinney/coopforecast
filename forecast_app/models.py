@@ -36,7 +36,7 @@ class ForecastModel(db.Model):
         if not is_prepared:
             raise Exception("Database is not prepared to create a model.")
 
-        self.creation_date = datetime.datetime.utcnow()
+        self.creation_date = datetime.datetime.now()
         self.slug = str(self.creation_date.timestamp())
         self.output_dir = os.path.join(current_app.config["OUTPUT_DIR"], self.slug)
         os.mkdir(self.output_dir)
