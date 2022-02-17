@@ -106,6 +106,15 @@ class TestDataViews:
         HistoricalLoadDataView,
     ]
 
+    def test_get_missing_value_summary(self, db):
+        fixture_path = pytest.FIXTURE_DIR / "uncontinuous.csv"
+        HistoricalLoadData.load_data(fixture_path)
+        summary = HistoricalLoadDataView().get_missing_values_summary()
+        assert summary["count"] == 6
+        assert summary["start_datetime"] == datetime(2002, 1, 3, 6, 0, 0)
+        assert summary["end_datetime"] == datetime(2002, 1, 3, 8, 0, 0)
+        assert summary["max_span"] == 3
+
     def test_get_table(self):
         # TODO: Test that descending order
         pass
@@ -120,13 +129,12 @@ class TestDataViews:
         assert forecast_summary["count"] == 24
         assert forecast_summary["start_datetime"] == datetime(2019, 1, 1, 0, 0, 0)
         assert forecast_summary["end_datetime"] == datetime(2019, 1, 1, 23, 0, 0)
-        assert forecast_summary["missing_values"] == 0
+        assert forecast_summary["missing_values"]["count"] == 0
 
-        # TODO: Test that missing values are counted
         init_db()
         HistoricalLoadData.load_data(pytest.FIXTURE_DIR / "uncontinuous.csv")
         load_summary = HistoricalLoadDataView().get_summary()
-        assert load_summary["missing_values"] == 6
+        assert load_summary["missing_values"]["count"] == 6
 
     def test_get_chart(self, db, app):
         for cls in self.classes:

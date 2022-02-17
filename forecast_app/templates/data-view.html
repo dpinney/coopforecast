@@ -56,8 +56,21 @@
         <dd>{{ summary.start_datetime }}</dd>
         <dt>Latest timestamp</dt>
         <dd>{{ summary.end_datetime }}</dd>
-        <dt>Missing data points</dt>
-        <dd>{{ summary.missing_values }}</dd>
+        {% if summary.missing_values.count %}
+        <details>
+          <summary>
+            <div style="display: inline;"><b>Missing data points:</b> {{ summary.missing_values.count }}</div>
+          </summary>
+          <ul>
+            <li><b>Longest consecutive span of missing data points:</b> {{ summary.missing_values.max_span }}</li>
+            <li><b>Longest span start date:</b> {{summary.missing_values.start_datetime}}</li>
+            <li><b>Longest span end date:</b> {{summary.missing_values.end_datetime}}</li>
+          </ul>
+        </details>
+        {% else %}
+        <dt>Missing values</dt>
+        <dd>{{ summary.missing_values.count }}</dd>
+        {% endif %}
       </dl>
     </div>
   </div>

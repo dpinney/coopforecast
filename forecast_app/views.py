@@ -32,6 +32,29 @@ class DataView(MethodView):
     # Variable for whether user can sync data with external API
     sync_request = None
 
+    def get_missing_values_summary(self):
+        df = self.model.to_df()
+        col = self.model.column_name
+
+        df = df.set_index("dates")
+        cumulative_df = (
+            df[col]
+            .isnull()
+            .astype(int)
+            .groupby(df[col].notnull().astype(int).cumsum())
+            .cumsum()
+        )
+        max_span = cumulative_df.max()
+        end_datetime = cumulative_df.idxmax()
+        # NOTE: timedelta can't take numpy.int64
+        start_datetime = end_datetime - datetime.timedelta(hours=int(max_span - 1))
+        return {
+            "count": df[col].isna().sum(),
+            "start_datetime": start_datetime,
+            "end_datetime": end_datetime,
+            "max_span": max_span,
+        }
+
     def get_summary(self):
         if self.model.query.count() == 0:
             return None
@@ -44,9 +67,7 @@ class DataView(MethodView):
             "end_datetime": self.model.query.order_by(self.model.timestamp.desc())
             .first()
             .timestamp,
-            "missing_values": self.model.query.filter(
-                self.model.value == null()
-            ).count(),
+            "missing_values": self.get_missing_values_summary(),
         }
 
     def get_table(self):
