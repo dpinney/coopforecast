@@ -50,9 +50,9 @@ class DataView(MethodView):
         start_datetime = end_datetime - datetime.timedelta(hours=int(max_span - 1))
         return {
             "count": df[col].isna().sum(),
+            "max_span": max_span,
             "start_datetime": start_datetime,
             "end_datetime": end_datetime,
-            "max_span": max_span,
         }
 
     def get_summary(self):
