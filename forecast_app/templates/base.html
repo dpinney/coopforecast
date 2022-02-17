@@ -28,10 +28,9 @@
   <link href="{{ url_for( 'static', filename='css/main.css') }}" rel="stylesheet">
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
-  {% if config['NAME'] != 'prod' %}
+  {% if config['NAME'] == 'dev' %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/dev.css') }}">
   {% endif %}
-
 
   {% block head %}{% endblock %}
 </head>

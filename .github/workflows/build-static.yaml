@@ -1,0 +1,25 @@
+# Run pytest in github actions
+name: run_pytest
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Install tensorflow separately
+        run: pip install tensorflow==2.7.0
+      - name: Install frozen flask separately
+        run: pip install Frozen-Flask
+      - name: Load demo data
+        run: python cli.py demo --config demo
+      - name: Create static site
+        run: python static-generator.py
+      # - name: Commit updated static site
