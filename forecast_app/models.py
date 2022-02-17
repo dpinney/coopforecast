@@ -4,6 +4,7 @@ import pandas as pd
 from sqlalchemy import Column, Integer, Float, String, DateTime, JSON
 from flask import current_app
 import signal
+import tensorflow as tf
 
 from forecast_app.utils import db
 import forecast_app.forecast as lf
@@ -41,6 +42,7 @@ class ForecastModel(db.Model):
         self.output_dir = os.path.join(current_app.config["OUTPUT_DIR"], self.slug)
         os.mkdir(self.output_dir)
 
+        # TODO: This should be named path or rewrite this
         self.model_file = os.path.join(self.output_dir, f"{self.slug}.h5")
         self.process_file = os.path.join(self.output_dir, "PID.txt")
 
@@ -155,6 +157,9 @@ class ForecastModel(db.Model):
             os.path.join(self.output_dir, self.df_filename), parse_dates=["dates"]
         )
 
+    def get_model(self):
+        return tf.keras.models.load_model(self.model_file)
+
     def train(self):
         pass
 
@@ -165,7 +170,7 @@ class ForecastModel(db.Model):
         df = self.get_df()
         self.all_X, self.all_y = lf.makeUsefulDf(df)  # structure = 3D
 
-        tomorrow_load, _, tomorrow_accuracy = lf.neural_net_next_day(
+        tomorrow_load, model, tomorrow_accuracy = lf.neural_net_next_day(
             self.all_X,
             self.all_y,
             epochs=self.epochs,
@@ -173,6 +178,11 @@ class ForecastModel(db.Model):
             model=None,
             # structure="3D",
         )
+
+        # HACK: Set forecasted load on cached dataframe
+        # TODO: Implement me
+        # df["forecasted_load"] = model.predict(self.all_X.values.tolist())
+        # df.to_csv(os.path.join(self.output_dir, self.df_filename), index=False)
 
         self.accuracy = tomorrow_accuracy
         self.loads = tomorrow_load
