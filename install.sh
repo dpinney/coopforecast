@@ -49,6 +49,9 @@ sudo chmod 710 /etc/authbind/byport/443
 # create directory for LetsEncrypt acme challenges.
 sudo mkdir -p $REPO/.well-known/acme-challenge
 
+# Ensure timezone is correct
+sudo ln -sf /usr/share/zoneinfo/America/Chicago /etc/localtime
+
 # enable
 sudo systemctl enable /etc/systemd/system/coopforecast.service
 sudo systemctl start coopforecast
