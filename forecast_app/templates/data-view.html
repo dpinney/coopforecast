@@ -77,7 +77,7 @@
 </div>
 {% endif %}
 
-{% if chart %}
+{% if chart.data %}
 <div class="card shadow mb-4" id="chart">
   <!-- Card Header - Accordion -->
   <a href="#collapse-chart" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
@@ -89,7 +89,7 @@
     <div class="card-body">
       <div id="chart-container" style="height: 400px; min-width: 310px"></div>
       <script type="text/javascript">
-        create_timeseries_chart(id = 'chart-container', data = {{ chart | tojson }}, title = '{{ title }}', series_name = '{{ view_key }}')
+        create_timeseries_chart(id = 'chart-container', data = {{ chart | tojson }}, title = '{{ title }}')
       </script>
     </div>
   </div>

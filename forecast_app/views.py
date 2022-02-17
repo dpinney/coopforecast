@@ -81,7 +81,7 @@ class DataView(MethodView):
     def get_chart(self):
         query = db.session.query(self.model.milliseconds, self.model.value)
         data = [list(row) for row in query]
-        return data if data and any([row[1] for row in query]) else None
+        return [{"data": data, "name": self.model.column_name}]
 
     def post(self):
         filepath = upload_file("file")
@@ -167,9 +167,7 @@ class LatestForecastView(MethodView):
         if model:
             return ForecastModelDetailView().get(slug=model.slug, model=model)
         else:
-            return render_template(
-                "latest-forecast.html",
-            )
+            return render_template("latest-forecast.html")
 
 
 class LoginView(MethodView):
@@ -274,13 +272,36 @@ class ForecastModelDetailView(MethodView):
     # - make model downloadable
 
     def get_chart(self, forecast):
-        if forecast and forecast.loads:
-            return [
-                [timestamp, load]
-                for load, timestamp in zip(forecast.loads, forecast.milliseconds)
-            ]
-        else:
+        if not forecast:
             return None
+
+        # Get training data
+        df = forecast.get_df()
+
+        df["timestamp"] = df.dates.apply(lambda x: x.timestamp() * 1000)
+
+        # Get end of load data
+        lvi = df["load"].last_valid_index()
+        CONTEXT = 72
+
+        context_data = [
+            [row.timestamp, row.load]
+            for row in df.iloc[lvi - CONTEXT : lvi].itertuples()
+        ]
+        forecast_data = [
+            [ts, load] for load, ts in zip(forecast.loads, forecast.milliseconds)
+        ]
+        return [
+            {
+                "data": context_data,
+                "name": "Load",
+            },
+            {
+                "data": forecast_data,
+                "name": "Forecast",
+                "color": "blue",
+            },
+        ]
 
     def get(self, slug, messages=None, model=None):
         if not messages:

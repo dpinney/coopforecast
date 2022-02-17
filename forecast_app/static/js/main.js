@@ -1,4 +1,4 @@
-function create_timeseries_chart(id = null, data = null, title = null, series_name = null) {
+function create_timeseries_chart(id = null, series = null, title = null) {
   Highcharts.setOptions({ lang: { thousandsSep: ',' } });
   // Create the chart
   Highcharts.stockChart(id, {
@@ -10,13 +10,10 @@ function create_timeseries_chart(id = null, data = null, title = null, series_na
       text: title
     },
 
-    series: [{
-      name: series_name,
-      data: data,
-      tooltip: {
-        valueDecimals: 2
-      }
-    }]
+    series: series,
+    tooltip: {
+      valueDecimals: 2
+    }
   });
 };
 

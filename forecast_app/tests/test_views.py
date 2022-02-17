@@ -139,13 +139,13 @@ class TestDataViews:
     def test_get_chart(self, db, app):
         for cls in self.classes:
             chart_array = cls().get_chart()
-            assert not chart_array
+            assert not chart_array[0]["data"]
 
         pytest.load_demo_db(app)
         for cls in self.classes:
-            chart_array = cls().get_chart()
-            assert type(chart_array) == list
-            assert all([len(datapoint) == 2 for datapoint in chart_array])
+            chart = cls().get_chart()
+            assert type(chart[0]) == dict
+            assert all([len(datapoint) == 2 for datapoint in chart[0]["data"]])
 
     def post_data_view(self, cls, filename=None, final_count=None):
         src_path = pytest.FIXTURE_DIR / filename

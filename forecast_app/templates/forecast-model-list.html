@@ -72,7 +72,7 @@
   <div class="card-header py-3">
 
     <h6 class="m-0 font-weight-bold text-primary"><a href="/forecast-models/{{ model.slug }}">MODEL: {{
-        model.creation_date.timestamp() }}</a> {% include
+        model.slug }}</a> {% include
       'partials/status.html' %}</h6>
     <div><b>Created:</b> {{ model.creation_date.strftime('%Y-%m-%d %H:%M:%S') }} </div>
     <div><b>Forecast:</b> <b class="text-primary">{{ model.start_date.strftime('%b %d, %Y %H:%M') }}</b> to <b
