@@ -150,8 +150,7 @@ class ForecastModel(db.Model):
         df = pd.concat([df_h, df_f])
         df.to_csv(os.path.join(self.output_dir, self.df_filename), index=False)
 
-    @property
-    def df(self):
+    def get_df(self):
         return pd.read_csv(
             os.path.join(self.output_dir, self.df_filename), parse_dates=["dates"]
         )
@@ -163,7 +162,7 @@ class ForecastModel(db.Model):
         pass
 
     def _execute_forecast(self):
-        df = self.df
+        df = self.get_df()
         self.all_X, self.all_y = lf.makeUsefulDf(df)  # structure = 3D
 
         tomorrow_load, _, tomorrow_accuracy = lf.neural_net_next_day(

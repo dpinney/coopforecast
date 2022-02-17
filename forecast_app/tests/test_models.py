@@ -135,13 +135,13 @@ class TestForecastModel:
         pytest.load_demo_db(app)
         model = ForecastModel()
         assert os.path.exists(os.path.join(model.output_dir, ForecastModel.df_filename))
-        df = model.df
+        df = model.get_df()
         assert not any(["Unnamed" in col for col in df.columns])
 
     def test_store_df(self, app, db):
         pytest.load_demo_db(app)
         model = ForecastModel.query.first()
-        model_df = model.df
+        model_df = model.get_df()
         assert pd.isnull(model_df.tail(1).load.values[0])
         assert model_df.shape[0] == HistoricalLoadData.to_df().shape[0] + 24
 
