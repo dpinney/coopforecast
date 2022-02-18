@@ -15,6 +15,12 @@ from forecast_app.models import (
 
 # TODO: Test that submitting a temperature csv to the load data view works
 
+# Quick code snippet to get inside subprocesses
+# def test_subprocess(app, db):
+#     pytest.load_demo_db(app)
+#     new_model = ForecastModel()
+#     breakpoint()
+
 
 class TestHistoricalLoadData:
     def test_load_data(self, db, app):
@@ -137,11 +143,13 @@ class TestForecastModel:
         df = model.get_df()
         assert not any(["Unnamed" in col for col in df.columns])
 
-    def test_store_df(self, app, db):
+    def test_collect_training_data(self, app, db):
         pytest.load_demo_db(app)
         model = ForecastModel.query.first()
         model_df = model.get_df()
         assert pd.isnull(model_df.tail(1).load.values[0])
+        model_df = model_df.set_index("dates")
+        assert pd.isna(model_df.loc[datetime(2019, 1, 1), "load"])
         assert model_df.shape[0] == HistoricalLoadData.to_df().shape[0] + 24
 
 
@@ -173,7 +181,7 @@ def test_is_prepared(app, db):
     is_prepared = HistoricalWeatherData.is_prepared()
     assert is_prepared
     assert is_prepared["start_date"] == datetime(2014, 1, 1, 0)
-    assert is_prepared["end_date"] == datetime(2018, 12, 31, 23)
+    assert is_prepared["end_date"] == datetime(2019, 1, 1, 10, 0)
 
 
 def test_to_df(app, db):

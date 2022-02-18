@@ -57,7 +57,8 @@ class ForecastModel(db.Model):
         ]
         self.epochs = current_app.config["EPOCHS"]
 
-        self.store_df()
+        df = self.collect_training_data()
+        self.store_df(df)
 
     @property
     def timestamps(self):
@@ -133,15 +134,15 @@ class ForecastModel(db.Model):
             self.store_process_id("FAILURE")
             raise Exception("Model failed: {}".format(e))
 
-    def store_df(self):
+    def collect_training_data(self):
         df_hl = HistoricalLoadData.to_df().sort_values("dates")
         df_hw = HistoricalWeatherData.to_df().sort_values("dates")
-        df_h = pd.merge(df_hl, df_hw, on="dates", how="outer")
 
-        df_f = ForecastWeatherData.to_df().sort_values("dates")
-        df_f = df_f[
-            (self.start_date <= df_f["dates"]) & (df_f["dates"] <= self.end_date)
-        ]
+        # Get the intersection of the two dataframes, and then resample hourly
+        #  to make a continuous datetime index.
+        df_h = pd.merge(df_hl, df_hw, on="dates", how="inner")
+        df_h = df_h.set_index("dates", drop=False)
+        df_h = df_h.resample("h").ffill()
 
         # Fill Nans for training data
         # TODO: Have configuration to set the maximum number of missing values filled
@@ -149,7 +150,19 @@ class ForecastModel(db.Model):
         # TODO: This would ideally be replaced with interpolation
         df_h = df_h.fillna(method="ffill").fillna(method="bfill")
 
+        df_f = ForecastWeatherData.to_df().sort_values("dates")
+        df_f = df_f[
+            (self.start_date <= df_f["dates"]) & (df_f["dates"] <= self.end_date)
+        ]
+
+        # TODO: Allow for different sized days
+        # Remove all days that are not the same size
         df = pd.concat([df_h, df_f])
+        d = dict(df.groupby(df.dates.dt.date)["dates"].count())
+        df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]
+        return df
+
+    def store_df(self, df):
         df.to_csv(os.path.join(self.output_dir, self.df_filename), index=False)
 
     def get_df(self):
@@ -180,9 +193,8 @@ class ForecastModel(db.Model):
         )
 
         # HACK: Set forecasted load on cached dataframe
-        # TODO: Implement me
-        # df["forecasted_load"] = model.predict(self.all_X.values.tolist())
-        # df.to_csv(os.path.join(self.output_dir, self.df_filename), index=False)
+        df["forecasted_load"] = model.predict(self.all_X.values.tolist())
+        self.store_df(df)
 
         self.accuracy = tomorrow_accuracy
         self.loads = tomorrow_load

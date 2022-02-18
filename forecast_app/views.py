@@ -163,6 +163,8 @@ class LatestForecastView(MethodView):
         return latest_successful_forecast
 
     def get(self):
+        """Redirect to the latest successful forecast model if one exists, otherwise
+        show a page with message"""
         model = self.get_latest_successful_model()
         if model:
             return ForecastModelDetailView().get(slug=model.slug, model=model)

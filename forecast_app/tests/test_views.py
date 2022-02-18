@@ -219,7 +219,7 @@ class TestHistoricalWeatherDataSync:
         pytest.load_demo_db(app)
 
         request = HistoricalWeatherDataSync().build_request()
-        assert request.start_date == date(2018, 12, 31)
+        assert request.start_date == date(2019, 1, 1)
 
     def test_post(self, app, client, auth, db):
         auth.login()
