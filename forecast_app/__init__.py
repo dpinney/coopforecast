@@ -42,10 +42,15 @@ def create_app(config: str):
         app.add_url_rule(
             view.view_url if hasattr(view, "view_url") else f"/{view.view_name}",
             view_func=view.as_view(view.view_name),
+            strict_slashes=False,
         )
 
     static_views = ["instructions", "user-settings", "model-settings"]
     for view in static_views:
-        app.add_url_rule(f"/{view}", view_func=views.RenderTemplateView.view(view))
+        app.add_url_rule(
+            f"/{view}",
+            view_func=views.RenderTemplateView.view(view),
+            strict_slashes=False,
+        )
 
     return app
