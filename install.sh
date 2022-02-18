@@ -16,7 +16,9 @@ if [ $(crontab -l | grep -v "^#" | wc -l) -eq 0 ]; then
     (crontab -l ; echo "$WEATHER_SYNC_CRON")| crontab -
     
     # Every day at 7:05 am, launch a new model
-    export FORECAST_INIT_CRON="05 7 * * * /usr/bin/python3 $REPO/cli.py launch-new-model $LOGIN_CONFIG"
+    # NOTE: Setting CRON_TZ=America/Chicago and sudo service cron restart didn't seem to correctly update the cron tz.
+    # Setting to UTC for now. 1pm UTC = 7am CST.
+    export FORECAST_INIT_CRON="05 13 * * * /usr/bin/python3 $REPO/cli.py launch-new-model $LOGIN_CONFIG"
     (crontab -l ; echo "$FORECAST_INIT_CRON")| crontab -
 fi
 
