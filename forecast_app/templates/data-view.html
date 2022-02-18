@@ -49,29 +49,32 @@
   <!-- Card Content - Collapse -->
   <div class="collapse show" id="collapse-chart">
     <div class="card-body">
-      <dl>
-        <dt>Number of data points</dt>
-        <dd>{{ summary.count }}</dd>
-        <dt>First timestamp</dt>
-        <dd>{{ summary.start_datetime }}</dd>
-        <dt>Latest timestamp</dt>
-        <dd>{{ summary.end_datetime }}</dd>
-        {% if summary.missing_values.count %}
-        <details>
-          <summary>
-            <div style="display: inline;"><b>Missing data points:</b> {{ summary.missing_values.count }}</div>
-          </summary>
-          <ul>
-            <li><b>Longest consecutive span of missing data points:</b> {{ summary.missing_values.max_span }}</li>
-            <li><b>Longest span start date:</b> {{summary.missing_values.start_datetime}}</li>
-            <li><b>Longest span end date:</b> {{summary.missing_values.end_datetime}}</li>
-          </ul>
-        </details>
-        {% else %}
-        <dt>Missing values</dt>
-        <dd>{{ summary.missing_values.count }}</dd>
-        {% endif %}
+      <dl class="row">
+        <dt class="col-4">Number of data points</dt>
+        <dd class="col-8">{{ summary.count }}</dd>
+        <dt class="col-4">First timestamp</dt>
+        <dd class="col-8">{{ summary.start_datetime }}</dd>
+        <dt class="col-4">Latest timestamp</dt>
+        <dd class="col-8">{{ summary.end_datetime }}</dd>
       </dl>
+      {% if summary.missing_values.count %}
+      <details>
+        <summary>
+          <b>Missing data points</b> {{ summary.missing_values.count }}
+        </summary>
+        <dl class="row" style="margin-left: 20px;">
+          <dt class="col-6">Longest consecutive span of missing values</dt>
+          <dd class="col-6">{{ summary.missing_values.max_span }}</dd>
+          <dt class="col-6">Longest span start date</dt>
+          <dd class="col-6">{{summary.missing_values.start_datetime}}</dd>
+          <dt class="col-6">Longest span end date</dt>
+          <dd class="col-6">{{summary.missing_values.end_datetime}}</dd>
+        </dl>
+      </details>
+      {% else %}
+      <dt>Missing values</dt>
+      <dd>{{ summary.missing_values.count }}</dd>
+      {% endif %}
     </div>
   </div>
 </div>
