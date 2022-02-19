@@ -167,7 +167,7 @@ class LatestForecastView(MethodView):
         show a page with message"""
         model = self.get_latest_successful_model()
         if model:
-            return ForecastModelDetailView().get(slug=model.slug, model=model)
+            return ForecastModelDetailView().get(slug=model.slug)
         else:
             return render_template("latest-forecast.html")
 
@@ -273,26 +273,44 @@ class ForecastModelDetailView(MethodView):
     # TODO:
     # - make model downloadable
 
-    def get_chart(self, forecast):
-        if not forecast:
+    def get_training_chart(self, df):
+        if "forecasted_load" not in df.columns:
             return None
 
-        # Get training data
-        df = forecast.get_df()
+        load_data = [[row.timestamp, row.load] for row in df.itertuples()]
+        forecast_data = [
+            [row.timestamp, row.forecasted_load] for row in df.itertuples()
+        ]
+        return [
+            {
+                "data": load_data,
+                "name": "Load",
+            },
+            {
+                "data": forecast_data,
+                "name": "Forecast",
+                "color": "blue",
+            },
+        ]
 
-        df["timestamp"] = df.dates.apply(lambda x: x.timestamp() * 1000)
-
+    def get_forecast_chart(self, df):
+        if df is None:
+            return None
+        if "forecasted_load" not in df.columns:
+            return None
         # Get end of load data
         lvi = df["load"].last_valid_index()
         CONTEXT = 72
-
         context_data = [
             [row.timestamp, row.load]
             for row in df.iloc[lvi - CONTEXT : lvi].itertuples()
         ]
         forecast_data = [
-            [ts, load] for load, ts in zip(forecast.loads, forecast.milliseconds)
+            [row.timestamp, row.forecasted_load]
+            # lvi - 1 because it's nicer to see the chart connected to historical data
+            for row in df.iloc[lvi - 1 :].itertuples()
         ]
+
         return [
             {
                 "data": context_data,
@@ -305,19 +323,23 @@ class ForecastModelDetailView(MethodView):
             },
         ]
 
-    def get(self, slug, messages=None, model=None):
+    def get(self, slug, messages=None):
         if not messages:
             messages = []
+        forecast_model = ForecastModel.query.filter_by(slug=slug).first()
 
-        if model:
-            forecast_model = model
+        # NOTE: Easier to just munge one dataframe for all queries
+        if forecast_model:
+            df = forecast_model.get_df()
+            df["timestamp"] = df.dates.apply(lambda x: x.timestamp() * 1000)
         else:
-            forecast_model = ForecastModel.query.filter_by(slug=slug).first()
+            df = None
 
         return render_template(
             "forecast-model-detail.html",
             name="forecast",
-            chart=self.get_chart(forecast_model),
+            forecast_chart=self.get_forecast_chart(df),
+            training_chart=self.get_training_chart(df),
             forecast_model=forecast_model,
             messages=messages,
         )
