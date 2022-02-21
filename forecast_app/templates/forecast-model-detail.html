@@ -15,6 +15,11 @@
       Displaying a forecast of <b class="text-primary">{{ forecast_model.start_date.strftime('%b %d, %Y %H:%M') }}</b>
       to <b class="text-primary">{{ forecast_model.end_date.strftime('%b %d, %Y %H:%M') }}</b>.
     </p>
+    {% if highest_peak %}
+    <p>
+      The highest peak for this month is <b class="text-primary">{{ highest_peak }}KW</b>.
+    </p>
+    {% endif %}
     <div id="forecast-chart-container" style="height: 400px; min-width: 310px"></div>
     <script type="text/javascript">
       create_timeseries_chart(id = 'forecast-chart-container', data = {{ forecast_chart | tojson }}, title = 'Load Forecast', series_name = 'Load')

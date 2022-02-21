@@ -274,7 +274,7 @@ class ForecastModelDetailView(MethodView):
     # - make model downloadable
 
     def get_training_chart(self, df):
-        if "forecasted_load" not in df.columns:
+        if df is None or ("forecasted_load" not in df.columns):
             return None
 
         load_data = [[row.timestamp, row.load] for row in df.itertuples()]
@@ -294,9 +294,7 @@ class ForecastModelDetailView(MethodView):
         ]
 
     def get_forecast_chart(self, df):
-        if df is None:
-            return None
-        if "forecasted_load" not in df.columns:
+        if df is None or ("forecasted_load" not in df.columns):
             return None
         # Get end of load data
         lvi = df["load"].last_valid_index()
@@ -323,12 +321,29 @@ class ForecastModelDetailView(MethodView):
             },
         ]
 
+    def get_highest_monthly_peak(self, df, model):
+        """Get the peak load for the month"""
+        if model is None:
+            return None
+        if df is None or ("forecasted_load" not in df.columns):
+            return None
+
+        # Return none if the start date is the first of the month
+        #  (otherwise we'd have to handle truthy NaNs in the logic below)
+        if model.start_date.day == 1:
+            return None
+
+        month_id = f"{model.start_date.year}-{model.start_date.month}"
+        df = df.set_index("dates", drop=False)
+        return df.loc[month_id].load.max()
+
     def get(self, slug, messages=None):
         if not messages:
             messages = []
         forecast_model = ForecastModel.query.filter_by(slug=slug).first()
 
         # NOTE: Easier to just munge one dataframe for all queries
+        #  more efficient to request dataframe once
         if forecast_model:
             df = forecast_model.get_df()
             df["timestamp"] = df.dates.apply(lambda x: x.timestamp() * 1000)
@@ -340,6 +355,7 @@ class ForecastModelDetailView(MethodView):
             name="forecast",
             forecast_chart=self.get_forecast_chart(df),
             training_chart=self.get_training_chart(df),
+            highest_peak=self.get_highest_monthly_peak(df, forecast_model),
             forecast_model=forecast_model,
             messages=messages,
         )
