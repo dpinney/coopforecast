@@ -43,7 +43,7 @@ class ForecastModel(db.Model):
         os.mkdir(self.output_dir)
 
         # TODO: This should be named path or rewrite this
-        self.model_file = os.path.join(self.output_dir, f"{self.slug}.h5")
+        self.model_file = os.path.join(self.output_dir, self.model_filename)
         self.process_file = os.path.join(self.output_dir, "PID.txt")
 
         self.tempcs = [
@@ -61,9 +61,8 @@ class ForecastModel(db.Model):
         self.store_df(df)
 
     @property
-    def timestamps(self):
-        raise Exception("Not implemented yet")
-        # TODO: Given start and end date, reconstruct the timestamps
+    def model_filename(self):
+        return f"{self.slug}.h5"
 
     @property
     def status(self):
@@ -162,13 +161,15 @@ class ForecastModel(db.Model):
         df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]
         return df
 
+    @property
+    def df_path(self):
+        return os.path.join(self.output_dir, self.df_filename)
+
     def store_df(self, df):
-        df.to_csv(os.path.join(self.output_dir, self.df_filename), index=False)
+        df.to_csv(self.df_path, index=False)
 
     def get_df(self):
-        return pd.read_csv(
-            os.path.join(self.output_dir, self.df_filename), parse_dates=["dates"]
-        )
+        return pd.read_csv(self.df_path, parse_dates=["dates"])
 
     def get_model(self):
         return tf.keras.models.load_model(self.model_file)
@@ -199,7 +200,6 @@ class ForecastModel(db.Model):
         self.accuracy = tomorrow_accuracy
         self.loads = tomorrow_load
         self.save()
-        # TODO: Confirm that the zscore normalization is appropriate
 
     @classmethod
     def is_prepared(cls):

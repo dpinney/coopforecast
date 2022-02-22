@@ -22,13 +22,8 @@
     {% endif %}
     <div id="forecast-chart-container" style="height: 400px; min-width: 310px"></div>
     <script type="text/javascript">
-      create_timeseries_chart(id = 'forecast-chart-container', data = {{ forecast_chart | tojson }}, title = 'Load Forecast', series_name = 'Load')
+      create_timeseries_chart(id = 'forecast-chart-container', data = {{ forecast_chart | tojson }}, title = 'Load Forecast')
     </script>
-    <p>
-      {# TODO: Attach links here #}
-      <a href="#" class="btn btn-secondary btn-sm">Read about how this models works</a>
-      <a href="#" class="btn btn-secondary btn-sm">Download the model</a>
-    </p>
   </div>
 </div>
 {% endif %}
@@ -56,16 +51,19 @@
   <div class="card-body">
     <div id="historical-chart-container" style="height: 400px; min-width: 310px"></div>
     <script type="text/javascript">
-      create_timeseries_chart(id = 'historical-chart-container', data = {{ training_chart | tojson }}, title = 'Training Data Performance', series_name = 'Load')
+      create_timeseries_chart(id = 'historical-chart-container', data = {{ training_chart | tojson }}, title = '')
     </script>
     <p>
       {# TODO: Attach links here #}
-      <a href="#" class="btn btn-secondary btn-sm">Read about how this models works</a>
-      <a href="#" class="btn btn-secondary btn-sm">Download the model</a>
+      <a target="_blank" href="https://www.kmcelwee.com/load-forecasting" class="btn btn-secondary btn-sm">Read about
+        how this models works</a>
+      <a href="{{ url_for('download-model-files', slug=forecast_model.slug, filename=forecast_model.model_filename )}}"
+        class="btn btn-secondary btn-sm">Download the model</a>
+      <a href="{{ url_for('download-model-files', slug=forecast_model.slug, filename=forecast_model.df_filename )}}"
+        class="btn btn-secondary btn-sm">Download the training and forecast data</a>
     </p>
   </div>
 </div>
 {% endif %}
-
 
 {% endblock %}

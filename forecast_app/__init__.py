@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template, redirect
 from forecast_app.utils import (
     login_manager,
     ADMIN_USER,
@@ -37,6 +37,7 @@ def create_app(config: str):
         views.ForecastModelDetailView,
         views.HistoricalWeatherDataSync,
         views.ForecastWeatherDataSync,
+        views.DownloadModelFiles,
     ]
     for view in method_views:
         app.add_url_rule(
@@ -52,5 +53,23 @@ def create_app(config: str):
             view_func=views.RenderTemplateView.view(view),
             strict_slashes=False,
         )
+
+    # Error handlers ==================
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template("404.html")
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        return render_template("500.html")
+
+    @app.route("/500-trigger")
+    def trigger_500():
+        raise Exception("500 error triggered")
+
+    @app.errorhandler(401)
+    def unauthorized(e):
+        """If a user tries to access a page that requires authentication, redirect them to the login page."""
+        return redirect("/")
 
     return app

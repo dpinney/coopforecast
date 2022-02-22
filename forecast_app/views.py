@@ -1,5 +1,13 @@
+import os
 import pandas as pd
-from flask import render_template, redirect, url_for, request, current_app
+from flask import (
+    render_template,
+    redirect,
+    url_for,
+    request,
+    current_app,
+    send_from_directory,
+)
 from flask.views import MethodView, View
 import flask_login
 from sqlalchemy import desc, null
@@ -264,6 +272,23 @@ class ForecastModelListView(MethodView):
             data_is_prepared=data_is_prepared,
             messages=messages,
         )
+
+
+class DownloadModelFiles(MethodView):
+    view_url = "/forecast-models/<slug>/output/<path:filename>"
+    view_name = "download-model-files"
+    decorators = [flask_login.login_required]
+
+    def get(self, slug, filename):
+        """Expose the model's output directory to the user and return a 404 if that file doesn't exist"""
+        model = ForecastModel.query.filter_by(slug=slug).first()
+        rel_path = os.path.join(model.output_dir, filename)
+        if model and os.path.exists(rel_path):
+            # NOTE: The absolute path is necessary to make file downloadable
+            abs_dir_path = os.path.abspath(model.output_dir)
+            return send_from_directory(abs_dir_path, filename, as_attachment=True)
+        else:
+            return render_template("404.html", title="404"), 404
 
 
 class ForecastModelDetailView(MethodView):
