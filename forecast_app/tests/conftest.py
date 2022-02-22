@@ -30,8 +30,8 @@ def db_path(app):
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_and_cleanup(request):
-    os.mkdir(TestingConfig.OUTPUT_DIR)
-    os.mkdir(TestingConfig.UPLOAD_DIR)
+    os.makedirs(TestingConfig.OUTPUT_DIR)
+    os.makedirs(TestingConfig.UPLOAD_DIR)
     yield None
     shutil.rmtree(TestingConfig.OUTPUT_DIR)
     shutil.rmtree(TestingConfig.UPLOAD_DIR)

@@ -30,8 +30,8 @@ class Config(object):
     ADMIN_PASSWORD = "admin"
     SECRET_KEY = "secret"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    OUTPUT_DIR = "forecast_app/static/output"
-    UPLOAD_DIR = "forecast_app/static/uploads"
+    OUTPUT_DIR = "forecast_app/user-content/output"
+    UPLOAD_DIR = "forecast_app/user-content/uploads"
     PORT = 5000
     WORKERS = 1
     DEBUG = True
@@ -83,8 +83,8 @@ class TestingConfig(Config):
     NAME = "test"
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/test.db"
     TESTING = True
-    OUTPUT_DIR = "forecast_app/tests/tmp_output"
-    UPLOAD_DIR = "forecast_app/tests/tmp_upload"
+    OUTPUT_DIR = "forecast_app/tests/user-content/tmp_output"
+    UPLOAD_DIR = "forecast_app/tests/user-content/tmp_upload"
 
 
 configs = [TestingConfig, ProductionConfig, DevelopmentConfig]

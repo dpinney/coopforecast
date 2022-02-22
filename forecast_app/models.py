@@ -40,7 +40,7 @@ class ForecastModel(db.Model):
         self.creation_date = datetime.datetime.now()
         self.slug = self.creation_date.strftime("%Y-%m-%d.%H-%M-%S")
         self.output_dir = os.path.join(current_app.config["OUTPUT_DIR"], self.slug)
-        os.mkdir(self.output_dir)
+        os.makedirs(self.output_dir)
 
         # TODO: This should be named path or rewrite this
         self.model_file = os.path.join(self.output_dir, self.model_filename)
