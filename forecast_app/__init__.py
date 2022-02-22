@@ -9,6 +9,7 @@ from forecast_app.config import config_map, SECRET_VARS
 
 
 def create_app(config: str):
+    """A factory function that creates the flask app with the given configuration."""
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_map[config])
 
@@ -70,6 +71,6 @@ def create_app(config: str):
     @app.errorhandler(401)
     def unauthorized(e):
         """If a user tries to access a page that requires authentication, redirect them to the login page."""
-        return redirect("/")
+        return redirect("/", code=302)
 
     return app

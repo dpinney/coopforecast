@@ -56,20 +56,17 @@ def test_templates(app, auth, client):
         assert response.status_code == 200
         assert page_name in str(response.data)
 
-    # Test again without having logged in
-    auth.logout()
-    for route, page_name in pages.items():
-        response = client.get(route)
-        assert response.status_code == 401, page_name
-
 
 def test_permissions(app, client, auth):
+    # Test that if you're logged out, you are redirected to the root page
     all_routes = set([rule_obj.rule for rule_obj in app.url_map.iter_rules()])
-    # TODO: Does this mean all files are open?
-    all_routes -= set(["/", "/login", "/logout", "/static/<path:filename>"])
+    all_routes -= set(
+        ["/", "/login", "/logout", "/static/<path:filename>", "/500-trigger"]
+    )
     for route in all_routes:
         response = client.get(route, follow_redirects=True)
-        assert response.status_code == 401, route
+        assert response.status_code == 200, route
+        assert response.request.path == "/", route
 
 
 class TestLoginView:
