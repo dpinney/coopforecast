@@ -43,6 +43,7 @@ class ForecastModel(db.Model):
         os.makedirs(self.output_dir)
 
         # TODO: This should be named path or rewrite this
+        # TODO: These should be removed from the database and set as properties
         self.model_file = os.path.join(self.output_dir, self.model_filename)
         self.process_file = os.path.join(self.output_dir, "PID.txt")
 
