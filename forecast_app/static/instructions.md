@@ -29,13 +29,13 @@ The model will predict the 24 hours following the final hour that is provided.
 
 In order to ensure that the weather data can be properly collected, please first import load data for new dates before importing weather data. Weather data can be upload as a CSV. Similar to load data, ensuring the quality of weather data is very important, especially if it was collected automatically. Fill any zeros or empty values with best-guesses. A single approximate data point will not hurt the model, but a collection of absolutely wrong values could seriously hurt accuracy.
 
-Two columns are expected: `timestamp` and `tempc`. The model and API expect users to input Celcius. Please use [ISO_8601](https://en.wikipedia.org/wiki/ISO_8601) formatting (`YYYY-MM-DD HH:00`). New timestamps will be added and timestamps with existing values will be overwritten.
+Two columns are expected: `timestamp` and `tempc`. The model and API expect users to input Celsius. Please use [ISO_8601](https://en.wikipedia.org/wiki/ISO_8601) formatting (`YYYY-MM-DD HH:00`). New timestamps will be added and timestamps with existing values will be overwritten.
 
 [View an example historical weather dataset](https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4)
 
 ## Forecast Weather Data
 
-In addition to historical data, the model requires a 24 hour forecast in order to make a prediction. This is also available as an automated process, but because the quality of the data cannot be gauranteed, we ask that you review this data before a load forecast is made.
+In addition to historical data, the model requires a 24 hour forecast in order to make a prediction. This is also available as an automated process, but because the quality of the data cannot be guaranteed, we ask that you review this data before a load forecast is made.
 
 [View an example weather forecast](https://gist.github.com/kmcelwee/071cac5e2b20c2f260f1bf7f9b3387f3)
 
