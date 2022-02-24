@@ -8,6 +8,7 @@ numpy
 openpyxl
 pandas
 pre-commit
+pdoc
 pytest
 pytest-cov
 requests
