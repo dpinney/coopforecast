@@ -1,0 +1,32 @@
+# # Run pytest in github actions
+# name: update-docs
+# on:
+#   push:
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Set up Python 3.8
+#         uses: actions/setup-python@v1
+#         with:
+#           python-version: 3.8
+#       - name: Install dependencies
+#         run: pip install -r requirements.txt
+#       - name: Install tensorflow separately
+#         run: pip install tensorflow==2.7.0
+#       - name: Publish
+#         run:
+#       - name: Commit files
+#         run: |
+#           git config --local user.email "action@github.com"
+#           git config --local user.name "GitHub Action"
+#           git add docs
+#           git commit -m "Actions update" --allow-empty
+#       - name: Push changes
+#         uses: ad-m/github-push-action@v0.5.0
+#         with:
+#           # TODO: Set SECRET_REPO_TOKEN
+#           github_token: ${{ secrets.SECRET_REPO_TOKEN }}
+#           branch: main
