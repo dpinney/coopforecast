@@ -15,9 +15,14 @@
       Displaying a forecast of <b class="text-primary">{{ forecast_model.start_date.strftime('%b %d, %Y %H:%M') }}</b>
       to <b class="text-primary">{{ forecast_model.end_date.strftime('%b %d, %Y %H:%M') }}</b>.
     </p>
-    {% if highest_peak %}
+    {% if peak_info %}
     <p>
-      The highest peak for this month is <b class="text-primary">{{ highest_peak }}KW</b>.
+      The highest on-peak for this month is <b class="text-primary">{{ peak_info.on_peak.max_load }}KW</b> at <b
+        class="text-primary">{{ peak_info.on_peak.timestamp.strftime('%b %d, %Y %H:%M') }}</b>.
+    </p>
+    <p>
+      The highest off-peak for this month is <b class="text-primary">{{ peak_info.off_peak.max_load }}KW</b> at <b
+        class="text-primary">{{ peak_info.off_peak.timestamp.strftime('%b %d, %Y %H:%M') }}</b>.
     </p>
     {% endif %}
     <div id="forecast-chart-container" style="height: 400px; min-width: 310px"></div>

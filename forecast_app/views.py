@@ -24,6 +24,7 @@ from forecast_app.models import (
 )
 from forecast_app.utils import db, ADMIN_USER, upload_file
 from forecast_app.weather import AsosRequest, NwsForecastRequest
+from forecast_app import burtcoppd
 
 
 class DataView(MethodView):
@@ -380,7 +381,7 @@ class ForecastModelDetailView(MethodView):
             name="forecast",
             forecast_chart=self.get_forecast_chart(df),
             training_chart=self.get_training_chart(df),
-            highest_peak=self.get_highest_monthly_peak(df, forecast_model),
+            peak_info=burtcoppd.get_on_and_off_peak_info(df, forecast_model),
             forecast_model=forecast_model,
             messages=messages,
         )

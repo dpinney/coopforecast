@@ -202,20 +202,6 @@ class TestForecastListView:
 
 
 class TestForecastModelDetailView:
-    def test_get_highest_monthly_peak(self, db, app):
-        hp = ForecastModelDetailView().get_highest_monthly_peak(None, None)
-        assert hp is None
-        pytest.load_demo_db(app)
-        model = ForecastModel()
-        model.save()
-        df = model.get_df()
-        # Pretend as if the forecast ran
-        df["forecasted load"] = 1
-        hp = ForecastModelDetailView().get_highest_monthly_peak(df, model)
-        assert hp is None  # Demo runs on January 1, so no value expected
-
-        # TODO: Add test with a midmonth forecast
-
     def test_get(self):
         pass
 

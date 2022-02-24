@@ -152,6 +152,7 @@ def backup(
     export_dir = os.path.join(export_dir, str(export_id))
     os.makedirs(export_dir)
 
+    # BACKUP TRAINING DATA
     historical_load_path = os.path.join(export_dir, f"historical-load-{export_id}.csv")
     historical_temp_path = os.path.join(export_dir, f"historical-temp-{export_id}.csv")
     forecast_temp_path = os.path.join(export_dir, f"forecast-temp-data-{export_id}.csv")
@@ -160,6 +161,7 @@ def backup(
         HistoricalWeatherData.to_df().to_csv(historical_temp_path, index=False)
         ForecastWeatherData.to_df().to_csv(forecast_temp_path, index=False)
 
+    # BACKUP DB
     local_db = app.config["SQLALCHEMY_DATABASE_URI"].split("///")[1]
     # TODO: If db is not stored locally, this won't work.
     db_path = os.path.join("forecast_app", local_db)
@@ -167,6 +169,8 @@ def backup(
         export_dir, f"{local_db.split('/')[-1]}-{export_id}.db"
     )
     os.popen(f"cp {db_path} {backup_db_path}")
+
+    # TODO: BACKUP MODELS
 
 
 @typer_app.command()
