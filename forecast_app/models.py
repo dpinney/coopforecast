@@ -1,3 +1,5 @@
+"""A collection of ORMs for the forecast_app, configured with sqlalchemy."""
+
 import os
 import datetime
 import pandas as pd
@@ -11,6 +13,8 @@ import forecast_app.forecast as lf
 
 
 class ForecastModel(db.Model):
+    """A database model that stores information about a deep learning model"""
+
     __tablename__ = "forecast_model"
     creation_date = Column(DateTime, primary_key=True)
     slug = Column(String, unique=True, nullable=False)
@@ -29,6 +33,8 @@ class ForecastModel(db.Model):
     df_filename = "cached-dataframe.csv"
 
     def __init__(self):
+        """Collect the current state of the database and prepare a model for training."""
+
         # NOTE: Object is initialized from state of the database
         # First ensure that the environment is prepared to create a new model
         is_prepared = self.is_prepared()
@@ -63,10 +69,12 @@ class ForecastModel(db.Model):
 
     @property
     def model_filename(self):
+        """Return the filename of the model."""
         return f"{self.slug}.h5"
 
     @property
     def status(self):
+        """Return the status of the model, either "Not started", "Finished", "Failed", or "Running"."""
         # TODO: Manage strings with class variables
         # TODO: Can I just make a status property and nothing else?
         pid = self.get_process_id()
@@ -81,20 +89,27 @@ class ForecastModel(db.Model):
 
     @property
     def is_running(self):
+        """Return True if the model is currently running."""
         return self.status == "Running"
 
     @property
     def exited_successfully(self):
+        """Return True if the model exited successfully."""
+
         if self.status in ["Not started", "Running"]:
             return None
         else:
             return self.status == "Finished"
 
     def store_process_id(self, process_id):
+        """Store the process id of the model in a text file to help with multiprocessing."""
+
         with open(self.process_file, "w") as f:
             f.write(str(process_id))
 
     def get_process_id(self):
+        """Extract the process id from the process file to help with multiprocessing."""
+
         if os.path.exists(self.process_file):
             with open(self.process_file, "r") as f:
                 return f.read()
@@ -102,6 +117,8 @@ class ForecastModel(db.Model):
             return None
 
     def cancel(self):
+        """Cancel the model's training if it is running. If it isn't running, raise an exception."""
+
         pid = self.get_process_id()
         if self.is_running:
             os.kill(int(pid), signal.SIGKILL)
@@ -110,6 +127,8 @@ class ForecastModel(db.Model):
             raise Exception("Model is not running.")
 
     def save(self):
+        """Save the model's state to the database. WARNING: Other queued changes will also be committed."""
+
         db.session.add(self)
         db.session.commit()
 
@@ -117,6 +136,8 @@ class ForecastModel(db.Model):
         return f"<ForecastModel {self.creation_date}>"
 
     def launch_model(self, app_config):
+        """Launch the model's training in a separate process."""
+
         try:
             # HACK: Because this is launched in another thread, we need to
             #       recreate the app context (!) Please think of a better way
@@ -135,6 +156,12 @@ class ForecastModel(db.Model):
             raise Exception("Model failed: {}".format(e))
 
     def collect_training_data(self):
+        """Save the state of the database into a dataframe that is in the correct format training.
+
+        Null values are filled in, and other data cleaning takes place, but full
+        df exploding is not performed.
+        """
+
         df_hl = HistoricalLoadData.to_df().sort_values("dates")
         df_hw = HistoricalWeatherData.to_df().sort_values("dates")
 
@@ -164,15 +191,20 @@ class ForecastModel(db.Model):
 
     @property
     def df_path(self):
+        """Path to the key dataframe used for training."""
         return os.path.join(self.output_dir, self.df_filename)
 
     def store_df(self, df):
+        """Store the dataframe in the output directory."""
         df.to_csv(self.df_path, index=False)
 
     def get_df(self):
+        """Return the dataframe used for training."""
         return pd.read_csv(self.df_path, parse_dates=["dates"])
 
     def get_model(self):
+        """Return the model."""
+        # TODO: Raise an exception if the model doesn't exist
         return tf.keras.models.load_model(self.model_file)
 
     def train(self):
@@ -182,6 +214,15 @@ class ForecastModel(db.Model):
         pass
 
     def _execute_forecast(self):
+        """Execute the forecast (outside a thread.) And save all info after finishing.
+
+        Given the cached dataframe collected from the database's state when the
+        object was initialized, generate the exploded, normalized dataframe, split
+        into training and testing sets, and train the model. Store all pertinent
+        information in the database.
+        """
+        # TODO: Separate this into three functions for easier testing.
+
         df = self.get_df()
         self.all_X, self.all_y = lf.makeUsefulDf(df)  # structure = 3D
 
@@ -204,6 +245,8 @@ class ForecastModel(db.Model):
 
     @classmethod
     def is_prepared(cls):
+        """Return the start and end timestamps of when the current database can forecast."""
+
         hld_is_prepared = HistoricalLoadData.is_prepared()
         hwd_is_prepared = HistoricalWeatherData.is_prepared()
         fwd_is_prepared = ForecastWeatherData.is_prepared()
@@ -230,6 +273,8 @@ class ForecastModel(db.Model):
 
 
 class TrainingData:
+    """Abstract class for different types of data needed to make a forecast."""
+
     __tablename__ = None
     friendly_name = None
     column_name = None
@@ -238,6 +283,8 @@ class TrainingData:
     value = Column(Float)
 
     def __init__(self, timestamp=None, value=None):
+        """Initialize the object with a timestamp and a value and generate remaining attributes."""
+
         if pd.isna(timestamp):
             raise Exception("timestamp is a required field")
         self.timestamp = timestamp
@@ -250,14 +297,20 @@ class TrainingData:
         return f"<{self.timestamp}: {self.friendly_name} {self.value}>"
 
     def update_value(self, value):
+        """Safely update the value of the object."""
+        # TODO: Implement privacy so that users can't update the value of the object
+        #  https://stackoverflow.com/questions/10929004/how-to-restrict-setting-an-attribute-outside-of-constructor
         self.value = None if pd.isna(value) else value
 
     @classmethod
     def load_df(cls, df):
+        """Load a dataframe into the database."""
         return cls.load_data("", df=df)
 
     @classmethod
     def to_df(cls):
+        """Return a dataframe of the data in the database in the format used across the app."""
+
         return pd.DataFrame(
             [
                 # TODO: Rename dates to timestamp, or just make a universal var
@@ -268,6 +321,8 @@ class TrainingData:
 
     @classmethod
     def _parse_dates(cls, df, DATE_COL, HOUR_COL):
+        """Parse an incoming dataframe's columns to correctly format the timestamps into the app's required format."""
+
         # TODO: Test me!
         if "timestamp" not in df.columns:
             df[DATE_COL] = pd.to_datetime(df[DATE_COL])
@@ -302,16 +357,19 @@ class TrainingData:
 
     @classmethod
     def load_data(cls, filepath, df=None):
+        """Given a filepath or a dataframe, parse the data and load it into the database of the given model."""
+
         # NOTE: Entering a csv with both weather and load will overwrite both.
         #  The columns parameter can prevent this.
         # TODO: validation should happen here
-        # TODO: This is a mess.
+        # TODO: This is a mess. Separate out into different functions for easier testing.
         messages = []
         LOAD_COL = current_app.config["LOAD_COL"]
         TEMP_COL = current_app.config["TEMP_COL"]
         HOUR_COL = current_app.config["HOUR_COL"]
         DATE_COL = current_app.config["DATE_COL"]
 
+        # TODO: Make a more immutable way of determining the value column
         VAL_COL = LOAD_COL if cls.column_name == "load" else TEMP_COL
 
         try:
@@ -384,12 +442,17 @@ class TrainingData:
 
 
 class ForecastWeatherData(TrainingData, db.Model):
+    """Table of forecasted weather data."""
+
+    # TODO: Shift is_prepared to the abstract class.
+
     __tablename__ = "forecast_weather_data"
     friendly_name = "Forecast Temperature"
     column_name = "tempc"
 
     @classmethod
     def is_prepared(cls):
+        """Return the start and end dates of the data if it is prepared. Return an empty dict otherwise."""
         df = cls.to_df()
         if df.shape[0] < 24:
             return {}
@@ -403,12 +466,16 @@ class ForecastWeatherData(TrainingData, db.Model):
 
 
 class HistoricalWeatherData(TrainingData, db.Model):
+    """Table of historical weather data."""
+
     __tablename__ = "historical_weather_data"
     friendly_name = "Historical Temperature"
     column_name = "tempc"
 
     @classmethod
     def is_prepared(cls):
+        """Return the start and end dates of the data if it is prepared. Return an empty dict otherwise."""
+
         df = cls.to_df().dropna()
         if df.shape[0] < 24 * 365 * 3:
             return {}
@@ -421,12 +488,15 @@ class HistoricalWeatherData(TrainingData, db.Model):
 
 
 class HistoricalLoadData(TrainingData, db.Model):
+    """Table of historical load data."""
+
     __tablename__ = "historical_load_data"
     friendly_name = "Historical Load"
     column_name = "load"
 
     @classmethod
     def is_prepared(cls):
+        """Return the start and end dates of the data if it is prepared. Return an empty dict otherwise."""
         df = cls.to_df().dropna()
         if df.shape[0] < 24 * 365 * 3:
             return {}

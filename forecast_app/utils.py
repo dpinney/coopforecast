@@ -1,3 +1,5 @@
+"""Collection of utility functions, db configurations, and authentication."""
+
 from flask import request, flash, current_app
 from werkzeug.utils import secure_filename
 import os
@@ -21,6 +23,7 @@ ADMIN_USER = UserMixin()
 
 @login_manager.user_loader
 def user_loader(username):
+    """Return the authenticated. We only have one. Configuring this is required by flask-login."""
     if username != ADMIN_USER.id:
         return
     return ADMIN_USER
@@ -28,6 +31,8 @@ def user_loader(username):
 
 @login_manager.request_loader
 def request_loader(request):
+    """Ensure that user is authenticated. Configuring this is required for flask-login."""
+
     if request.form.get("username") != ADMIN_USER.id:
         return
     ADMIN_USER.is_authenticated = (
@@ -40,10 +45,12 @@ def request_loader(request):
 
 
 def allowed_file(filename):
+    """Return true if the file is an allowed filetype."""
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ["csv", "xlsx"]
 
 
 def upload_file(name):
+    """In a request context, upload a file to the upload directory."""
     # check if the post request has the file part
     if name not in request.files:
         flash("Cannot find a file with that name.")

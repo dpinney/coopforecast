@@ -9,8 +9,9 @@ import json
 
 
 class AsosRequest:
-    """Pulls hourly data for a specified year and ASOS station. Drawn heavily from
-    https://github.com/dpinney/omf
+    """Pulls hourly data for a specified year and ASOS station.
+
+    Drawn heavily from https://github.com/dpinney/omf
     * ASOS is the Automated Surface Observing System, a network of about 900
             weater stations, they collect data at hourly intervals, they're run by
             NWS, FAA, and DOD, and there is data going back to 1901 in some sites.
@@ -92,6 +93,7 @@ class AsosRequest:
 class NwsForecastRequest:
     # TODO: Can this be an abstract class?
     """Pulls hourly data from the National Weather Service
+
     Docs: https://weather-gov.github.io/api/
     Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly
     * Timezone data is encoded in the response as UTC with offset. We strip it.

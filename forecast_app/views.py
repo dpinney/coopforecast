@@ -1,3 +1,5 @@
+"""All the views for the forecast app. Each view corresponds to a route."""
+
 import os
 import pandas as pd
 from flask import (
@@ -42,6 +44,7 @@ class DataView(MethodView):
     sync_request = None
 
     def get_missing_values_summary(self):
+        """Collect basic information about missing values in the given model"""
         df = self.model.to_df()
         col = self.model.column_name
 
@@ -65,6 +68,7 @@ class DataView(MethodView):
         }
 
     def get_summary(self):
+        """Return dictionary for the data views "Data Summary" section."""
         if self.model.query.count() == 0:
             return None
 
@@ -80,6 +84,7 @@ class DataView(MethodView):
         }
 
     def get_table(self):
+        """Put data into a format that can be rendered by jinja as a table"""
         query = db.session.query(
             self.model.timestamp,
             self.model.value,
@@ -88,16 +93,19 @@ class DataView(MethodView):
         return [{"timestamp": timestamp, "value": value} for timestamp, value in query]
 
     def get_chart(self):
+        """Put data into a format that can be rendered by highstock as a chart"""
         query = db.session.query(self.model.milliseconds, self.model.value)
         data = [list(row) for row in query]
         return [{"data": data, "name": self.model.column_name}]
 
     def post(self):
+        """Given a POST request to the data view's endpoint, upload the file and load it into the database"""
         filepath = upload_file("file")
         messages = self.model.load_data(filepath)
         return self.get(messages=messages)  # NOTE: A redirect wouldn't work here
 
     def get(self, messages=None):
+        """Render the data view"""
         if not messages:
             messages = []
 
@@ -120,6 +128,8 @@ class DataView(MethodView):
 
 
 class ForecastWeatherDataView(DataView):
+    """View for the forecast weather data"""
+
     model = ForecastWeatherData
     view_name = "forecast-weather-data"
     title = "Forecast Weather Data"
@@ -130,6 +140,8 @@ class ForecastWeatherDataView(DataView):
 
 
 class HistoricalLoadDataView(DataView):
+    """View for the historical load data"""
+
     model = HistoricalLoadData
     view_name = "historical-load-data"
     title = "Historical Load Data"
@@ -139,6 +151,8 @@ class HistoricalLoadDataView(DataView):
 
 
 class HistoricalWeatherDataView(DataView):
+    """View for the historical weather data"""
+
     model = HistoricalWeatherData
     view_name = "historical-weather-data"
     title = "Historical Weather Data"
@@ -155,6 +169,7 @@ class LatestForecastView(MethodView):
     decorators = [flask_login.login_required]
 
     def get_latest_successful_model(self):
+        """Return the latest successful forecast model to show to user in this view"""
         # NOTE: Need to do manually because of exited_successfully being a property
         query = (
             db.session.query(ForecastModel)
@@ -172,8 +187,7 @@ class LatestForecastView(MethodView):
         return latest_successful_forecast
 
     def get(self):
-        """Redirect to the latest successful forecast model if one exists, otherwise
-        show a page with message"""
+        """Redirect to the latest successful forecast model if one exists, otherwise show a page with message."""
         model = self.get_latest_successful_model()
         if model:
             return ForecastModelDetailView().get(slug=model.slug)
@@ -182,10 +196,13 @@ class LatestForecastView(MethodView):
 
 
 class LoginView(MethodView):
+    """View for the login page."""
+
     view_name = "login"
     view_url = "/"
 
     def post(self):
+        """Given a POST request to the login page, authenticate the user and redirect"""
         if request.form.get("password") == current_app.config["ADMIN_PASSWORD"]:
             remember = request.form.get("remember-me") == "on"
             flask_login.login_user(ADMIN_USER, remember=remember)
@@ -195,20 +212,26 @@ class LoginView(MethodView):
         return redirect(url_for("login", error="Incorrect username and/or password."))
 
     def get(self):
+        """Render the login page"""
         if flask_login.current_user.is_authenticated:
             return redirect(url_for("latest-forecast"))
         return render_template("login.html")
 
 
 class LogoutView(MethodView):
+    """View for the logout page"""
+
     view_name = "logout"
 
     def get(self):
+        """Logout the user and redirect to the login page"""
         flask_login.logout_user()
         return redirect("/")
 
 
 class RenderTemplateView(View):
+    """Simple view to render any static page, like `instructions.html`."""
+
     decorators = [flask_login.login_required]
 
     def __init__(self, template_name):
@@ -225,6 +248,8 @@ class RenderTemplateView(View):
 
 
 class ForecastModelListView(MethodView):
+    """View for the list of all forecast models and generating new ones."""
+
     decorators = [flask_login.login_required]
     view_name = "forecast-model-list"
     view_url = "/forecast-models"
@@ -238,8 +263,9 @@ class ForecastModelListView(MethodView):
     #     messages = [{"level": "info", "text": "All running models were terminated."}]
     #     return self.get(messages=messages)
 
-    # TODO: mock=False is a hack
     def post(self, mock=False):
+        """Generate a new forecast model."""
+        # TODO: mock=False is a hack
         new_model = ForecastModel()
         new_model.save()
         print(f"Starting model {new_model.creation_date}")
@@ -256,6 +282,7 @@ class ForecastModelListView(MethodView):
         return redirect(url_for("forecast-model-list"))
 
     def get(self, messages=None):
+        """Render the list of all forecast models and show the state of all data views"""
         # messages = request.args.get("messages", [])
         messages = [] if messages is None else messages
         models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()
@@ -388,12 +415,16 @@ class ForecastModelDetailView(MethodView):
 
 
 class DataSync(MethodView):
+    """Abstract view to handle data syncing with external APIs."""
+
     view_name = None
     view_url = None
     endpoint_class = None
     parent_view = None
 
     def post(self):
+        """Sync data with the given external API."""
+
         request = self.build_request()
         request.send_request()
         df = request.create_df()
@@ -401,16 +432,22 @@ class DataSync(MethodView):
         return redirect(url_for(self.parent_view.view_name))
 
     def get(self):
+        """Redirect any GET requests to the parent view."""
+
         return redirect(url_for(self.parent_view.view_name))
 
 
 class HistoricalWeatherDataSync(DataSync):
+    """View to sync historical weather data with the ASOS API."""
+
     view_name = "historical-weather-data-sync"
     view_url = "/historical-weather-data/sync"
     endpoint_class = AsosRequest
     parent_view = HistoricalWeatherDataView
 
     def build_request(self):
+        """Given the state of the database, prepare (but don't send) an appropriate request for ASOS."""
+
         if HistoricalWeatherData.query.count() > 0:
             # Get the latest sync timestamp as the start date
             start_date = (
@@ -433,10 +470,13 @@ class HistoricalWeatherDataSync(DataSync):
 
 
 class ForecastWeatherDataSync(DataSync):
+    """View to sync forecast weather data with the NWS API."""
+
     view_name = "forecast-weather-data-sync"
     view_url = "/forecast-weather-data/sync"
     endpoint_class = NwsForecastRequest
     parent_view = ForecastWeatherDataView
 
     def build_request(self):
+        """Given app config, prepare (but don't send) an appropriate request for NWS."""
         return NwsForecastRequest(nws_code=current_app.config["NWS_CODE"])
