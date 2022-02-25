@@ -107,8 +107,9 @@
 
 
 <span class="k">class</span> <span class="nc">AsosRequest</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Pulls hourly data for a specified year and ASOS station. Drawn heavily from</span>
-<span class="sd">    https://github.com/dpinney/omf</span>
+    <span class="sd">&quot;&quot;&quot;Pulls hourly data for a specified year and ASOS station.</span>
+
+<span class="sd">    Drawn heavily from https://github.com/dpinney/omf</span>
 <span class="sd">    * ASOS is the Automated Surface Observing System, a network of about 900</span>
 <span class="sd">            weater stations, they collect data at hourly intervals, they&#39;re run by</span>
 <span class="sd">            NWS, FAA, and DOD, and there is data going back to 1901 in some sites.</span>
@@ -153,12 +154,14 @@
         <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send the request to the ASOS server and return the response&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset URL does not exist. </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span>
 
     <span class="k">def</span> <span class="nf">write_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write the response to a file&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
@@ -168,6 +171,7 @@
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">create_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a dataframe from the response in the format we need for our models&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;valid&quot;</span><span class="p">])</span>
@@ -187,6 +191,7 @@
 <span class="k">class</span> <span class="nc">NwsForecastRequest</span><span class="p">:</span>
     <span class="c1"># TODO: Can this be an abstract class?</span>
     <span class="sd">&quot;&quot;&quot;Pulls hourly data from the National Weather Service</span>
+
 <span class="sd">    Docs: https://weather-gov.github.io/api/</span>
 <span class="sd">    Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</span>
 <span class="sd">    * Timezone data is encoded in the response as UTC with offset. We strip it.</span>
@@ -201,17 +206,20 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">fahrenheit_to_celcius</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fahrenheit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Class method to convert Fahrenheit to Celsius&quot;&quot;&quot;</span>
         <span class="c1"># TODO: We should be using fahrenheit instead of celcius, but it&#39;s baked into</span>
         <span class="c1">#  a lot of the structure. May not be worth switching back for a while.</span>
         <span class="k">return</span> <span class="nb">round</span><span class="p">((</span><span class="n">fahrenheit</span> <span class="o">-</span> <span class="mi">32</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send the request to the NWS server and return the response&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nws_code</span> <span class="o">+</span> <span class="s2">&quot;/forecast/hourly&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset URL does not exist. </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span>
 
     <span class="k">def</span> <span class="nf">write_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write the response to a file&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
@@ -221,6 +229,7 @@
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">create_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a dataframe from the response in the format we need for our models&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
         <span class="n">json_response</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
@@ -254,8 +263,9 @@
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">AsosRequest</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Pulls hourly data for a specified year and ASOS station. Drawn heavily from</span>
-<span class="sd">    https://github.com/dpinney/omf</span>
+    <span class="sd">&quot;&quot;&quot;Pulls hourly data for a specified year and ASOS station.</span>
+
+<span class="sd">    Drawn heavily from https://github.com/dpinney/omf</span>
 <span class="sd">    * ASOS is the Automated Surface Observing System, a network of about 900</span>
 <span class="sd">            weater stations, they collect data at hourly intervals, they&#39;re run by</span>
 <span class="sd">            NWS, FAA, and DOD, and there is data going back to 1901 in some sites.</span>
@@ -300,12 +310,14 @@
         <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send the request to the ASOS server and return the response&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset URL does not exist. </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span>
 
     <span class="k">def</span> <span class="nf">write_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write the response to a file&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
@@ -315,6 +327,7 @@
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">create_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a dataframe from the response in the format we need for our models&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;valid&quot;</span><span class="p">])</span>
@@ -333,8 +346,9 @@
 
         </details>
 
-            <div class="docstring"><p>Pulls hourly data for a specified year and ASOS station. Drawn heavily from
-https://github.com/dpinney/omf</p>
+            <div class="docstring"><p>Pulls hourly data for a specified year and ASOS station.</p>
+
+<p>Drawn heavily from https://github.com/dpinney/omf</p>
 
 <ul>
 <li>ASOS is the Automated Surface Observing System, a network of about 900
@@ -419,6 +433,7 @@ https://github.com/dpinney/omf</p>
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send the request to the ASOS server and return the response&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset URL does not exist. </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -427,7 +442,9 @@ https://github.com/dpinney/omf</p>
 
         </details>
 
-    
+            <div class="docstring"><p>Send the request to the ASOS server and return the response</p>
+</div>
+
 
                             </div>
                             <div id="AsosRequest.write_response" class="classattr">
@@ -441,6 +458,7 @@ https://github.com/dpinney/omf</p>
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">write_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write the response to a file&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
@@ -452,7 +470,9 @@ https://github.com/dpinney/omf</p>
 
         </details>
 
-    
+            <div class="docstring"><p>Write the response to a file</p>
+</div>
+
 
                             </div>
                             <div id="AsosRequest.create_df" class="classattr">
@@ -466,6 +486,7 @@ https://github.com/dpinney/omf</p>
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">create_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a dataframe from the response in the format we need for our models&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;valid&quot;</span><span class="p">])</span>
@@ -484,7 +505,9 @@ https://github.com/dpinney/omf</p>
 
         </details>
 
-    
+            <div class="docstring"><p>Create a dataframe from the response in the format we need for our models</p>
+</div>
+
 
                             </div>
                 </section>
@@ -502,6 +525,7 @@ https://github.com/dpinney/omf</p>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">NwsForecastRequest</span><span class="p">:</span>
     <span class="c1"># TODO: Can this be an abstract class?</span>
     <span class="sd">&quot;&quot;&quot;Pulls hourly data from the National Weather Service</span>
+
 <span class="sd">    Docs: https://weather-gov.github.io/api/</span>
 <span class="sd">    Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</span>
 <span class="sd">    * Timezone data is encoded in the response as UTC with offset. We strip it.</span>
@@ -516,17 +540,20 @@ https://github.com/dpinney/omf</p>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">fahrenheit_to_celcius</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fahrenheit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Class method to convert Fahrenheit to Celsius&quot;&quot;&quot;</span>
         <span class="c1"># TODO: We should be using fahrenheit instead of celcius, but it&#39;s baked into</span>
         <span class="c1">#  a lot of the structure. May not be worth switching back for a while.</span>
         <span class="k">return</span> <span class="nb">round</span><span class="p">((</span><span class="n">fahrenheit</span> <span class="o">-</span> <span class="mi">32</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send the request to the NWS server and return the response&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nws_code</span> <span class="o">+</span> <span class="s2">&quot;/forecast/hourly&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset URL does not exist. </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span>
 
     <span class="k">def</span> <span class="nf">write_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write the response to a file&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
@@ -536,6 +563,7 @@ https://github.com/dpinney/omf</p>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">create_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a dataframe from the response in the format we need for our models&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
         <span class="n">json_response</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
@@ -556,8 +584,9 @@ https://github.com/dpinney/omf</p>
 
         </details>
 
-            <div class="docstring"><p>Pulls hourly data from the National Weather Service
-Docs: https://weather-gov.github.io/api/
+            <div class="docstring"><p>Pulls hourly data from the National Weather Service</p>
+
+<p>Docs: https://weather-gov.github.io/api/
 Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</p>
 
 <ul>
@@ -609,6 +638,7 @@ Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</p
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">fahrenheit_to_celcius</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fahrenheit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Class method to convert Fahrenheit to Celsius&quot;&quot;&quot;</span>
         <span class="c1"># TODO: We should be using fahrenheit instead of celcius, but it&#39;s baked into</span>
         <span class="c1">#  a lot of the structure. May not be worth switching back for a while.</span>
         <span class="k">return</span> <span class="nb">round</span><span class="p">((</span><span class="n">fahrenheit</span> <span class="o">-</span> <span class="mi">32</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
@@ -616,7 +646,9 @@ Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</p
 
         </details>
 
-    
+            <div class="docstring"><p>Class method to convert Fahrenheit to Celsius</p>
+</div>
+
 
                             </div>
                             <div id="NwsForecastRequest.send_request" class="classattr">
@@ -630,6 +662,7 @@ Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</p
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send the request to the NWS server and return the response&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nws_code</span> <span class="o">+</span> <span class="s2">&quot;/forecast/hourly&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset URL does not exist. </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -638,7 +671,9 @@ Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</p
 
         </details>
 
-    
+            <div class="docstring"><p>Send the request to the NWS server and return the response</p>
+</div>
+
 
                             </div>
                             <div id="NwsForecastRequest.write_response" class="classattr">
@@ -652,6 +687,7 @@ Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</p
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">write_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write the response to a file&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
@@ -663,7 +699,9 @@ Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</p
 
         </details>
 
-    
+            <div class="docstring"><p>Write the response to a file</p>
+</div>
+
 
                             </div>
                             <div id="NwsForecastRequest.create_df" class="classattr">
@@ -677,6 +715,7 @@ Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</p
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">create_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a dataframe from the response in the format we need for our models&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No request has been sent yet.&quot;</span><span class="p">)</span>
         <span class="n">json_response</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
@@ -697,7 +736,9 @@ Example request: https://api.weather.gov/gridpoints/LWX/96,70/forecast/hourly</p
 
         </details>
 
-    
+            <div class="docstring"><p>Create a dataframe from the response in the format we need for our models</p>
+</div>
+
 
                             </div>
                 </section>

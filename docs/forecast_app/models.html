@@ -118,12 +118,6 @@
                                 <a class="function" href="#ForecastModel.get_model">get_model</a>
                         </li>
                         <li>
-                                <a class="function" href="#ForecastModel.train">train</a>
-                        </li>
-                        <li>
-                                <a class="function" href="#ForecastModel.test">test</a>
-                        </li>
-                        <li>
                                 <a class="function" href="#ForecastModel.is_prepared">is_prepared</a>
                         </li>
                 </ul>
@@ -262,10 +256,14 @@
                     <h1 class="modulename">
 <a href="./../forecast_app.html">forecast_app</a><wbr>.models    </h1>
 
-                
+                        <div class="docstring"><p>A collection of ORMs for the forecast_app, configured with sqlalchemy.</p>
+</div>
+
                         <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;A collection of ORMs for the forecast_app, configured with sqlalchemy.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">JSON</span>
@@ -278,24 +276,28 @@
 
 
 <span class="k">class</span> <span class="nc">ForecastModel</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A database model that stores information about a deep learning model&quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;forecast_model&quot;</span>
     <span class="n">creation_date</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">slug</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">milliseconds</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="c1"># TODO: This is start_datetime and end_datetime</span>
+    <span class="n">milliseconds</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># TODO: This should be a property</span>
+    <span class="c1"># TODO: This is start_dt and end_dt</span>
     <span class="n">start_date</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">end_date</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">tempcs</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">model_file</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">process_file</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">tempcs</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># TODO: Remove me, this is tracked in the df</span>
+    <span class="n">model_file</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># TODO: Remove me</span>
+    <span class="n">process_file</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># TODO: Remove me</span>
     <span class="n">output_dir</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">accuracy</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">)</span>
-    <span class="n">loads</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">)</span>
+    <span class="n">loads</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">)</span>  <span class="c1"># TODO: Remove me, this is tracked in the df</span>
     <span class="n">epochs</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="n">df_filename</span> <span class="o">=</span> <span class="s2">&quot;cached-dataframe.csv&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Collect the current state of the database and prepare a model for training.&quot;&quot;&quot;</span>
+
         <span class="c1"># NOTE: Object is initialized from state of the database</span>
         <span class="c1"># First ensure that the environment is prepared to create a new model</span>
         <span class="n">is_prepared</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
@@ -330,10 +332,13 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">model_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the filename of the model.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: This can be a friendlier name, it&#39;s nested in the output_dir</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="si">}</span><span class="s2">.h5&quot;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the status of the model, either &quot;Not started&quot;, &quot;Finished&quot;, &quot;Failed&quot;, or &quot;Running&quot;.&quot;&quot;&quot;</span>
         <span class="c1"># TODO: Manage strings with class variables</span>
         <span class="c1"># TODO: Can I just make a status property and nothing else?</span>
         <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span>
@@ -348,20 +353,27 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return True if the model is currently running.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Running&quot;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">exited_successfully</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return True if the model exited successfully.&quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Not started&quot;</span><span class="p">,</span> <span class="s2">&quot;Running&quot;</span><span class="p">]:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Finished&quot;</span>
 
     <span class="k">def</span> <span class="nf">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store the process id of the model in a text file to help with multiprocessing.&quot;&quot;&quot;</span>
+
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">process_id</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">get_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the process id from the process file to help with multiprocessing.&quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">):</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -369,6 +381,8 @@
             <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Cancel the model&#39;s training if it is running. If it isn&#39;t running, raise an exception.&quot;&quot;&quot;</span>
+
         <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
@@ -377,6 +391,8 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model is not running.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the model&#39;s state to the database. WARNING: Other queued changes will also be committed.&quot;&quot;&quot;</span>
+
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
@@ -384,6 +400,8 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ForecastModel </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">creation_date</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
 
     <span class="k">def</span> <span class="nf">launch_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Launch the model&#39;s training in a separate process.&quot;&quot;&quot;</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># HACK: Because this is launched in another thread, we need to</span>
             <span class="c1">#       recreate the app context (!) Please think of a better way</span>
@@ -399,9 +417,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;COMPLETED&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;FAILURE&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model failed: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">collect_training_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the state of the database into a dataframe that is in the correct format for training.</span>
+
+<span class="sd">        Null values are filled in, and other data cleaning takes place, but full</span>
+<span class="sd">        df exploding is not performed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">df_hl</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
         <span class="n">df_hw</span> <span class="o">=</span> <span class="n">HistoricalWeatherData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
 
@@ -431,34 +455,40 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">df_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Path to the key dataframe used for training.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df_filename</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">store_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store the dataframe in the output directory.&quot;&quot;&quot;</span>
         <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the dataframe used for training.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df_path</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the model.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Raise an exception if the model doesn&#39;t exist</span>
         <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-
     <span class="k">def</span> <span class="nf">_execute_forecast</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_df</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">makeUsefulDf</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>  <span class="c1"># structure = 3D</span>
+        <span class="sd">&quot;&quot;&quot;Execute the forecast (outside a thread.) And save all info after finishing.</span>
 
-        <span class="n">tomorrow_load</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tomorrow_accuracy</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">neural_net_next_day</span><span class="p">(</span>
+<span class="sd">        Given the cached dataframe collected from the database&#39;s state when the</span>
+<span class="sd">        object was initialized, generate the exploded, normalized dataframe, split</span>
+<span class="sd">        into training and testing sets, and train the model. Store all pertinent</span>
+<span class="sd">        information in the database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Separate this into three functions for easier testing.</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_df</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">generate_x_and_ys</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+        <span class="n">tomorrow_load</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tomorrow_accuracy</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">train_and_forecast_next_day</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span><span class="p">,</span>
             <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
             <span class="n">save_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">,</span>
-            <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="c1"># structure=&quot;3D&quot;,</span>
         <span class="p">)</span>
 
         <span class="c1"># HACK: Set forecasted load on cached dataframe</span>
@@ -471,6 +501,8 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end timestamps of when the current database can forecast.&quot;&quot;&quot;</span>
+
         <span class="n">hld_is_prepared</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
         <span class="n">hwd_is_prepared</span> <span class="o">=</span> <span class="n">HistoricalWeatherData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
         <span class="n">fwd_is_prepared</span> <span class="o">=</span> <span class="n">ForecastWeatherData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
@@ -488,15 +520,10 @@
             <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">24</span><span class="p">),</span>
         <span class="p">}</span>
 
-    <span class="c1"># TODO: This should be at the end of launch_model</span>
-    <span class="c1"># def done_callback(self, future):</span>
-    <span class="c1">#     # TODO: see if future was cancelled</span>
-    <span class="c1">#     print(&quot;Exited with Future callback&quot;)</span>
-    <span class="c1">#     self.is_running = False</span>
-    <span class="c1">#     self.save()</span>
-
 
 <span class="k">class</span> <span class="nc">TrainingData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Abstract class for different types of data needed to make a forecast.&quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="kc">None</span>
@@ -505,6 +532,8 @@
     <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the object with a timestamp and a value and generate remaining attributes.&quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">timestamp</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;timestamp is a required field&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">timestamp</span>
@@ -517,14 +546,20 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">friendly_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
 
     <span class="k">def</span> <span class="nf">update_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Safely update the value of the object.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Implement privacy so that users can&#39;t update the value of the object</span>
+        <span class="c1">#  https://stackoverflow.com/questions/10929004/how-to-restrict-setting-an-attribute-outside-of-constructor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load_df</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load a dataframe into the database.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">to_df</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a dataframe of the data in the database in the format used across the app.&quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
             <span class="p">[</span>
                 <span class="c1"># TODO: Rename dates to timestamp, or just make a universal var</span>
@@ -535,6 +570,8 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_parse_dates</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">DATE_COL</span><span class="p">,</span> <span class="n">HOUR_COL</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse an incoming dataframe&#39;s columns to correctly format the timestamps into the app&#39;s required format.&quot;&quot;&quot;</span>
+
         <span class="c1"># TODO: Test me!</span>
         <span class="k">if</span> <span class="s2">&quot;timestamp&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="n">df</span><span class="p">[</span><span class="n">DATE_COL</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">DATE_COL</span><span class="p">])</span>
@@ -569,16 +606,19 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Given a filepath or a dataframe, parse the data and load it into the database of the given model.&quot;&quot;&quot;</span>
+
         <span class="c1"># NOTE: Entering a csv with both weather and load will overwrite both.</span>
         <span class="c1">#  The columns parameter can prevent this.</span>
         <span class="c1"># TODO: validation should happen here</span>
-        <span class="c1"># TODO: This is a mess.</span>
+        <span class="c1"># TODO: This is a mess. Separate out into different functions for easier testing.</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LOAD_COL&quot;</span><span class="p">]</span>
         <span class="n">TEMP_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;TEMP_COL&quot;</span><span class="p">]</span>
         <span class="n">HOUR_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOUR_COL&quot;</span><span class="p">]</span>
         <span class="n">DATE_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;DATE_COL&quot;</span><span class="p">]</span>
 
+        <span class="c1"># TODO: Make a more immutable way of determining the value column</span>
         <span class="n">VAL_COL</span> <span class="o">=</span> <span class="n">LOAD_COL</span> <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">column_name</span> <span class="o">==</span> <span class="s2">&quot;load&quot;</span> <span class="k">else</span> <span class="n">TEMP_COL</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -651,12 +691,17 @@
 
 
 <span class="k">class</span> <span class="nc">ForecastWeatherData</span><span class="p">(</span><span class="n">TrainingData</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Table of forecasted weather data.&quot;&quot;&quot;</span>
+
+    <span class="c1"># TODO: Shift is_prepared to the abstract class.</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;forecast_weather_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Forecast Temperature&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;tempc&quot;</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
@@ -670,12 +715,16 @@
 
 
 <span class="k">class</span> <span class="nc">HistoricalWeatherData</span><span class="p">(</span><span class="n">TrainingData</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Table of historical weather data.&quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;historical_weather_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Historical Temperature&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;tempc&quot;</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
+
         <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
@@ -688,12 +737,15 @@
 
 
 <span class="k">class</span> <span class="nc">HistoricalLoadData</span><span class="p">(</span><span class="n">TrainingData</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Table of historical load data.&quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;historical_load_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Historical Load&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;load&quot;</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
@@ -719,24 +771,28 @@
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ForecastModel</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A database model that stores information about a deep learning model&quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;forecast_model&quot;</span>
     <span class="n">creation_date</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">slug</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">milliseconds</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="c1"># TODO: This is start_datetime and end_datetime</span>
+    <span class="n">milliseconds</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># TODO: This should be a property</span>
+    <span class="c1"># TODO: This is start_dt and end_dt</span>
     <span class="n">start_date</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">end_date</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">tempcs</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">model_file</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">process_file</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">tempcs</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># TODO: Remove me, this is tracked in the df</span>
+    <span class="n">model_file</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># TODO: Remove me</span>
+    <span class="n">process_file</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># TODO: Remove me</span>
     <span class="n">output_dir</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">accuracy</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">)</span>
-    <span class="n">loads</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">)</span>
+    <span class="n">loads</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">)</span>  <span class="c1"># TODO: Remove me, this is tracked in the df</span>
     <span class="n">epochs</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="n">df_filename</span> <span class="o">=</span> <span class="s2">&quot;cached-dataframe.csv&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Collect the current state of the database and prepare a model for training.&quot;&quot;&quot;</span>
+
         <span class="c1"># NOTE: Object is initialized from state of the database</span>
         <span class="c1"># First ensure that the environment is prepared to create a new model</span>
         <span class="n">is_prepared</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
@@ -771,10 +827,13 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">model_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the filename of the model.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: This can be a friendlier name, it&#39;s nested in the output_dir</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="si">}</span><span class="s2">.h5&quot;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the status of the model, either &quot;Not started&quot;, &quot;Finished&quot;, &quot;Failed&quot;, or &quot;Running&quot;.&quot;&quot;&quot;</span>
         <span class="c1"># TODO: Manage strings with class variables</span>
         <span class="c1"># TODO: Can I just make a status property and nothing else?</span>
         <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span>
@@ -789,20 +848,27 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return True if the model is currently running.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Running&quot;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">exited_successfully</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return True if the model exited successfully.&quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Not started&quot;</span><span class="p">,</span> <span class="s2">&quot;Running&quot;</span><span class="p">]:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Finished&quot;</span>
 
     <span class="k">def</span> <span class="nf">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store the process id of the model in a text file to help with multiprocessing.&quot;&quot;&quot;</span>
+
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">process_id</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">get_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the process id from the process file to help with multiprocessing.&quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">):</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -810,6 +876,8 @@
             <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Cancel the model&#39;s training if it is running. If it isn&#39;t running, raise an exception.&quot;&quot;&quot;</span>
+
         <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
@@ -818,6 +886,8 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model is not running.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the model&#39;s state to the database. WARNING: Other queued changes will also be committed.&quot;&quot;&quot;</span>
+
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
@@ -825,6 +895,8 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ForecastModel </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">creation_date</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
 
     <span class="k">def</span> <span class="nf">launch_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Launch the model&#39;s training in a separate process.&quot;&quot;&quot;</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># HACK: Because this is launched in another thread, we need to</span>
             <span class="c1">#       recreate the app context (!) Please think of a better way</span>
@@ -840,9 +912,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;COMPLETED&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;FAILURE&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model failed: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">collect_training_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the state of the database into a dataframe that is in the correct format for training.</span>
+
+<span class="sd">        Null values are filled in, and other data cleaning takes place, but full</span>
+<span class="sd">        df exploding is not performed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">df_hl</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
         <span class="n">df_hw</span> <span class="o">=</span> <span class="n">HistoricalWeatherData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
 
@@ -872,34 +950,40 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">df_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Path to the key dataframe used for training.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df_filename</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">store_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store the dataframe in the output directory.&quot;&quot;&quot;</span>
         <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the dataframe used for training.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df_path</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the model.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Raise an exception if the model doesn&#39;t exist</span>
         <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-
     <span class="k">def</span> <span class="nf">_execute_forecast</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_df</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">makeUsefulDf</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>  <span class="c1"># structure = 3D</span>
+        <span class="sd">&quot;&quot;&quot;Execute the forecast (outside a thread.) And save all info after finishing.</span>
 
-        <span class="n">tomorrow_load</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tomorrow_accuracy</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">neural_net_next_day</span><span class="p">(</span>
+<span class="sd">        Given the cached dataframe collected from the database&#39;s state when the</span>
+<span class="sd">        object was initialized, generate the exploded, normalized dataframe, split</span>
+<span class="sd">        into training and testing sets, and train the model. Store all pertinent</span>
+<span class="sd">        information in the database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Separate this into three functions for easier testing.</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_df</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">generate_x_and_ys</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+        <span class="n">tomorrow_load</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tomorrow_accuracy</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">train_and_forecast_next_day</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span><span class="p">,</span>
             <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
             <span class="n">save_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">,</span>
-            <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="c1"># structure=&quot;3D&quot;,</span>
         <span class="p">)</span>
 
         <span class="c1"># HACK: Set forecasted load on cached dataframe</span>
@@ -912,6 +996,8 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end timestamps of when the current database can forecast.&quot;&quot;&quot;</span>
+
         <span class="n">hld_is_prepared</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
         <span class="n">hwd_is_prepared</span> <span class="o">=</span> <span class="n">HistoricalWeatherData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
         <span class="n">fwd_is_prepared</span> <span class="o">=</span> <span class="n">ForecastWeatherData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
@@ -928,22 +1014,11 @@
             <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
             <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">24</span><span class="p">),</span>
         <span class="p">}</span>
-
-    <span class="c1"># TODO: This should be at the end of launch_model</span>
-    <span class="c1"># def done_callback(self, future):</span>
-    <span class="c1">#     # TODO: see if future was cancelled</span>
-    <span class="c1">#     print(&quot;Exited with Future callback&quot;)</span>
-    <span class="c1">#     self.is_running = False</span>
-    <span class="c1">#     self.save()</span>
 </pre></div>
 
         </details>
 
-            <div class="docstring"><p>Base class for SQLAlchemy declarative base model.</p>
-
-<p>To define models, subclass :attr:<code>db.Model &lt;SQLAlchemy.Model&gt;</code>, not this
-class. To customize <code>db.Model</code>, subclass this and pass it as
-<code>model_class</code> to :class:<code>SQLAlchemy</code>.</p>
+            <div class="docstring"><p>A database model that stores information about a deep learning model</p>
 </div>
 
 
@@ -955,7 +1030,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
     </div>
 
     
-    
+            <div class="docstring"><p>Collect the current state of the database and prepare a model for training.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.creation_date" class="classattr">
@@ -1095,7 +1172,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
     </div>
 
     
-    
+            <div class="docstring"><p>Return the filename of the model.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.status" class="classattr">
@@ -1105,7 +1184,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
     </div>
 
     
-    
+            <div class="docstring"><p>Return the status of the model, either "Not started", "Finished", "Failed", or "Running".</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.is_running" class="classattr">
@@ -1115,7 +1196,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
     </div>
 
     
-    
+            <div class="docstring"><p>Return True if the model is currently running.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.exited_successfully" class="classattr">
@@ -1125,7 +1208,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
     </div>
 
     
-    
+            <div class="docstring"><p>Return True if the model exited successfully.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.store_process_id" class="classattr">
@@ -1139,13 +1224,17 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store the process id of the model in a text file to help with multiprocessing.&quot;&quot;&quot;</span>
+
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">process_id</span><span class="p">))</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Store the process id of the model in a text file to help with multiprocessing.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.get_process_id" class="classattr">
@@ -1159,6 +1248,8 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the process id from the process file to help with multiprocessing.&quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">):</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -1168,7 +1259,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Extract the process id from the process file to help with multiprocessing.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.cancel" class="classattr">
@@ -1182,6 +1275,8 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Cancel the model&#39;s training if it is running. If it isn&#39;t running, raise an exception.&quot;&quot;&quot;</span>
+
         <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
@@ -1192,7 +1287,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Cancel the model's training if it is running. If it isn't running, raise an exception.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.save" class="classattr">
@@ -1206,13 +1303,17 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the model&#39;s state to the database. WARNING: Other queued changes will also be committed.&quot;&quot;&quot;</span>
+
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Save the model's state to the database. WARNING: Other queued changes will also be committed.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.launch_model" class="classattr">
@@ -1226,6 +1327,8 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">launch_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Launch the model&#39;s training in a separate process.&quot;&quot;&quot;</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># HACK: Because this is launched in another thread, we need to</span>
             <span class="c1">#       recreate the app context (!) Please think of a better way</span>
@@ -1241,12 +1344,14 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;COMPLETED&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;FAILURE&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model failed: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Launch the model's training in a separate process.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.collect_training_data" class="classattr">
@@ -1260,6 +1365,12 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">collect_training_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the state of the database into a dataframe that is in the correct format for training.</span>
+
+<span class="sd">        Null values are filled in, and other data cleaning takes place, but full</span>
+<span class="sd">        df exploding is not performed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">df_hl</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
         <span class="n">df_hw</span> <span class="o">=</span> <span class="n">HistoricalWeatherData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
 
@@ -1290,7 +1401,12 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Save the state of the database into a dataframe that is in the correct format for training.</p>
+
+<p>Null values are filled in, and other data cleaning takes place, but full
+df exploding is not performed.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.df_path" class="classattr">
@@ -1300,7 +1416,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
     </div>
 
     
-    
+            <div class="docstring"><p>Path to the key dataframe used for training.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.store_df" class="classattr">
@@ -1314,12 +1432,15 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">store_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store the dataframe in the output directory.&quot;&quot;&quot;</span>
         <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Store the dataframe in the output directory.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.get_df" class="classattr">
@@ -1333,12 +1454,15 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the dataframe used for training.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df_path</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">])</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Return the dataframe used for training.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastModel.get_model" class="classattr">
@@ -1352,50 +1476,16 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the model.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Raise an exception if the model doesn&#39;t exist</span>
         <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">)</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Return the model.</p>
+</div>
 
-                            </div>
-                            <div id="ForecastModel.train" class="classattr">
-                                        <div class="attr function"><a class="headerlink" href="#ForecastModel.train">#&nbsp;&nbsp</a>
-
-        
-            <span class="def">def</span>
-            <span class="name">train</span><span class="signature">(self)</span>:
-    </div>
-
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-</pre></div>
-
-        </details>
-
-    
-
-                            </div>
-                            <div id="ForecastModel.test" class="classattr">
-                                        <div class="attr function"><a class="headerlink" href="#ForecastModel.test">#&nbsp;&nbsp</a>
-
-        
-            <span class="def">def</span>
-            <span class="name">test</span><span class="signature">(self)</span>:
-    </div>
-
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-</pre></div>
-
-        </details>
-
-    
 
                             </div>
                             <div id="ForecastModel.is_prepared" class="classattr">
@@ -1411,6 +1501,8 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end timestamps of when the current database can forecast.&quot;&quot;&quot;</span>
+
         <span class="n">hld_is_prepared</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
         <span class="n">hwd_is_prepared</span> <span class="o">=</span> <span class="n">HistoricalWeatherData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
         <span class="n">fwd_is_prepared</span> <span class="o">=</span> <span class="n">ForecastWeatherData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
@@ -1431,7 +1523,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Return the start and end timestamps of when the current database can forecast.</p>
+</div>
+
 
                             </div>
                             <div class="inherited">
@@ -1459,6 +1553,8 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">TrainingData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Abstract class for different types of data needed to make a forecast.&quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1467,6 +1563,8 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
     <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the object with a timestamp and a value and generate remaining attributes.&quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">timestamp</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;timestamp is a required field&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">timestamp</span>
@@ -1479,14 +1577,20 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">friendly_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
 
     <span class="k">def</span> <span class="nf">update_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Safely update the value of the object.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Implement privacy so that users can&#39;t update the value of the object</span>
+        <span class="c1">#  https://stackoverflow.com/questions/10929004/how-to-restrict-setting-an-attribute-outside-of-constructor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load_df</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load a dataframe into the database.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">to_df</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a dataframe of the data in the database in the format used across the app.&quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
             <span class="p">[</span>
                 <span class="c1"># TODO: Rename dates to timestamp, or just make a universal var</span>
@@ -1497,6 +1601,8 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_parse_dates</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">DATE_COL</span><span class="p">,</span> <span class="n">HOUR_COL</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse an incoming dataframe&#39;s columns to correctly format the timestamps into the app&#39;s required format.&quot;&quot;&quot;</span>
+
         <span class="c1"># TODO: Test me!</span>
         <span class="k">if</span> <span class="s2">&quot;timestamp&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="n">df</span><span class="p">[</span><span class="n">DATE_COL</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">DATE_COL</span><span class="p">])</span>
@@ -1531,16 +1637,19 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Given a filepath or a dataframe, parse the data and load it into the database of the given model.&quot;&quot;&quot;</span>
+
         <span class="c1"># NOTE: Entering a csv with both weather and load will overwrite both.</span>
         <span class="c1">#  The columns parameter can prevent this.</span>
         <span class="c1"># TODO: validation should happen here</span>
-        <span class="c1"># TODO: This is a mess.</span>
+        <span class="c1"># TODO: This is a mess. Separate out into different functions for easier testing.</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LOAD_COL&quot;</span><span class="p">]</span>
         <span class="n">TEMP_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;TEMP_COL&quot;</span><span class="p">]</span>
         <span class="n">HOUR_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOUR_COL&quot;</span><span class="p">]</span>
         <span class="n">DATE_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;DATE_COL&quot;</span><span class="p">]</span>
 
+        <span class="c1"># TODO: Make a more immutable way of determining the value column</span>
         <span class="n">VAL_COL</span> <span class="o">=</span> <span class="n">LOAD_COL</span> <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">column_name</span> <span class="o">==</span> <span class="s2">&quot;load&quot;</span> <span class="k">else</span> <span class="n">TEMP_COL</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -1614,7 +1723,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Abstract class for different types of data needed to make a forecast.</p>
+</div>
+
 
                             <div id="TrainingData.__init__" class="classattr">
                                         <div class="attr function"><a class="headerlink" href="#TrainingData.__init__">#&nbsp;&nbsp</a>
@@ -1626,6 +1737,8 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the object with a timestamp and a value and generate remaining attributes.&quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">timestamp</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;timestamp is a required field&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">timestamp</span>
@@ -1637,7 +1750,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Initialize the object with a timestamp and a value and generate remaining attributes.</p>
+</div>
+
 
                             </div>
                             <div id="TrainingData.friendly_name" class="classattr">
@@ -1701,12 +1816,17 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">update_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Safely update the value of the object.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Implement privacy so that users can&#39;t update the value of the object</span>
+        <span class="c1">#  https://stackoverflow.com/questions/10929004/how-to-restrict-setting-an-attribute-outside-of-constructor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Safely update the value of the object.</p>
+</div>
+
 
                             </div>
                             <div id="TrainingData.load_df" class="classattr">
@@ -1722,12 +1842,15 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load_df</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load a dataframe into the database.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Load a dataframe into the database.</p>
+</div>
+
 
                             </div>
                             <div id="TrainingData.to_df" class="classattr">
@@ -1743,6 +1866,8 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">to_df</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a dataframe of the data in the database in the format used across the app.&quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
             <span class="p">[</span>
                 <span class="c1"># TODO: Rename dates to timestamp, or just make a universal var</span>
@@ -1754,7 +1879,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Return a dataframe of the data in the database in the format used across the app.</p>
+</div>
+
 
                             </div>
                             <div id="TrainingData.load_data" class="classattr">
@@ -1770,16 +1897,19 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Given a filepath or a dataframe, parse the data and load it into the database of the given model.&quot;&quot;&quot;</span>
+
         <span class="c1"># NOTE: Entering a csv with both weather and load will overwrite both.</span>
         <span class="c1">#  The columns parameter can prevent this.</span>
         <span class="c1"># TODO: validation should happen here</span>
-        <span class="c1"># TODO: This is a mess.</span>
+        <span class="c1"># TODO: This is a mess. Separate out into different functions for easier testing.</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LOAD_COL&quot;</span><span class="p">]</span>
         <span class="n">TEMP_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;TEMP_COL&quot;</span><span class="p">]</span>
         <span class="n">HOUR_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOUR_COL&quot;</span><span class="p">]</span>
         <span class="n">DATE_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;DATE_COL&quot;</span><span class="p">]</span>
 
+        <span class="c1"># TODO: Make a more immutable way of determining the value column</span>
         <span class="n">VAL_COL</span> <span class="o">=</span> <span class="n">LOAD_COL</span> <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">column_name</span> <span class="o">==</span> <span class="s2">&quot;load&quot;</span> <span class="k">else</span> <span class="n">TEMP_COL</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -1853,7 +1983,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Given a filepath or a dataframe, parse the data and load it into the database of the given model.</p>
+</div>
+
 
                             </div>
                 </section>
@@ -1869,12 +2001,17 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ForecastWeatherData</span><span class="p">(</span><span class="n">TrainingData</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Table of forecasted weather data.&quot;&quot;&quot;</span>
+
+    <span class="c1"># TODO: Shift is_prepared to the abstract class.</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;forecast_weather_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Forecast Temperature&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;tempc&quot;</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
@@ -1889,11 +2026,7 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-            <div class="docstring"><p>Base class for SQLAlchemy declarative base model.</p>
-
-<p>To define models, subclass :attr:<code>db.Model &lt;SQLAlchemy.Model&gt;</code>, not this
-class. To customize <code>db.Model</code>, subclass this and pass it as
-<code>model_class</code> to :class:<code>SQLAlchemy</code>.</p>
+            <div class="docstring"><p>Table of forecasted weather data.</p>
 </div>
 
 
@@ -1905,7 +2038,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
     </div>
 
     
-    
+            <div class="docstring"><p>Initialize the object with a timestamp and a value and generate remaining attributes.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastWeatherData.friendly_name" class="classattr">
@@ -1941,6 +2076,7 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
@@ -1955,7 +2091,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.</p>
+</div>
+
 
                             </div>
                             <div id="ForecastWeatherData.timestamp" class="classattr">
@@ -2020,12 +2158,16 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">HistoricalWeatherData</span><span class="p">(</span><span class="n">TrainingData</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Table of historical weather data.&quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;historical_weather_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Historical Temperature&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;tempc&quot;</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
+
         <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
@@ -2039,11 +2181,7 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-            <div class="docstring"><p>Base class for SQLAlchemy declarative base model.</p>
-
-<p>To define models, subclass :attr:<code>db.Model &lt;SQLAlchemy.Model&gt;</code>, not this
-class. To customize <code>db.Model</code>, subclass this and pass it as
-<code>model_class</code> to :class:<code>SQLAlchemy</code>.</p>
+            <div class="docstring"><p>Table of historical weather data.</p>
 </div>
 
 
@@ -2055,7 +2193,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
     </div>
 
     
-    
+            <div class="docstring"><p>Initialize the object with a timestamp and a value and generate remaining attributes.</p>
+</div>
+
 
                             </div>
                             <div id="HistoricalWeatherData.friendly_name" class="classattr">
@@ -2091,6 +2231,8 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
+
         <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
@@ -2104,7 +2246,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.</p>
+</div>
+
 
                             </div>
                             <div id="HistoricalWeatherData.timestamp" class="classattr">
@@ -2169,12 +2313,15 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">HistoricalLoadData</span><span class="p">(</span><span class="n">TrainingData</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Table of historical load data.&quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;historical_load_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Historical Load&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;load&quot;</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
@@ -2187,11 +2334,7 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-            <div class="docstring"><p>Base class for SQLAlchemy declarative base model.</p>
-
-<p>To define models, subclass :attr:<code>db.Model &lt;SQLAlchemy.Model&gt;</code>, not this
-class. To customize <code>db.Model</code>, subclass this and pass it as
-<code>model_class</code> to :class:<code>SQLAlchemy</code>.</p>
+            <div class="docstring"><p>Table of historical load data.</p>
 </div>
 
 
@@ -2203,7 +2346,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
     </div>
 
     
-    
+            <div class="docstring"><p>Initialize the object with a timestamp and a value and generate remaining attributes.</p>
+</div>
+
 
                             </div>
                             <div id="HistoricalLoadData.friendly_name" class="classattr">
@@ -2239,6 +2384,7 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
@@ -2251,7 +2397,9 @@ class. To customize <code>db.Model</code>, subclass this and pass it as
 
         </details>
 
-    
+            <div class="docstring"><p>Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.</p>
+</div>
+
 
                             </div>
                             <div id="HistoricalLoadData.timestamp" class="classattr">

@@ -1,3 +1,5 @@
+"""Base module for the application, imports of all utilities, models, and views go through here."""
+
 from flask import Flask, render_template, redirect
 from forecast_app.utils import (
     login_manager,

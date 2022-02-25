@@ -58,10 +58,14 @@
                     <h1 class="modulename">
 <a href="./../forecast_app.html">forecast_app</a><wbr>.utils    </h1>
 
-                
+                        <div class="docstring"><p>Collection of utility functions, db configurations, and authentication.</p>
+</div>
+
                         <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">request</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span> <span class="n">current_app</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;Collection of utility functions, db configurations, and authentication.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">request</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span> <span class="n">current_app</span>
 <span class="kn">from</span> <span class="nn">werkzeug.utils</span> <span class="kn">import</span> <span class="n">secure_filename</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
@@ -84,6 +88,7 @@
 
 <span class="nd">@login_manager</span><span class="o">.</span><span class="n">user_loader</span>
 <span class="k">def</span> <span class="nf">user_loader</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the authenticated. We only have one. Configuring this is required by flask-login.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">username</span> <span class="o">!=</span> <span class="n">ADMIN_USER</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="k">return</span> <span class="n">ADMIN_USER</span>
@@ -91,6 +96,8 @@
 
 <span class="nd">@login_manager</span><span class="o">.</span><span class="n">request_loader</span>
 <span class="k">def</span> <span class="nf">request_loader</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ensure that user is authenticated. Configuring this is required for flask-login.&quot;&quot;&quot;</span>
+
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ADMIN_USER</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="n">ADMIN_USER</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="o">=</span> <span class="p">(</span>
@@ -103,10 +110,12 @@
 
 
 <span class="k">def</span> <span class="nf">allowed_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return true if the file is an allowed filetype.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">filename</span> <span class="ow">and</span> <span class="n">filename</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="s2">&quot;xlsx&quot;</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">upload_file</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;In a request context, upload a file to the upload directory.&quot;&quot;&quot;</span>
     <span class="c1"># check if the post request has the file part</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
         <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;Cannot find a file with that name.&quot;</span><span class="p">)</span>
@@ -140,6 +149,7 @@
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="nd">@login_manager</span><span class="o">.</span><span class="n">user_loader</span>
 <span class="k">def</span> <span class="nf">user_loader</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the authenticated. We only have one. Configuring this is required by flask-login.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">username</span> <span class="o">!=</span> <span class="n">ADMIN_USER</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="k">return</span> <span class="n">ADMIN_USER</span>
@@ -147,7 +157,9 @@
 
         </details>
 
-    
+            <div class="docstring"><p>Return the authenticated. We only have one. Configuring this is required by flask-login.</p>
+</div>
+
 
                 </section>
                 <section id="request_loader">
@@ -163,6 +175,8 @@
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="nd">@login_manager</span><span class="o">.</span><span class="n">request_loader</span>
 <span class="k">def</span> <span class="nf">request_loader</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ensure that user is authenticated. Configuring this is required for flask-login.&quot;&quot;&quot;</span>
+
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ADMIN_USER</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="n">ADMIN_USER</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="o">=</span> <span class="p">(</span>
@@ -173,7 +187,9 @@
 
         </details>
 
-    
+            <div class="docstring"><p>Ensure that user is authenticated. Configuring this is required for flask-login.</p>
+</div>
+
 
                 </section>
                 <section id="allowed_file">
@@ -187,12 +203,15 @@
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">allowed_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return true if the file is an allowed filetype.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">filename</span> <span class="ow">and</span> <span class="n">filename</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="s2">&quot;xlsx&quot;</span><span class="p">]</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Return true if the file is an allowed filetype.</p>
+</div>
+
 
                 </section>
                 <section id="upload_file">
@@ -206,6 +225,7 @@
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">upload_file</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;In a request context, upload a file to the upload directory.&quot;&quot;&quot;</span>
     <span class="c1"># check if the post request has the file part</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
         <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;Cannot find a file with that name.&quot;</span><span class="p">)</span>
@@ -225,7 +245,9 @@
 
         </details>
 
-    
+            <div class="docstring"><p>In a request context, upload a file to the upload directory.</p>
+</div>
+
 
                 </section>
     </main>

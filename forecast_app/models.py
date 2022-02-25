@@ -18,16 +18,16 @@ class ForecastModel(db.Model):
     __tablename__ = "forecast_model"
     creation_date = Column(DateTime, primary_key=True)
     slug = Column(String, unique=True, nullable=False)
-    milliseconds = Column(JSON, nullable=False)
-    # TODO: This is start_datetime and end_datetime
+    milliseconds = Column(JSON, nullable=False)  # TODO: This should be a property
+    # TODO: This is start_dt and end_dt
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
-    tempcs = Column(JSON, nullable=False)
-    model_file = Column(String, nullable=False)
-    process_file = Column(String, nullable=False)
+    tempcs = Column(JSON, nullable=False)  # TODO: Remove me, this is tracked in the df
+    model_file = Column(String, nullable=False)  # TODO: Remove me
+    process_file = Column(String, nullable=False)  # TODO: Remove me
     output_dir = Column(String, nullable=False)
     accuracy = Column(JSON)
-    loads = Column(JSON)
+    loads = Column(JSON)  # TODO: Remove me, this is tracked in the df
     epochs = Column(Integer, nullable=False)
 
     df_filename = "cached-dataframe.csv"
@@ -70,6 +70,7 @@ class ForecastModel(db.Model):
     @property
     def model_filename(self):
         """Return the filename of the model."""
+        # TODO: This can be a friendlier name, it's nested in the output_dir
         return f"{self.slug}.h5"
 
     @property
@@ -153,10 +154,10 @@ class ForecastModel(db.Model):
             self.store_process_id("COMPLETED")
         except Exception as e:
             self.store_process_id("FAILURE")
-            raise Exception("Model failed: {}".format(e))
+            raise Exception(f"Model failed: {e}")
 
     def collect_training_data(self):
-        """Save the state of the database into a dataframe that is in the correct format training.
+        """Save the state of the database into a dataframe that is in the correct format for training.
 
         Null values are filled in, and other data cleaning takes place, but full
         df exploding is not performed.
@@ -207,12 +208,6 @@ class ForecastModel(db.Model):
         # TODO: Raise an exception if the model doesn't exist
         return tf.keras.models.load_model(self.model_file)
 
-    def train(self):
-        pass
-
-    def test(self):
-        pass
-
     def _execute_forecast(self):
         """Execute the forecast (outside a thread.) And save all info after finishing.
 
@@ -224,15 +219,13 @@ class ForecastModel(db.Model):
         # TODO: Separate this into three functions for easier testing.
 
         df = self.get_df()
-        self.all_X, self.all_y = lf.makeUsefulDf(df)  # structure = 3D
+        self.all_X, self.all_y = lf.generate_x_and_ys(df)
 
-        tomorrow_load, model, tomorrow_accuracy = lf.neural_net_next_day(
+        tomorrow_load, model, tomorrow_accuracy = lf.train_and_forecast_next_day(
             self.all_X,
             self.all_y,
             epochs=self.epochs,
             save_file=self.model_file,
-            model=None,
-            # structure="3D",
         )
 
         # HACK: Set forecasted load on cached dataframe
@@ -263,13 +256,6 @@ class ForecastModel(db.Model):
             "start_date": hd_end_date + datetime.timedelta(hours=1),
             "end_date": hd_end_date + datetime.timedelta(hours=24),
         }
-
-    # TODO: This should be at the end of launch_model
-    # def done_callback(self, future):
-    #     # TODO: see if future was cancelled
-    #     print("Exited with Future callback")
-    #     self.is_running = False
-    #     self.save()
 
 
 class TrainingData:

@@ -31,15 +31,6 @@
         <h2>API Documentation</h2>
             <ul class="memberlist">
             <li>
-                    <a class="class" href="#abstract_attribute">abstract_attribute</a>
-                            <ul class="memberlist">
-                        <li>
-                                <a class="function" href="#abstract_attribute.__init__">abstract_attribute</a>
-                        </li>
-                </ul>
-
-            </li>
-            <li>
                     <a class="class" href="#Config">Config</a>
                             <ul class="memberlist">
                         <li>
@@ -49,13 +40,7 @@
                                 <a class="variable" href="#Config.TESTING">TESTING</a>
                         </li>
                         <li>
-                                <a class="variable" href="#Config.ADMIN_USER">ADMIN_USER</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#Config.ADMIN_PASSWORD">ADMIN_PASSWORD</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#Config.SECRET_KEY">SECRET_KEY</a>
+                                <a class="variable" href="#Config.DEBUG">DEBUG</a>
                         </li>
                         <li>
                                 <a class="variable" href="#Config.SQLALCHEMY_TRACK_MODIFICATIONS">SQLALCHEMY_TRACK_MODIFICATIONS</a>
@@ -70,10 +55,22 @@
                                 <a class="variable" href="#Config.PORT">PORT</a>
                         </li>
                         <li>
+                                <a class="variable" href="#Config.REDIRECT_PORT">REDIRECT_PORT</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#Config.WORKERS">WORKERS</a>
                         </li>
                         <li>
-                                <a class="variable" href="#Config.DEBUG">DEBUG</a>
+                                <a class="variable" href="#Config.GUNICORN_PATH">GUNICORN_PATH</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.ADMIN_USER">ADMIN_USER</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.ADMIN_PASSWORD">ADMIN_PASSWORD</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.SECRET_KEY">SECRET_KEY</a>
                         </li>
                         <li>
                                 <a class="variable" href="#Config.CERT_DIR">CERT_DIR</a>
@@ -83,15 +80,6 @@
                         </li>
                         <li>
                                 <a class="variable" href="#Config.DOMAIN">DOMAIN</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#Config.GUNICORN_PATH">GUNICORN_PATH</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#Config.REDIRECT_PORT">REDIRECT_PORT</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#Config.EPOCHS">EPOCHS</a>
                         </li>
                         <li>
                                 <a class="variable" href="#Config.LOAD_COL">LOAD_COL</a>
@@ -106,6 +94,9 @@
                                 <a class="variable" href="#Config.DATE_COL">DATE_COL</a>
                         </li>
                         <li>
+                                <a class="variable" href="#Config.EPOCHS">EPOCHS</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#Config.ASOS_STATION">ASOS_STATION</a>
                         </li>
                         <li>
@@ -117,6 +108,12 @@
                         <li>
                                 <a class="variable" href="#Config.EARLIEST_SYNC_DATE">EARLIEST_SYNC_DATE</a>
                         </li>
+                        <li>
+                                <a class="variable" href="#Config.NAME">NAME</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.SQLALCHEMY_DATABASE_URI">SQLALCHEMY_DATABASE_URI</a>
+                        </li>
                 </ul>
 
             </li>
@@ -127,16 +124,10 @@
                                 <a class="function" href="#ProductionConfig.__init__">ProductionConfig</a>
                         </li>
                         <li>
+                                <a class="variable" href="#ProductionConfig.DEBUG">DEBUG</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#ProductionConfig.NAME">NAME</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#ProductionConfig.ADMIN_USER">ADMIN_USER</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#ProductionConfig.ADMIN_PASSWORD">ADMIN_PASSWORD</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#ProductionConfig.SECRET_KEY">SECRET_KEY</a>
                         </li>
                         <li>
                                 <a class="variable" href="#ProductionConfig.SQLALCHEMY_DATABASE_URI">SQLALCHEMY_DATABASE_URI</a>
@@ -145,19 +136,13 @@
                                 <a class="variable" href="#ProductionConfig.PORT">PORT</a>
                         </li>
                         <li>
+                                <a class="variable" href="#ProductionConfig.REDIRECT_PORT">REDIRECT_PORT</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#ProductionConfig.WORKERS">WORKERS</a>
                         </li>
                         <li>
-                                <a class="variable" href="#ProductionConfig.DEBUG">DEBUG</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#ProductionConfig.CERT_DIR">CERT_DIR</a>
-                        </li>
-                        <li>
                                 <a class="variable" href="#ProductionConfig.GUNICORN_PATH">GUNICORN_PATH</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#ProductionConfig.REDIRECT_PORT">REDIRECT_PORT</a>
                         </li>
                         <li>
                                 <a class="variable" href="#ProductionConfig.EPOCHS">EPOCHS</a>
@@ -187,13 +172,13 @@
                                 <a class="function" href="#TestingConfig.__init__">TestingConfig</a>
                         </li>
                         <li>
+                                <a class="variable" href="#TestingConfig.TESTING">TESTING</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#TestingConfig.NAME">NAME</a>
                         </li>
                         <li>
                                 <a class="variable" href="#TestingConfig.SQLALCHEMY_DATABASE_URI">SQLALCHEMY_DATABASE_URI</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#TestingConfig.TESTING">TESTING</a>
                         </li>
                         <li>
                                 <a class="variable" href="#TestingConfig.OUTPUT_DIR">OUTPUT_DIR</a>
@@ -220,11 +205,16 @@
                     <h1 class="modulename">
 <a href="./../forecast_app.html">forecast_app</a><wbr>.config    </h1>
 
-                
+                        <div class="docstring"><p>App configurations for different environments. Imports from secret_config.py for all sensitive info.</p>
+</div>
+
                         <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;App configurations for different environments. Imports from secret_config.py for all sensitive info.&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="c1"># Import the secret configurations</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">forecast_app.secret_config</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">ADMIN_USER</span><span class="p">,</span>
@@ -233,43 +223,57 @@
     <span class="p">)</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="c1"># It&#39;s okay if this isn&#39;t defined for local development and testing</span>
-    <span class="n">ADMIN_USER</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">ADMIN_PASSWORD</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ADMIN_USER</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span>
+    <span class="n">ADMIN_PASSWORD</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span>
+    <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="s2">&quot;secret&quot;</span>
 
-<span class="n">SECRET_VARS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ADMIN_USER&quot;</span><span class="p">,</span> <span class="s2">&quot;ADMIN_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;SECRET_KEY&quot;</span><span class="p">,</span> <span class="s2">&quot;DOMAIN&quot;</span><span class="p">,</span> <span class="s2">&quot;EMAIL&quot;</span><span class="p">]</span>
-
-<span class="c1"># GLOBAL CONFIGS</span>
+<span class="c1"># Email and domain need to be set here so that they can be easily imported in bash scripts</span>
 <span class="n">EMAIL</span> <span class="o">=</span> <span class="s2">&quot;admin@coopforecast.com&quot;</span>
 <span class="n">DOMAIN</span> <span class="o">=</span> <span class="s2">&quot;coopforecast.com&quot;</span>
 
 
-<span class="k">class</span> <span class="nc">abstract_attribute</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This attribute was not set in a subclass&quot;</span><span class="p">)</span>
-
-
 <span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base configuration.&quot;&quot;&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;Flask configuration.&quot;&quot;&quot;</span>
     <span class="n">TESTING</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">ADMIN_USER</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span>
-    <span class="n">ADMIN_PASSWORD</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span>
-    <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="s2">&quot;secret&quot;</span>
+    <span class="n">DEBUG</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="sd">&quot;&quot;&quot;Database configuration.&quot;&quot;&quot;</span>
     <span class="n">SQLALCHEMY_TRACK_MODIFICATIONS</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="sd">&quot;&quot;&quot;Local path to store user content&quot;&quot;&quot;</span>
     <span class="n">OUTPUT_DIR</span> <span class="o">=</span> <span class="s2">&quot;forecast_app/user-content/output&quot;</span>
     <span class="n">UPLOAD_DIR</span> <span class="o">=</span> <span class="s2">&quot;forecast_app/user-content/uploads&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;Web serving configuration&quot;&quot;&quot;</span>
     <span class="n">PORT</span> <span class="o">=</span> <span class="mi">5000</span>
-    <span class="n">WORKERS</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">DEBUG</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">CERT_DIR</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">REDIRECT_PORT</span> <span class="o">=</span> <span class="mi">4000</span>
+    <span class="n">WORKERS</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Number of processes to use for Gunicorn</span>
+    <span class="c1"># Needs to be explicitly defined since systemctl wouldn&#39;t recognize an implicit path on prod</span>
+    <span class="n">GUNICORN_PATH</span> <span class="o">=</span> <span class="s2">&quot;gunicorn&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;Secrets config&quot;&quot;&quot;</span>
+    <span class="n">ADMIN_USER</span> <span class="o">=</span> <span class="n">ADMIN_USER</span>
+    <span class="n">ADMIN_PASSWORD</span> <span class="o">=</span> <span class="n">ADMIN_PASSWORD</span>
+    <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="n">SECRET_KEY</span>
+
+    <span class="sd">&quot;&quot;&quot;SSL config (for production)&quot;&quot;&quot;</span>
+    <span class="n">CERT_DIR</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/etc/letsencrypt/live/</span><span class="si">{</span><span class="n">DOMAIN</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">EMAIL</span> <span class="o">=</span> <span class="n">EMAIL</span>
     <span class="n">DOMAIN</span> <span class="o">=</span> <span class="n">DOMAIN</span>
-    <span class="n">GUNICORN_PATH</span> <span class="o">=</span> <span class="s2">&quot;gunicorn&quot;</span>
-    <span class="n">REDIRECT_PORT</span> <span class="o">=</span> <span class="mi">4000</span>
-    <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="sd">&quot;&quot;&quot;Data ingest config. Columns in the expected CSV file uploads.&quot;&quot;&quot;</span>
     <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="s2">&quot;kw&quot;</span>
     <span class="n">TEMP_COL</span> <span class="o">=</span> <span class="s2">&quot;tempc&quot;</span>
     <span class="n">HOUR_COL</span> <span class="o">=</span> <span class="s2">&quot;hour&quot;</span>
     <span class="n">DATE_COL</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;Machine learning config&quot;&quot;&quot;</span>
+    <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="sd">&quot;&quot;&quot;External API config&quot;&quot;&quot;</span>
+    <span class="c1"># Info for data syncing with external APIs</span>
     <span class="n">ASOS_STATION</span> <span class="o">=</span> <span class="s2">&quot;TQE&quot;</span>
     <span class="n">TIMEZONE</span> <span class="o">=</span> <span class="s2">&quot;America/Chicago&quot;</span>
     <span class="c1"># Get weather codes and stations here: https://mesonet.agron.iastate.edu/request/download.phtml</span>
@@ -282,75 +286,57 @@
     <span class="c1">#  Please use the form &quot;STATION/##,##&quot;</span>
     <span class="n">EARLIEST_SYNC_DATE</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
+    <span class="sd">&quot;&quot;&quot;Required configurations in subclasses&quot;&quot;&quot;</span>
+    <span class="n">NAME</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="kc">None</span>
+
 
 <span class="k">class</span> <span class="nc">ProductionConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
-    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;prod&quot;</span>
-    <span class="n">ADMIN_USER</span> <span class="o">=</span> <span class="n">ADMIN_USER</span>
-    <span class="n">ADMIN_PASSWORD</span> <span class="o">=</span> <span class="n">ADMIN_PASSWORD</span>
-    <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="n">SECRET_KEY</span>
-    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/prod.db&quot;</span>
-    <span class="n">PORT</span> <span class="o">=</span> <span class="mi">443</span>
-    <span class="n">WORKERS</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="sd">&quot;&quot;&quot;Production configuration.&quot;&quot;&quot;</span>
+
     <span class="n">DEBUG</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">CERT_DIR</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/etc/letsencrypt/live/</span><span class="si">{</span><span class="n">DOMAIN</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="c1"># NOTE: systemctl wouldn&#39;t recognize gunicorn on the path</span>
-    <span class="n">GUNICORN_PATH</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/.local/bin/gunicorn&quot;</span>
+
+    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;prod&quot;</span>
+
+    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/prod.db&quot;</span>
+
+    <span class="n">PORT</span> <span class="o">=</span> <span class="mi">443</span>
     <span class="n">REDIRECT_PORT</span> <span class="o">=</span> <span class="mi">80</span>
+    <span class="n">WORKERS</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">GUNICORN_PATH</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/.local/bin/gunicorn&quot;</span>
+
     <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">10</span>
 
 
 <span class="k">class</span> <span class="nc">DevelopmentConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Development configuration.&quot;&quot;&quot;</span>
+
     <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;dev&quot;</span>
     <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/dev.db&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">TestingConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
-    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
-    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/test.db&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Testing configuration.&quot;&quot;&quot;</span>
+
     <span class="n">TESTING</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
+
+    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/test.db&quot;</span>
+
     <span class="n">OUTPUT_DIR</span> <span class="o">=</span> <span class="s2">&quot;forecast_app/tests/user-content/tmp_output&quot;</span>
     <span class="n">UPLOAD_DIR</span> <span class="o">=</span> <span class="s2">&quot;forecast_app/tests/user-content/tmp_upload&quot;</span>
 
 
+<span class="c1"># Module level variables to help with app factory</span>
 <span class="n">configs</span> <span class="o">=</span> <span class="p">[</span><span class="n">TestingConfig</span><span class="p">,</span> <span class="n">ProductionConfig</span><span class="p">,</span> <span class="n">DevelopmentConfig</span><span class="p">]</span>
 <span class="n">config_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">config</span><span class="o">.</span><span class="n">NAME</span><span class="p">:</span> <span class="n">config</span> <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">configs</span><span class="p">}</span>
+<span class="n">SECRET_VARS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ADMIN_USER&quot;</span><span class="p">,</span> <span class="s2">&quot;ADMIN_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;SECRET_KEY&quot;</span><span class="p">]</span>
 </pre></div>
 
         </details>
 
             </section>
-                <section id="abstract_attribute">
-                                <div class="attr class">
-        <a class="headerlink" href="#abstract_attribute">#&nbsp;&nbsp</a>
-
-        
-        <span class="def">class</span>
-        <span class="name">abstract_attribute</span>:
-    </div>
-
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">abstract_attribute</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This attribute was not set in a subclass&quot;</span><span class="p">)</span>
-</pre></div>
-
-        </details>
-
-    
-
-                            <div id="abstract_attribute.__init__" class="classattr">
-                                        <div class="attr function"><a class="headerlink" href="#abstract_attribute.__init__">#&nbsp;&nbsp</a>
-
-        
-            <span class="name">abstract_attribute</span><span class="signature">()</span>
-    </div>
-
-    
-    
-
-                            </div>
-                </section>
                 <section id="Config">
                                 <div class="attr class">
         <a class="headerlink" href="#Config">#&nbsp;&nbsp</a>
@@ -363,26 +349,47 @@
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base configuration.&quot;&quot;&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;Flask configuration.&quot;&quot;&quot;</span>
     <span class="n">TESTING</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">ADMIN_USER</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span>
-    <span class="n">ADMIN_PASSWORD</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span>
-    <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="s2">&quot;secret&quot;</span>
+    <span class="n">DEBUG</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="sd">&quot;&quot;&quot;Database configuration.&quot;&quot;&quot;</span>
     <span class="n">SQLALCHEMY_TRACK_MODIFICATIONS</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="sd">&quot;&quot;&quot;Local path to store user content&quot;&quot;&quot;</span>
     <span class="n">OUTPUT_DIR</span> <span class="o">=</span> <span class="s2">&quot;forecast_app/user-content/output&quot;</span>
     <span class="n">UPLOAD_DIR</span> <span class="o">=</span> <span class="s2">&quot;forecast_app/user-content/uploads&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;Web serving configuration&quot;&quot;&quot;</span>
     <span class="n">PORT</span> <span class="o">=</span> <span class="mi">5000</span>
-    <span class="n">WORKERS</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">DEBUG</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">CERT_DIR</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">REDIRECT_PORT</span> <span class="o">=</span> <span class="mi">4000</span>
+    <span class="n">WORKERS</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Number of processes to use for Gunicorn</span>
+    <span class="c1"># Needs to be explicitly defined since systemctl wouldn&#39;t recognize an implicit path on prod</span>
+    <span class="n">GUNICORN_PATH</span> <span class="o">=</span> <span class="s2">&quot;gunicorn&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;Secrets config&quot;&quot;&quot;</span>
+    <span class="n">ADMIN_USER</span> <span class="o">=</span> <span class="n">ADMIN_USER</span>
+    <span class="n">ADMIN_PASSWORD</span> <span class="o">=</span> <span class="n">ADMIN_PASSWORD</span>
+    <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="n">SECRET_KEY</span>
+
+    <span class="sd">&quot;&quot;&quot;SSL config (for production)&quot;&quot;&quot;</span>
+    <span class="n">CERT_DIR</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/etc/letsencrypt/live/</span><span class="si">{</span><span class="n">DOMAIN</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">EMAIL</span> <span class="o">=</span> <span class="n">EMAIL</span>
     <span class="n">DOMAIN</span> <span class="o">=</span> <span class="n">DOMAIN</span>
-    <span class="n">GUNICORN_PATH</span> <span class="o">=</span> <span class="s2">&quot;gunicorn&quot;</span>
-    <span class="n">REDIRECT_PORT</span> <span class="o">=</span> <span class="mi">4000</span>
-    <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="sd">&quot;&quot;&quot;Data ingest config. Columns in the expected CSV file uploads.&quot;&quot;&quot;</span>
     <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="s2">&quot;kw&quot;</span>
     <span class="n">TEMP_COL</span> <span class="o">=</span> <span class="s2">&quot;tempc&quot;</span>
     <span class="n">HOUR_COL</span> <span class="o">=</span> <span class="s2">&quot;hour&quot;</span>
     <span class="n">DATE_COL</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;Machine learning config&quot;&quot;&quot;</span>
+    <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="sd">&quot;&quot;&quot;External API config&quot;&quot;&quot;</span>
+    <span class="c1"># Info for data syncing with external APIs</span>
     <span class="n">ASOS_STATION</span> <span class="o">=</span> <span class="s2">&quot;TQE&quot;</span>
     <span class="n">TIMEZONE</span> <span class="o">=</span> <span class="s2">&quot;America/Chicago&quot;</span>
     <span class="c1"># Get weather codes and stations here: https://mesonet.agron.iastate.edu/request/download.phtml</span>
@@ -394,11 +401,17 @@
     <span class="c1">#  from there, the &quot;forecastHourly&quot; property contains the code you need.</span>
     <span class="c1">#  Please use the form &quot;STATION/##,##&quot;</span>
     <span class="n">EARLIEST_SYNC_DATE</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="sd">&quot;&quot;&quot;Required configurations in subclasses&quot;&quot;&quot;</span>
+    <span class="n">NAME</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Base configuration.</p>
+</div>
+
 
                             <div id="Config.__init__" class="classattr">
                                         <div class="attr function"><a class="headerlink" href="#Config.__init__">#&nbsp;&nbsp</a>
@@ -419,6 +432,94 @@
 
     
     
+
+                            </div>
+                            <div id="Config.DEBUG" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.DEBUG">#&nbsp;&nbsp</a>
+
+        <span class="name">DEBUG</span><span class="default_value"> = True</span>
+    </div>
+
+    
+            <div class="docstring"><p>Database configuration.</p>
+</div>
+
+
+                            </div>
+                            <div id="Config.SQLALCHEMY_TRACK_MODIFICATIONS" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.SQLALCHEMY_TRACK_MODIFICATIONS">#&nbsp;&nbsp</a>
+
+        <span class="name">SQLALCHEMY_TRACK_MODIFICATIONS</span><span class="default_value"> = False</span>
+    </div>
+
+    
+            <div class="docstring"><p>Local path to store user content</p>
+</div>
+
+
+                            </div>
+                            <div id="Config.OUTPUT_DIR" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.OUTPUT_DIR">#&nbsp;&nbsp</a>
+
+        <span class="name">OUTPUT_DIR</span><span class="default_value"> = &#39;forecast_app/user-content/output&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.UPLOAD_DIR" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.UPLOAD_DIR">#&nbsp;&nbsp</a>
+
+        <span class="name">UPLOAD_DIR</span><span class="default_value"> = &#39;forecast_app/user-content/uploads&#39;</span>
+    </div>
+
+    
+            <div class="docstring"><p>Web serving configuration</p>
+</div>
+
+
+                            </div>
+                            <div id="Config.PORT" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.PORT">#&nbsp;&nbsp</a>
+
+        <span class="name">PORT</span><span class="default_value"> = 5000</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.REDIRECT_PORT" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.REDIRECT_PORT">#&nbsp;&nbsp</a>
+
+        <span class="name">REDIRECT_PORT</span><span class="default_value"> = 4000</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.WORKERS" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.WORKERS">#&nbsp;&nbsp</a>
+
+        <span class="name">WORKERS</span><span class="default_value"> = 1</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.GUNICORN_PATH" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.GUNICORN_PATH">#&nbsp;&nbsp</a>
+
+        <span class="name">GUNICORN_PATH</span><span class="default_value"> = &#39;gunicorn&#39;</span>
+    </div>
+
+    
+            <div class="docstring"><p>Secrets config</p>
+</div>
+
 
                             </div>
                             <div id="Config.ADMIN_USER" class="classattr">
@@ -444,77 +545,19 @@
                             <div id="Config.SECRET_KEY" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#Config.SECRET_KEY">#&nbsp;&nbsp</a>
 
-        <span class="name">SECRET_KEY</span><span class="default_value"> = &#39;secret&#39;</span>
+        <span class="name">SECRET_KEY</span><span class="default_value"> = &#39;L7H$qNizh3f&amp;PC@$$y4aqk@oy?&#39;</span>
     </div>
 
     
-    
+            <div class="docstring"><p>SSL config (for production)</p>
+</div>
 
-                            </div>
-                            <div id="Config.SQLALCHEMY_TRACK_MODIFICATIONS" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Config.SQLALCHEMY_TRACK_MODIFICATIONS">#&nbsp;&nbsp</a>
-
-        <span class="name">SQLALCHEMY_TRACK_MODIFICATIONS</span><span class="default_value"> = False</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="Config.OUTPUT_DIR" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Config.OUTPUT_DIR">#&nbsp;&nbsp</a>
-
-        <span class="name">OUTPUT_DIR</span><span class="default_value"> = &#39;forecast_app/user-content/output&#39;</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="Config.UPLOAD_DIR" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Config.UPLOAD_DIR">#&nbsp;&nbsp</a>
-
-        <span class="name">UPLOAD_DIR</span><span class="default_value"> = &#39;forecast_app/user-content/uploads&#39;</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="Config.PORT" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Config.PORT">#&nbsp;&nbsp</a>
-
-        <span class="name">PORT</span><span class="default_value"> = 5000</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="Config.WORKERS" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Config.WORKERS">#&nbsp;&nbsp</a>
-
-        <span class="name">WORKERS</span><span class="default_value"> = 1</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="Config.DEBUG" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Config.DEBUG">#&nbsp;&nbsp</a>
-
-        <span class="name">DEBUG</span><span class="default_value"> = True</span>
-    </div>
-
-    
-    
 
                             </div>
                             <div id="Config.CERT_DIR" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#Config.CERT_DIR">#&nbsp;&nbsp</a>
 
-        <span class="name">CERT_DIR</span><span class="default_value"> = None</span>
+        <span class="name">CERT_DIR</span><span class="default_value"> = &#39;/etc/letsencrypt/live/coopforecast.com&#39;</span>
     </div>
 
     
@@ -538,37 +581,9 @@
     </div>
 
     
-    
+            <div class="docstring"><p>Data ingest config. Columns in the expected CSV file uploads.</p>
+</div>
 
-                            </div>
-                            <div id="Config.GUNICORN_PATH" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Config.GUNICORN_PATH">#&nbsp;&nbsp</a>
-
-        <span class="name">GUNICORN_PATH</span><span class="default_value"> = &#39;gunicorn&#39;</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="Config.REDIRECT_PORT" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Config.REDIRECT_PORT">#&nbsp;&nbsp</a>
-
-        <span class="name">REDIRECT_PORT</span><span class="default_value"> = 4000</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="Config.EPOCHS" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Config.EPOCHS">#&nbsp;&nbsp</a>
-
-        <span class="name">EPOCHS</span><span class="default_value"> = 1</span>
-    </div>
-
-    
-    
 
                             </div>
                             <div id="Config.LOAD_COL" class="classattr">
@@ -608,7 +623,21 @@
     </div>
 
     
+            <div class="docstring"><p>Machine learning config</p>
+</div>
+
+
+                            </div>
+                            <div id="Config.EPOCHS" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.EPOCHS">#&nbsp;&nbsp</a>
+
+        <span class="name">EPOCHS</span><span class="default_value"> = 1</span>
+    </div>
+
     
+            <div class="docstring"><p>External API config</p>
+</div>
+
 
                             </div>
                             <div id="Config.ASOS_STATION" class="classattr">
@@ -648,6 +677,28 @@
     </div>
 
     
+            <div class="docstring"><p>Required configurations in subclasses</p>
+</div>
+
+
+                            </div>
+                            <div id="Config.NAME" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.NAME">#&nbsp;&nbsp</a>
+
+        <span class="name">NAME</span><span class="default_value"> = None</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.SQLALCHEMY_DATABASE_URI" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.SQLALCHEMY_DATABASE_URI">#&nbsp;&nbsp</a>
+
+        <span class="name">SQLALCHEMY_DATABASE_URI</span><span class="default_value"> = None</span>
+    </div>
+
+    
     
 
                             </div>
@@ -664,24 +715,27 @@
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ProductionConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
-    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;prod&quot;</span>
-    <span class="n">ADMIN_USER</span> <span class="o">=</span> <span class="n">ADMIN_USER</span>
-    <span class="n">ADMIN_PASSWORD</span> <span class="o">=</span> <span class="n">ADMIN_PASSWORD</span>
-    <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="n">SECRET_KEY</span>
-    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/prod.db&quot;</span>
-    <span class="n">PORT</span> <span class="o">=</span> <span class="mi">443</span>
-    <span class="n">WORKERS</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="sd">&quot;&quot;&quot;Production configuration.&quot;&quot;&quot;</span>
+
     <span class="n">DEBUG</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">CERT_DIR</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/etc/letsencrypt/live/</span><span class="si">{</span><span class="n">DOMAIN</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="c1"># NOTE: systemctl wouldn&#39;t recognize gunicorn on the path</span>
-    <span class="n">GUNICORN_PATH</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/.local/bin/gunicorn&quot;</span>
+
+    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;prod&quot;</span>
+
+    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/prod.db&quot;</span>
+
+    <span class="n">PORT</span> <span class="o">=</span> <span class="mi">443</span>
     <span class="n">REDIRECT_PORT</span> <span class="o">=</span> <span class="mi">80</span>
+    <span class="n">WORKERS</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">GUNICORN_PATH</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/.local/bin/gunicorn&quot;</span>
+
     <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">10</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Production configuration.</p>
+</div>
+
 
                             <div id="ProductionConfig.__init__" class="classattr">
                                         <div class="attr function"><a class="headerlink" href="#ProductionConfig.__init__">#&nbsp;&nbsp</a>
@@ -694,40 +748,22 @@
     
 
                             </div>
+                            <div id="ProductionConfig.DEBUG" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#ProductionConfig.DEBUG">#&nbsp;&nbsp</a>
+
+        <span class="name">DEBUG</span><span class="default_value"> = False</span>
+    </div>
+
+    
+            <div class="docstring"><p>Database configuration.</p>
+</div>
+
+
+                            </div>
                             <div id="ProductionConfig.NAME" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#ProductionConfig.NAME">#&nbsp;&nbsp</a>
 
         <span class="name">NAME</span><span class="default_value"> = &#39;prod&#39;</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="ProductionConfig.ADMIN_USER" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ProductionConfig.ADMIN_USER">#&nbsp;&nbsp</a>
-
-        <span class="name">ADMIN_USER</span><span class="default_value"> = &#39;admin&#39;</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="ProductionConfig.ADMIN_PASSWORD" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ProductionConfig.ADMIN_PASSWORD">#&nbsp;&nbsp</a>
-
-        <span class="name">ADMIN_PASSWORD</span><span class="default_value"> = &#39;admin&#39;</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="ProductionConfig.SECRET_KEY" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ProductionConfig.SECRET_KEY">#&nbsp;&nbsp</a>
-
-        <span class="name">SECRET_KEY</span><span class="default_value"> = &#39;L7H$qNizh3f&amp;PC@$$y4aqk@oy?&#39;</span>
     </div>
 
     
@@ -754,30 +790,20 @@
     
 
                             </div>
+                            <div id="ProductionConfig.REDIRECT_PORT" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#ProductionConfig.REDIRECT_PORT">#&nbsp;&nbsp</a>
+
+        <span class="name">REDIRECT_PORT</span><span class="default_value"> = 80</span>
+    </div>
+
+    
+    
+
+                            </div>
                             <div id="ProductionConfig.WORKERS" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#ProductionConfig.WORKERS">#&nbsp;&nbsp</a>
 
         <span class="name">WORKERS</span><span class="default_value"> = 4</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="ProductionConfig.DEBUG" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ProductionConfig.DEBUG">#&nbsp;&nbsp</a>
-
-        <span class="name">DEBUG</span><span class="default_value"> = False</span>
-    </div>
-
-    
-    
-
-                            </div>
-                            <div id="ProductionConfig.CERT_DIR" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ProductionConfig.CERT_DIR">#&nbsp;&nbsp</a>
-
-        <span class="name">CERT_DIR</span><span class="default_value"> = &#39;/etc/letsencrypt/live/coopforecast.com&#39;</span>
     </div>
 
     
@@ -791,17 +817,9 @@
     </div>
 
     
-    
+            <div class="docstring"><p>Secrets config</p>
+</div>
 
-                            </div>
-                            <div id="ProductionConfig.REDIRECT_PORT" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ProductionConfig.REDIRECT_PORT">#&nbsp;&nbsp</a>
-
-        <span class="name">REDIRECT_PORT</span><span class="default_value"> = 80</span>
-    </div>
-
-    
-    
 
                             </div>
                             <div id="ProductionConfig.EPOCHS" class="classattr">
@@ -811,7 +829,9 @@
     </div>
 
     
-    
+            <div class="docstring"><p>External API config</p>
+</div>
+
 
                             </div>
                             <div class="inherited">
@@ -822,6 +842,10 @@
                 <dd id="ProductionConfig.SQLALCHEMY_TRACK_MODIFICATIONS" class="variable"><a href="#Config.SQLALCHEMY_TRACK_MODIFICATIONS">SQLALCHEMY_TRACK_MODIFICATIONS</a></dd>
                 <dd id="ProductionConfig.OUTPUT_DIR" class="variable"><a href="#Config.OUTPUT_DIR">OUTPUT_DIR</a></dd>
                 <dd id="ProductionConfig.UPLOAD_DIR" class="variable"><a href="#Config.UPLOAD_DIR">UPLOAD_DIR</a></dd>
+                <dd id="ProductionConfig.ADMIN_USER" class="variable"><a href="#Config.ADMIN_USER">ADMIN_USER</a></dd>
+                <dd id="ProductionConfig.ADMIN_PASSWORD" class="variable"><a href="#Config.ADMIN_PASSWORD">ADMIN_PASSWORD</a></dd>
+                <dd id="ProductionConfig.SECRET_KEY" class="variable"><a href="#Config.SECRET_KEY">SECRET_KEY</a></dd>
+                <dd id="ProductionConfig.CERT_DIR" class="variable"><a href="#Config.CERT_DIR">CERT_DIR</a></dd>
                 <dd id="ProductionConfig.EMAIL" class="variable"><a href="#Config.EMAIL">EMAIL</a></dd>
                 <dd id="ProductionConfig.DOMAIN" class="variable"><a href="#Config.DOMAIN">DOMAIN</a></dd>
                 <dd id="ProductionConfig.LOAD_COL" class="variable"><a href="#Config.LOAD_COL">LOAD_COL</a></dd>
@@ -849,13 +873,17 @@
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">DevelopmentConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Development configuration.&quot;&quot;&quot;</span>
+
     <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;dev&quot;</span>
     <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/dev.db&quot;</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Development configuration.</p>
+</div>
+
 
                             <div id="DevelopmentConfig.__init__" class="classattr">
                                         <div class="attr function"><a class="headerlink" href="#DevelopmentConfig.__init__">#&nbsp;&nbsp</a>
@@ -893,25 +921,25 @@
                                 <dl>
                                     <div><dt><a href="#Config">Config</a></dt>
                                 <dd id="DevelopmentConfig.TESTING" class="variable"><a href="#Config.TESTING">TESTING</a></dd>
-                <dd id="DevelopmentConfig.ADMIN_USER" class="variable"><a href="#Config.ADMIN_USER">ADMIN_USER</a></dd>
-                <dd id="DevelopmentConfig.ADMIN_PASSWORD" class="variable"><a href="#Config.ADMIN_PASSWORD">ADMIN_PASSWORD</a></dd>
-                <dd id="DevelopmentConfig.SECRET_KEY" class="variable"><a href="#Config.SECRET_KEY">SECRET_KEY</a></dd>
+                <dd id="DevelopmentConfig.DEBUG" class="variable"><a href="#Config.DEBUG">DEBUG</a></dd>
                 <dd id="DevelopmentConfig.SQLALCHEMY_TRACK_MODIFICATIONS" class="variable"><a href="#Config.SQLALCHEMY_TRACK_MODIFICATIONS">SQLALCHEMY_TRACK_MODIFICATIONS</a></dd>
                 <dd id="DevelopmentConfig.OUTPUT_DIR" class="variable"><a href="#Config.OUTPUT_DIR">OUTPUT_DIR</a></dd>
                 <dd id="DevelopmentConfig.UPLOAD_DIR" class="variable"><a href="#Config.UPLOAD_DIR">UPLOAD_DIR</a></dd>
                 <dd id="DevelopmentConfig.PORT" class="variable"><a href="#Config.PORT">PORT</a></dd>
+                <dd id="DevelopmentConfig.REDIRECT_PORT" class="variable"><a href="#Config.REDIRECT_PORT">REDIRECT_PORT</a></dd>
                 <dd id="DevelopmentConfig.WORKERS" class="variable"><a href="#Config.WORKERS">WORKERS</a></dd>
-                <dd id="DevelopmentConfig.DEBUG" class="variable"><a href="#Config.DEBUG">DEBUG</a></dd>
+                <dd id="DevelopmentConfig.GUNICORN_PATH" class="variable"><a href="#Config.GUNICORN_PATH">GUNICORN_PATH</a></dd>
+                <dd id="DevelopmentConfig.ADMIN_USER" class="variable"><a href="#Config.ADMIN_USER">ADMIN_USER</a></dd>
+                <dd id="DevelopmentConfig.ADMIN_PASSWORD" class="variable"><a href="#Config.ADMIN_PASSWORD">ADMIN_PASSWORD</a></dd>
+                <dd id="DevelopmentConfig.SECRET_KEY" class="variable"><a href="#Config.SECRET_KEY">SECRET_KEY</a></dd>
                 <dd id="DevelopmentConfig.CERT_DIR" class="variable"><a href="#Config.CERT_DIR">CERT_DIR</a></dd>
                 <dd id="DevelopmentConfig.EMAIL" class="variable"><a href="#Config.EMAIL">EMAIL</a></dd>
                 <dd id="DevelopmentConfig.DOMAIN" class="variable"><a href="#Config.DOMAIN">DOMAIN</a></dd>
-                <dd id="DevelopmentConfig.GUNICORN_PATH" class="variable"><a href="#Config.GUNICORN_PATH">GUNICORN_PATH</a></dd>
-                <dd id="DevelopmentConfig.REDIRECT_PORT" class="variable"><a href="#Config.REDIRECT_PORT">REDIRECT_PORT</a></dd>
-                <dd id="DevelopmentConfig.EPOCHS" class="variable"><a href="#Config.EPOCHS">EPOCHS</a></dd>
                 <dd id="DevelopmentConfig.LOAD_COL" class="variable"><a href="#Config.LOAD_COL">LOAD_COL</a></dd>
                 <dd id="DevelopmentConfig.TEMP_COL" class="variable"><a href="#Config.TEMP_COL">TEMP_COL</a></dd>
                 <dd id="DevelopmentConfig.HOUR_COL" class="variable"><a href="#Config.HOUR_COL">HOUR_COL</a></dd>
                 <dd id="DevelopmentConfig.DATE_COL" class="variable"><a href="#Config.DATE_COL">DATE_COL</a></dd>
+                <dd id="DevelopmentConfig.EPOCHS" class="variable"><a href="#Config.EPOCHS">EPOCHS</a></dd>
                 <dd id="DevelopmentConfig.ASOS_STATION" class="variable"><a href="#Config.ASOS_STATION">ASOS_STATION</a></dd>
                 <dd id="DevelopmentConfig.TIMEZONE" class="variable"><a href="#Config.TIMEZONE">TIMEZONE</a></dd>
                 <dd id="DevelopmentConfig.NWS_CODE" class="variable"><a href="#Config.NWS_CODE">NWS_CODE</a></dd>
@@ -933,22 +961,39 @@
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">TestingConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
-    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
-    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/test.db&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Testing configuration.&quot;&quot;&quot;</span>
+
     <span class="n">TESTING</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
+
+    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/test.db&quot;</span>
+
     <span class="n">OUTPUT_DIR</span> <span class="o">=</span> <span class="s2">&quot;forecast_app/tests/user-content/tmp_output&quot;</span>
     <span class="n">UPLOAD_DIR</span> <span class="o">=</span> <span class="s2">&quot;forecast_app/tests/user-content/tmp_upload&quot;</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Testing configuration.</p>
+</div>
+
 
                             <div id="TestingConfig.__init__" class="classattr">
                                         <div class="attr function"><a class="headerlink" href="#TestingConfig.__init__">#&nbsp;&nbsp</a>
 
         
             <span class="name">TestingConfig</span><span class="signature">()</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="TestingConfig.TESTING" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#TestingConfig.TESTING">#&nbsp;&nbsp</a>
+
+        <span class="name">TESTING</span><span class="default_value"> = True</span>
     </div>
 
     
@@ -975,16 +1020,6 @@
     
 
                             </div>
-                            <div id="TestingConfig.TESTING" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#TestingConfig.TESTING">#&nbsp;&nbsp</a>
-
-        <span class="name">TESTING</span><span class="default_value"> = True</span>
-    </div>
-
-    
-    
-
-                            </div>
                             <div id="TestingConfig.OUTPUT_DIR" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#TestingConfig.OUTPUT_DIR">#&nbsp;&nbsp</a>
 
@@ -1002,30 +1037,32 @@
     </div>
 
     
-    
+            <div class="docstring"><p>Web serving configuration</p>
+</div>
+
 
                             </div>
                             <div class="inherited">
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt><a href="#Config">Config</a></dt>
-                                <dd id="TestingConfig.ADMIN_USER" class="variable"><a href="#Config.ADMIN_USER">ADMIN_USER</a></dd>
-                <dd id="TestingConfig.ADMIN_PASSWORD" class="variable"><a href="#Config.ADMIN_PASSWORD">ADMIN_PASSWORD</a></dd>
-                <dd id="TestingConfig.SECRET_KEY" class="variable"><a href="#Config.SECRET_KEY">SECRET_KEY</a></dd>
+                                <dd id="TestingConfig.DEBUG" class="variable"><a href="#Config.DEBUG">DEBUG</a></dd>
                 <dd id="TestingConfig.SQLALCHEMY_TRACK_MODIFICATIONS" class="variable"><a href="#Config.SQLALCHEMY_TRACK_MODIFICATIONS">SQLALCHEMY_TRACK_MODIFICATIONS</a></dd>
                 <dd id="TestingConfig.PORT" class="variable"><a href="#Config.PORT">PORT</a></dd>
+                <dd id="TestingConfig.REDIRECT_PORT" class="variable"><a href="#Config.REDIRECT_PORT">REDIRECT_PORT</a></dd>
                 <dd id="TestingConfig.WORKERS" class="variable"><a href="#Config.WORKERS">WORKERS</a></dd>
-                <dd id="TestingConfig.DEBUG" class="variable"><a href="#Config.DEBUG">DEBUG</a></dd>
+                <dd id="TestingConfig.GUNICORN_PATH" class="variable"><a href="#Config.GUNICORN_PATH">GUNICORN_PATH</a></dd>
+                <dd id="TestingConfig.ADMIN_USER" class="variable"><a href="#Config.ADMIN_USER">ADMIN_USER</a></dd>
+                <dd id="TestingConfig.ADMIN_PASSWORD" class="variable"><a href="#Config.ADMIN_PASSWORD">ADMIN_PASSWORD</a></dd>
+                <dd id="TestingConfig.SECRET_KEY" class="variable"><a href="#Config.SECRET_KEY">SECRET_KEY</a></dd>
                 <dd id="TestingConfig.CERT_DIR" class="variable"><a href="#Config.CERT_DIR">CERT_DIR</a></dd>
                 <dd id="TestingConfig.EMAIL" class="variable"><a href="#Config.EMAIL">EMAIL</a></dd>
                 <dd id="TestingConfig.DOMAIN" class="variable"><a href="#Config.DOMAIN">DOMAIN</a></dd>
-                <dd id="TestingConfig.GUNICORN_PATH" class="variable"><a href="#Config.GUNICORN_PATH">GUNICORN_PATH</a></dd>
-                <dd id="TestingConfig.REDIRECT_PORT" class="variable"><a href="#Config.REDIRECT_PORT">REDIRECT_PORT</a></dd>
-                <dd id="TestingConfig.EPOCHS" class="variable"><a href="#Config.EPOCHS">EPOCHS</a></dd>
                 <dd id="TestingConfig.LOAD_COL" class="variable"><a href="#Config.LOAD_COL">LOAD_COL</a></dd>
                 <dd id="TestingConfig.TEMP_COL" class="variable"><a href="#Config.TEMP_COL">TEMP_COL</a></dd>
                 <dd id="TestingConfig.HOUR_COL" class="variable"><a href="#Config.HOUR_COL">HOUR_COL</a></dd>
                 <dd id="TestingConfig.DATE_COL" class="variable"><a href="#Config.DATE_COL">DATE_COL</a></dd>
+                <dd id="TestingConfig.EPOCHS" class="variable"><a href="#Config.EPOCHS">EPOCHS</a></dd>
                 <dd id="TestingConfig.ASOS_STATION" class="variable"><a href="#Config.ASOS_STATION">ASOS_STATION</a></dd>
                 <dd id="TestingConfig.TIMEZONE" class="variable"><a href="#Config.TIMEZONE">TIMEZONE</a></dd>
                 <dd id="TestingConfig.NWS_CODE" class="variable"><a href="#Config.NWS_CODE">NWS_CODE</a></dd>

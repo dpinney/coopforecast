@@ -1,3 +1,5 @@
+"""A collection of utilities to help with building and executing the machine learning model."""
+
 import numpy as np
 import pandas as pd
 import os
@@ -11,14 +13,21 @@ from scipy.stats import zscore
 import tensorflow as tf
 from tensorflow.keras import layers
 
+# TODO: generalize hours_prior
+HOURS_PRIOR = 24
 
-def makeUsefulDf(df, noise=2.5, hours_prior=24, structure=None):
+
+def generate_x_and_ys(df, noise=2.5):
+    """Turn a dataframe of datetime and load data into a dataframe useful for machine learning.
+
+    Normalize values, expload categorical data, and add noise to the temperature data to simulate
+    uncertainty in a forecast.
     """
-    Turn a dataframe of datetime and load data into a dataframe useful for
-    machine learning. Normalize values.
-    """
+
+    # TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.
 
     def _isHoliday(holiday, df):
+        # TODO: Search for libraries that do this for you.
         m1 = None
         if holiday == "New Year's Day":
             m1 = (df["dates"].dt.month == 1) & (df["dates"].dt.day == 1)
@@ -29,25 +38,6 @@ def makeUsefulDf(df, noise=2.5, hours_prior=24, structure=None):
         m1 = df["dates"].dt.date.isin(nerc6[holiday]) if m1 is None else m1
         m2 = df["dates"].dt.date.isin(nerc6.get(holiday + " (Observed)", []))
         return m1 | m2
-
-    def _data_transform_3d(data, timesteps=24, var="x"):
-        m = []
-        s = data.to_numpy()
-        for i in range(s.shape[0] - timesteps):
-            m.append(s[i : i + timesteps].tolist())
-
-        if var == "x":
-            t = np.zeros((len(m), len(m[0]), len(m[0][0])))
-            for i, x in enumerate(m):
-                for j, y in enumerate(x):
-                    for k, z in enumerate(y):
-                        t[i, j, k] = z
-        else:
-            t = np.zeros((len(m), len(m[0])))
-            for i, x in enumerate(m):
-                for j, y in enumerate(x):
-                    t[i, j] = y
-        return t
 
     with open("forecast_app/static/holidays.pickle", "rb") as f:
         nerc6 = pickle.load(
@@ -63,23 +53,20 @@ def makeUsefulDf(df, noise=2.5, hours_prior=24, structure=None):
     # LOAD
     r_df["load_n"] = df["load"] / (df["load"].max() - df["load"].min())
     # NOTE: This requires a continuous dataframe!
-    r_df["load_prev_n"] = r_df["load_n"].shift(hours_prior)
+    r_df["load_prev_n"] = r_df["load_n"].shift(HOURS_PRIOR)
     r_df["load_prev_n"].bfill(inplace=True)
 
-    if structure != "3D":
+    def _chunks(l, n):
+        return [l[i : i + n] for i in range(0, len(l), n)]
 
-        def _chunks(l, n):
-            return [l[i : i + n] for i in range(0, len(l), n)]
+    n = np.array([val for val in _chunks(list(r_df["load_n"]), 24) for _ in range(24)])
+    l = ["l" + str(i) for i in range(24)]
+    for i, s in enumerate(l):
+        r_df[s] = n[:, i]
+        r_df[s] = r_df[s].shift(HOURS_PRIOR)
+        r_df[s] = r_df[s].bfill()
 
-        n = np.array(
-            [val for val in _chunks(list(r_df["load_n"]), 24) for _ in range(24)]
-        )
-        l = ["l" + str(i) for i in range(24)]
-        for i, s in enumerate(l):
-            r_df[s] = n[:, i]
-            r_df[s] = r_df[s].shift(hours_prior)
-            r_df[s] = r_df[s].bfill()
-
+    # Remove normalized load from Xs, otherwise you're just feeding the answers into the model.
     r_df.drop(["load_n"], axis=1, inplace=True)
 
     # DATE
@@ -110,17 +97,12 @@ def makeUsefulDf(df, noise=2.5, hours_prior=24, structure=None):
     r_df["temp_n"] = zscore(temp_noise)
     r_df["temp_n^2"] = zscore([x * x for x in temp_noise])
 
-    return (
-        (r_df, df["load"])
-        if structure != "3D"
-        else (
-            _data_transform_3d(r_df, var="x"),
-            _data_transform_3d(df["load"], var="y"),
-        )
-    )
+    return r_df, df["load"]
 
 
 def MAPE(predictions, answers):
+    """Calculate the mean absolute percentage error."""
+
     assert len(predictions) == len(answers)
     return (
         sum([abs(x - y) / (y + 1e-5) for x, y in zip(predictions, answers)])
@@ -129,143 +111,60 @@ def MAPE(predictions, answers):
     )
 
 
-def train_neural_net(X_train, y_train, epochs, HOURS_AHEAD=24, structure=None):
-    if structure != "3D":
-        model = tf.keras.Sequential(
-            [
-                layers.Dense(
-                    X_train.shape[1],
-                    activation=tf.nn.relu,
-                    input_shape=[len(X_train.keys())],
-                ),
-                layers.Dense(X_train.shape[1], activation=tf.nn.relu),
-                layers.Dense(X_train.shape[1], activation=tf.nn.relu),
-                layers.Dense(X_train.shape[1], activation=tf.nn.relu),
-                layers.Dense(X_train.shape[1], activation=tf.nn.relu),
-                layers.Dense(1),
-            ]
-        )
-    else:
-        model = tf.keras.Sequential(
-            [
-                layers.Dense(
-                    X_train.shape[2],
-                    activation=tf.nn.relu,
-                    input_shape=(HOURS_AHEAD, X_train.shape[2]),
-                ),
-                layers.Dense(X_train.shape[2], activation=tf.nn.relu),
-                layers.Dense(X_train.shape[2], activation=tf.nn.relu),
-                layers.Dense(X_train.shape[2], activation=tf.nn.relu),
-                layers.Dense(X_train.shape[2], activation=tf.nn.relu),
-                layers.Flatten(),
-                layers.Dense(
-                    X_train.shape[2] * HOURS_AHEAD // 2, activation=tf.nn.relu
-                ),
-                layers.Dense(HOURS_AHEAD),
-            ]
-        )
+def train_neural_net(X_train, y_train, epochs):
+    """Train a new neural net given training data the number of epochs."""
+
+    model = tf.keras.Sequential(
+        [
+            layers.Dense(
+                X_train.shape[1],
+                activation=tf.nn.relu,
+                input_shape=[len(X_train.keys())],
+            ),
+            layers.Dense(X_train.shape[1], activation=tf.nn.relu),
+            layers.Dense(X_train.shape[1], activation=tf.nn.relu),
+            layers.Dense(X_train.shape[1], activation=tf.nn.relu),
+            layers.Dense(X_train.shape[1], activation=tf.nn.relu),
+            layers.Dense(1),
+        ]
+    )
 
     nadam = tf.keras.optimizers.Nadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999)
     model.compile(optimizer=nadam, loss="mape")
 
-    x, y = (
-        (np.asarray(X_train.values.tolist()), np.asarray(y_train.tolist()))
-        if structure != "3D"
-        else (X_train, y_train)
-    )
+    x, y = np.asarray(X_train.values.tolist()), np.asarray(y_train.tolist())
     model.fit(x, y, epochs=epochs)
 
     return model
 
 
-def neural_net_predictions(all_X, all_y, epochs=20, model=None, save_file=None):
-    X_train, y_train = all_X[:-8760], all_y[:-8760]
+def train_and_forecast_next_day(all_X, all_y, epochs=20, save_file=None):
+    """Train a neural net and forecast the next day's load."""
 
-    if model == None:
-        model = train_neural_net(X_train, y_train, epochs)
-
-    predictions = [
-        float(f) for f in model.predict(np.asarray(all_X[-8760:].values.tolist()))
-    ]
-    train = [float(f) for f in model.predict(np.asarray(all_X[:-8760].values.tolist()))]
-    accuracy = {
-        "test": MAPE(predictions, all_y[-8760:]),
-        "train": MAPE(train, all_y[:-8760]),
-    }
-
-    if save_file != None:
-        model.save(save_file)
-
-    return [
-        float(f) for f in model.predict(np.asarray(all_X[-8760:].values.tolist()))
-    ], accuracy
-
-
-def neural_net_next_day(
-    all_X, all_y, epochs=20, hours_prior=24, save_file=None, model=None, structure=None
-):
-    all_X_n, all_y_n = all_X[:-hours_prior], all_y[:-hours_prior]
+    all_X_n, all_y_n = all_X[:-HOURS_PRIOR], all_y[:-HOURS_PRIOR]
     X_train = all_X_n[:-8760]
     y_train = all_y_n[:-8760]
     X_test = all_X_n[-8760:]
     y_test = all_y_n[-8760:]
 
-    if model == None:
-        model = train_neural_net(X_train, y_train, epochs, structure=structure)
+    model = train_neural_net(X_train, y_train, epochs)
 
-    if structure != "3D":
-        predictions_test = [
-            float(f)
-            for f in model.predict(np.asarray(X_test.values.tolist()), verbose=0)
-        ]
-        train = [
-            float(f)
-            for f in model.predict(np.asarray(X_train.values.tolist()), verbose=0)
-        ]
-        accuracy = {
-            "test": MAPE(predictions_test, y_test),
-            "train": MAPE(train, y_train),
-        }
-        predictions = [
-            float(f)
-            for f in model.predict(np.asarray(all_X[-24:].values.tolist()), verbose=0)
-        ]
-    else:
-        accuracy = {
-            "test": model.evaluate(X_test, y_test),
-            "train": model.evaluate(X_train, y_train),
-        }
-        predictions = [
-            float(f) for f in model.predict(np.array([all_X[-1]]), verbose=0)[0]
-        ]
+    predictions_test = [
+        float(f) for f in model.predict(np.asarray(X_test.values.tolist()), verbose=0)
+    ]
+    train = [
+        float(f) for f in model.predict(np.asarray(X_train.values.tolist()), verbose=0)
+    ]
+    accuracy = {
+        "test": MAPE(predictions_test, y_test),
+        "train": MAPE(train, y_train),
+    }
+    predictions = [
+        float(f)
+        for f in model.predict(np.asarray(all_X[-24:].values.tolist()), verbose=0)
+    ]
 
     if save_file != None:
         model.save(save_file)
 
     return predictions, model, accuracy
-
-
-def add_day(df, weather):
-    lr = df.iloc[-1]
-    if "dates" in df.columns:
-        last_day = lr.dates
-        df.drop(["dates"], axis=1, inplace=True)  # TODO: WHY?!
-    else:
-        last_day = date(int(lr.year), int(lr.month), int(lr.day))
-    predicted_day = last_day + datetime.timedelta(days=1)
-
-    d_24 = [
-        {
-            "load": -999999,
-            "tempc": w,
-            "year": predicted_day.year,
-            "month": predicted_day.month,
-            "day": predicted_day.day,
-            "hour": i,
-        }
-        for i, w in enumerate(weather)
-    ]
-
-    df = df.append(d_24, ignore_index=True)
-
-    return df, predicted_day

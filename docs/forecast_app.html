@@ -57,10 +57,14 @@
                     <h1 class="modulename">
 forecast_app    </h1>
 
-                
+                        <div class="docstring"><p>Base module for the application, imports of all utilities, models, and views go through here.</p>
+</div>
+
                         <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">redirect</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;Base module for the application, imports of all utilities, models, and views go through here.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">redirect</span>
 <span class="kn">from</span> <span class="nn">forecast_app.utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">login_manager</span><span class="p">,</span>
     <span class="n">ADMIN_USER</span><span class="p">,</span>

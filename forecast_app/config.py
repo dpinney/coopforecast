@@ -1,5 +1,8 @@
+"""App configurations for different environments. Imports from secret_config.py for all sensitive info."""
+
 from datetime import datetime
 
+# Import the secret configurations
 try:
     from forecast_app.secret_config import (
         ADMIN_USER,
@@ -8,43 +11,57 @@ try:
     )
 except ImportError:
     # It's okay if this isn't defined for local development and testing
-    ADMIN_USER = None
-    ADMIN_PASSWORD = None
-    SECRET_KEY = None
+    ADMIN_USER = "admin"
+    ADMIN_PASSWORD = "admin"
+    SECRET_KEY = "secret"
 
-SECRET_VARS = ["ADMIN_USER", "ADMIN_PASSWORD", "SECRET_KEY", "DOMAIN", "EMAIL"]
-
-# GLOBAL CONFIGS
+# Email and domain need to be set here so that they can be easily imported in bash scripts
 EMAIL = "admin@coopforecast.com"
 DOMAIN = "coopforecast.com"
 
 
-class abstract_attribute(object):
-    def __get__(self, obj, type):
-        raise NotImplementedError("This attribute was not set in a subclass")
-
-
 class Config(object):
+    """Base configuration."""
+
+    """Flask configuration."""
     TESTING = False
-    ADMIN_USER = "admin"
-    ADMIN_PASSWORD = "admin"
-    SECRET_KEY = "secret"
+    DEBUG = True
+
+    """Database configuration."""
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    """Local path to store user content"""
     OUTPUT_DIR = "forecast_app/user-content/output"
     UPLOAD_DIR = "forecast_app/user-content/uploads"
+
+    """Web serving configuration"""
     PORT = 5000
-    WORKERS = 1
-    DEBUG = True
-    CERT_DIR = None
+    REDIRECT_PORT = 4000
+    WORKERS = 1  # Number of processes to use for Gunicorn
+    # Needs to be explicitly defined since systemctl wouldn't recognize an implicit path on prod
+    GUNICORN_PATH = "gunicorn"
+
+    """Secrets config"""
+    ADMIN_USER = ADMIN_USER
+    ADMIN_PASSWORD = ADMIN_PASSWORD
+    SECRET_KEY = SECRET_KEY
+
+    """SSL config (for production)"""
+    CERT_DIR = f"/etc/letsencrypt/live/{DOMAIN}"
     EMAIL = EMAIL
     DOMAIN = DOMAIN
-    GUNICORN_PATH = "gunicorn"
-    REDIRECT_PORT = 4000
-    EPOCHS = 1
+
+    """Data ingest config. Columns in the expected CSV file uploads."""
     LOAD_COL = "kw"
     TEMP_COL = "tempc"
     HOUR_COL = "hour"
     DATE_COL = "date"
+
+    """Machine learning config"""
+    EPOCHS = 1
+
+    """External API config"""
+    # Info for data syncing with external APIs
     ASOS_STATION = "TQE"
     TIMEZONE = "America/Chicago"
     # Get weather codes and stations here: https://mesonet.agron.iastate.edu/request/download.phtml
@@ -57,35 +74,49 @@ class Config(object):
     #  Please use the form "STATION/##,##"
     EARLIEST_SYNC_DATE = datetime(2016, 1, 1)
 
+    """Required configurations in subclasses"""
+    NAME = None
+    SQLALCHEMY_DATABASE_URI = None
+
 
 class ProductionConfig(Config):
-    NAME = "prod"
-    ADMIN_USER = ADMIN_USER
-    ADMIN_PASSWORD = ADMIN_PASSWORD
-    SECRET_KEY = SECRET_KEY
-    SQLALCHEMY_DATABASE_URI = "sqlite:///db/prod.db"
-    PORT = 443
-    WORKERS = 4
+    """Production configuration."""
+
     DEBUG = False
-    CERT_DIR = f"/etc/letsencrypt/live/{DOMAIN}"
-    # NOTE: systemctl wouldn't recognize gunicorn on the path
-    GUNICORN_PATH = "/home/ubuntu/.local/bin/gunicorn"
+
+    NAME = "prod"
+
+    SQLALCHEMY_DATABASE_URI = "sqlite:///db/prod.db"
+
+    PORT = 443
     REDIRECT_PORT = 80
+    WORKERS = 4
+    GUNICORN_PATH = "/home/ubuntu/.local/bin/gunicorn"
+
     EPOCHS = 10
 
 
 class DevelopmentConfig(Config):
+    """Development configuration."""
+
     NAME = "dev"
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/dev.db"
 
 
 class TestingConfig(Config):
-    NAME = "test"
-    SQLALCHEMY_DATABASE_URI = "sqlite:///db/test.db"
+    """Testing configuration."""
+
     TESTING = True
+
+    NAME = "test"
+
+    SQLALCHEMY_DATABASE_URI = "sqlite:///db/test.db"
+
     OUTPUT_DIR = "forecast_app/tests/user-content/tmp_output"
     UPLOAD_DIR = "forecast_app/tests/user-content/tmp_upload"
 
 
+# Module level variables to help with app factory
 configs = [TestingConfig, ProductionConfig, DevelopmentConfig]
 config_map = {config.NAME: config for config in configs}
+SECRET_VARS = ["ADMIN_USER", "ADMIN_PASSWORD", "SECRET_KEY"]

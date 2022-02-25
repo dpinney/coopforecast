@@ -31,7 +31,7 @@
         <h2>API Documentation</h2>
             <ul class="memberlist">
             <li>
-                    <a class="function" href="#makeUsefulDf">makeUsefulDf</a>
+                    <a class="function" href="#generate_x_and_ys">generate_x_and_ys</a>
             </li>
             <li>
                     <a class="function" href="#MAPE">MAPE</a>
@@ -40,13 +40,7 @@
                     <a class="function" href="#train_neural_net">train_neural_net</a>
             </li>
             <li>
-                    <a class="function" href="#neural_net_predictions">neural_net_predictions</a>
-            </li>
-            <li>
-                    <a class="function" href="#neural_net_next_day">neural_net_next_day</a>
-            </li>
-            <li>
-                    <a class="function" href="#add_day">add_day</a>
+                    <a class="function" href="#train_and_forecast_next_day">train_and_forecast_next_day</a>
             </li>
     </ul>
 
@@ -64,10 +58,14 @@
                     <h1 class="modulename">
 <a href="./../forecast_app.html">forecast_app</a><wbr>.forecast    </h1>
 
-                
+                        <div class="docstring"><p>A collection of utilities to help with building and executing the machine learning model.</p>
+</div>
+
                         <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;A collection of utilities to help with building and executing the machine learning model.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">pJoin</span>
@@ -80,14 +78,21 @@
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 <span class="kn">from</span> <span class="nn">tensorflow.keras</span> <span class="kn">import</span> <span class="n">layers</span>
 
+<span class="c1"># TODO: generalize hours_prior</span>
+<span class="n">HOURS_PRIOR</span> <span class="o">=</span> <span class="mi">24</span>
 
-<span class="k">def</span> <span class="nf">makeUsefulDf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">hours_prior</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Turn a dataframe of datetime and load data into a dataframe useful for</span>
-<span class="sd">    machine learning. Normalize values.</span>
+
+<span class="k">def</span> <span class="nf">generate_x_and_ys</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">2.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Turn a dataframe of datetime and load data into a dataframe useful for machine learning.</span>
+
+<span class="sd">    Normalize values, expload categorical data, and add noise to the temperature data to simulate</span>
+<span class="sd">    uncertainty in a forecast.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="c1"># TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.</span>
+
     <span class="k">def</span> <span class="nf">_isHoliday</span><span class="p">(</span><span class="n">holiday</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="c1"># TODO: Search for libraries that do this for you.</span>
         <span class="n">m1</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">holiday</span> <span class="o">==</span> <span class="s2">&quot;New Year&#39;s Day&quot;</span><span class="p">:</span>
             <span class="n">m1</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
@@ -98,25 +103,6 @@
         <span class="n">m1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">nerc6</span><span class="p">[</span><span class="n">holiday</span><span class="p">])</span> <span class="k">if</span> <span class="n">m1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">m1</span>
         <span class="n">m2</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">nerc6</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">holiday</span> <span class="o">+</span> <span class="s2">&quot; (Observed)&quot;</span><span class="p">,</span> <span class="p">[]))</span>
         <span class="k">return</span> <span class="n">m1</span> <span class="o">|</span> <span class="n">m2</span>
-
-    <span class="k">def</span> <span class="nf">_data_transform_3d</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">timesteps</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">):</span>
-        <span class="n">m</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">timesteps</span><span class="p">):</span>
-            <span class="n">m</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">timesteps</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-
-        <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span>
-            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])))</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
-                        <span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">z</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-                    <span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
-        <span class="k">return</span> <span class="n">t</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;forecast_app/static/holidays.pickle&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">nerc6</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
@@ -132,23 +118,20 @@
     <span class="c1"># LOAD</span>
     <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
     <span class="c1"># NOTE: This requires a continuous dataframe!</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">hours_prior</span><span class="p">)</span>
+    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">HOURS_PRIOR</span><span class="p">)</span>
     <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;3D&quot;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_chunks</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">l</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">),</span> <span class="n">n</span><span class="p">)]</span>
 
-        <span class="k">def</span> <span class="nf">_chunks</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">l</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">),</span> <span class="n">n</span><span class="p">)]</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_chunks</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]),</span> <span class="mi">24</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)])</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;l&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">HOURS_PRIOR</span><span class="p">)</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">()</span>
 
-        <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_chunks</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]),</span> <span class="mi">24</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)]</span>
-        <span class="p">)</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;l&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
-            <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
-            <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">hours_prior</span><span class="p">)</span>
-            <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">()</span>
-
+    <span class="c1"># Remove normalized load from Xs, otherwise you&#39;re just feeding the answers into the model.</span>
     <span class="n">r_df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;load_n&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># DATE</span>
@@ -179,17 +162,12 @@
     <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">temp_noise</span><span class="p">)</span>
     <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n^2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">([</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp_noise</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">r_df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;3D&quot;</span>
-        <span class="k">else</span> <span class="p">(</span>
-            <span class="n">_data_transform_3d</span><span class="p">(</span><span class="n">r_df</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">),</span>
-            <span class="n">_data_transform_3d</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">],</span> <span class="n">var</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">r_df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">MAPE</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">answers</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the mean absolute percentage error.&quot;&quot;&quot;</span>
+
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="nb">sum</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mf">1e-5</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">answers</span><span class="p">)])</span>
@@ -198,168 +176,89 @@
     <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">HOURS_AHEAD</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;3D&quot;</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
-                    <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                    <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span>
-                    <span class="n">input_shape</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">keys</span><span class="p">())],</span>
-                <span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
-            <span class="p">]</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
-                    <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                    <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span>
-                    <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="n">HOURS_AHEAD</span><span class="p">,</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
-                <span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
-                    <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">HOURS_AHEAD</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span>
-                <span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">HOURS_AHEAD</span><span class="p">),</span>
-            <span class="p">]</span>
-        <span class="p">)</span>
+<span class="k">def</span> <span class="nf">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train a new neural net given training data the number of epochs.&quot;&quot;&quot;</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
+                <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span>
+                <span class="n">input_shape</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">keys</span><span class="p">())],</span>
+            <span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
 
     <span class="n">nadam</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Nadam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">beta_1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">beta_2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">nadam</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;mape&quot;</span><span class="p">)</span>
 
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
-        <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;3D&quot;</span>
-        <span class="k">else</span> <span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
-    <span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
     <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span>
 
 
-<span class="k">def</span> <span class="nf">neural_net_predictions</span><span class="p">(</span><span class="n">all_X</span><span class="p">,</span> <span class="n">all_y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span> <span class="o">=</span> <span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">],</span> <span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span>
+<span class="k">def</span> <span class="nf">train_and_forecast_next_day</span><span class="p">(</span><span class="n">all_X</span><span class="p">,</span> <span class="n">all_y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train a neural net and forecast the next day&#39;s load.&quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
-
-    <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
-    <span class="p">]</span>
-    <span class="n">train</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))]</span>
-    <span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">all_y</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]),</span>
-        <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]),</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="n">save_file</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_file</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="p">[</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
-    <span class="p">],</span> <span class="n">accuracy</span>
-
-
-<span class="k">def</span> <span class="nf">neural_net_next_day</span><span class="p">(</span>
-    <span class="n">all_X</span><span class="p">,</span> <span class="n">all_y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">hours_prior</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="kc">None</span>
-<span class="p">):</span>
-    <span class="n">all_X_n</span><span class="p">,</span> <span class="n">all_y_n</span> <span class="o">=</span> <span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="n">hours_prior</span><span class="p">],</span> <span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="n">hours_prior</span><span class="p">]</span>
+    <span class="n">all_X_n</span><span class="p">,</span> <span class="n">all_y_n</span> <span class="o">=</span> <span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="n">HOURS_PRIOR</span><span class="p">],</span> <span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="n">HOURS_PRIOR</span><span class="p">]</span>
     <span class="n">X_train</span> <span class="o">=</span> <span class="n">all_X_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span>
     <span class="n">y_train</span> <span class="o">=</span> <span class="n">all_y_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span>
     <span class="n">X_test</span> <span class="o">=</span> <span class="n">all_X_n</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span>
     <span class="n">y_test</span> <span class="o">=</span> <span class="n">all_y_n</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span>
 
-    <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">structure</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;3D&quot;</span><span class="p">:</span>
-        <span class="n">predictions_test</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="p">]</span>
-        <span class="n">train</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="p">]</span>
-        <span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">predictions_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span>
-            <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
-        <span class="p">}</span>
-        <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">24</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span>
-            <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
-        <span class="p">}</span>
-        <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="p">]</span>
+    <span class="n">predictions_test</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">train</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">predictions_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span>
+        <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">24</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">]</span>
 
     <span class="k">if</span> <span class="n">save_file</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_file</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">accuracy</span>
-
-
-<span class="k">def</span> <span class="nf">add_day</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">weather</span><span class="p">):</span>
-    <span class="n">lr</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">if</span> <span class="s2">&quot;dates&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-        <span class="n">last_day</span> <span class="o">=</span> <span class="n">lr</span><span class="o">.</span><span class="n">dates</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;dates&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># TODO: WHY?!</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">last_day</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">lr</span><span class="o">.</span><span class="n">year</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">lr</span><span class="o">.</span><span class="n">month</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">lr</span><span class="o">.</span><span class="n">day</span><span class="p">))</span>
-    <span class="n">predicted_day</span> <span class="o">=</span> <span class="n">last_day</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="n">d_24</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;load&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">999999</span><span class="p">,</span>
-            <span class="s2">&quot;tempc&quot;</span><span class="p">:</span> <span class="n">w</span><span class="p">,</span>
-            <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="n">predicted_day</span><span class="o">.</span><span class="n">year</span><span class="p">,</span>
-            <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="n">predicted_day</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
-            <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="n">predicted_day</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
-            <span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">weather</span><span class="p">)</span>
-    <span class="p">]</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d_24</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">predicted_day</span>
 </pre></div>
 
         </details>
 
             </section>
-                <section id="makeUsefulDf">
-                            <div class="attr function"><a class="headerlink" href="#makeUsefulDf">#&nbsp;&nbsp</a>
+                <section id="generate_x_and_ys">
+                            <div class="attr function"><a class="headerlink" href="#generate_x_and_ys">#&nbsp;&nbsp</a>
 
         
             <span class="def">def</span>
-            <span class="name">makeUsefulDf</span><span class="signature">(df, noise=2.5, hours_prior=24, structure=None)</span>:
+            <span class="name">generate_x_and_ys</span><span class="signature">(df, noise=2.5)</span>:
     </div>
 
             <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">makeUsefulDf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">hours_prior</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Turn a dataframe of datetime and load data into a dataframe useful for</span>
-<span class="sd">    machine learning. Normalize values.</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">generate_x_and_ys</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">2.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Turn a dataframe of datetime and load data into a dataframe useful for machine learning.</span>
+
+<span class="sd">    Normalize values, expload categorical data, and add noise to the temperature data to simulate</span>
+<span class="sd">    uncertainty in a forecast.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="c1"># TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.</span>
+
     <span class="k">def</span> <span class="nf">_isHoliday</span><span class="p">(</span><span class="n">holiday</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="c1"># TODO: Search for libraries that do this for you.</span>
         <span class="n">m1</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">holiday</span> <span class="o">==</span> <span class="s2">&quot;New Year&#39;s Day&quot;</span><span class="p">:</span>
             <span class="n">m1</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
@@ -370,25 +269,6 @@
         <span class="n">m1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">nerc6</span><span class="p">[</span><span class="n">holiday</span><span class="p">])</span> <span class="k">if</span> <span class="n">m1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">m1</span>
         <span class="n">m2</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">nerc6</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">holiday</span> <span class="o">+</span> <span class="s2">&quot; (Observed)&quot;</span><span class="p">,</span> <span class="p">[]))</span>
         <span class="k">return</span> <span class="n">m1</span> <span class="o">|</span> <span class="n">m2</span>
-
-    <span class="k">def</span> <span class="nf">_data_transform_3d</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">timesteps</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">):</span>
-        <span class="n">m</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">timesteps</span><span class="p">):</span>
-            <span class="n">m</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">timesteps</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-
-        <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span>
-            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])))</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
-                        <span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">z</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-                    <span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
-        <span class="k">return</span> <span class="n">t</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;forecast_app/static/holidays.pickle&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">nerc6</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
@@ -404,23 +284,20 @@
     <span class="c1"># LOAD</span>
     <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
     <span class="c1"># NOTE: This requires a continuous dataframe!</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">hours_prior</span><span class="p">)</span>
+    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">HOURS_PRIOR</span><span class="p">)</span>
     <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;3D&quot;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_chunks</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">l</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">),</span> <span class="n">n</span><span class="p">)]</span>
 
-        <span class="k">def</span> <span class="nf">_chunks</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">l</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">),</span> <span class="n">n</span><span class="p">)]</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_chunks</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]),</span> <span class="mi">24</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)])</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;l&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">HOURS_PRIOR</span><span class="p">)</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">()</span>
 
-        <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_chunks</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]),</span> <span class="mi">24</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)]</span>
-        <span class="p">)</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;l&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
-            <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
-            <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">hours_prior</span><span class="p">)</span>
-            <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">()</span>
-
+    <span class="c1"># Remove normalized load from Xs, otherwise you&#39;re just feeding the answers into the model.</span>
     <span class="n">r_df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;load_n&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># DATE</span>
@@ -451,20 +328,15 @@
     <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">temp_noise</span><span class="p">)</span>
     <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n^2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">([</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp_noise</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">r_df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;3D&quot;</span>
-        <span class="k">else</span> <span class="p">(</span>
-            <span class="n">_data_transform_3d</span><span class="p">(</span><span class="n">r_df</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">),</span>
-            <span class="n">_data_transform_3d</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">],</span> <span class="n">var</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">r_df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span>
 </pre></div>
 
         </details>
 
-            <div class="docstring"><p>Turn a dataframe of datetime and load data into a dataframe useful for
-machine learning. Normalize values.</p>
+            <div class="docstring"><p>Turn a dataframe of datetime and load data into a dataframe useful for machine learning.</p>
+
+<p>Normalize values, expload categorical data, and add noise to the temperature data to simulate
+uncertainty in a forecast.</p>
 </div>
 
 
@@ -480,6 +352,8 @@ machine learning. Normalize values.</p>
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">MAPE</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">answers</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the mean absolute percentage error.&quot;&quot;&quot;</span>
+
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="nb">sum</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mf">1e-5</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">answers</span><span class="p">)])</span>
@@ -490,7 +364,9 @@ machine learning. Normalize values.</p>
 
         </details>
 
-    
+            <div class="docstring"><p>Calculate the mean absolute percentage error.</p>
+</div>
+
 
                 </section>
                 <section id="train_neural_net">
@@ -498,55 +374,33 @@ machine learning. Normalize values.</p>
 
         
             <span class="def">def</span>
-            <span class="name">train_neural_net</span><span class="signature">(X_train, y_train, epochs, HOURS_AHEAD=24, structure=None)</span>:
+            <span class="name">train_neural_net</span><span class="signature">(X_train, y_train, epochs)</span>:
     </div>
 
             <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">HOURS_AHEAD</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;3D&quot;</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
-                    <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                    <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span>
-                    <span class="n">input_shape</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">keys</span><span class="p">())],</span>
-                <span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
-            <span class="p">]</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
-                    <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                    <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span>
-                    <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="n">HOURS_AHEAD</span><span class="p">,</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
-                <span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
-                    <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">HOURS_AHEAD</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span>
-                <span class="p">),</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">HOURS_AHEAD</span><span class="p">),</span>
-            <span class="p">]</span>
-        <span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train a new neural net given training data the number of epochs.&quot;&quot;&quot;</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
+                <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span>
+                <span class="n">input_shape</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">keys</span><span class="p">())],</span>
+            <span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
 
     <span class="n">nadam</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Nadam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">beta_1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">beta_2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">nadam</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;mape&quot;</span><span class="p">)</span>
 
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
-        <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;3D&quot;</span>
-        <span class="k">else</span> <span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
-    <span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
     <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span>
@@ -554,102 +408,46 @@ machine learning. Normalize values.</p>
 
         </details>
 
-    
+            <div class="docstring"><p>Train a new neural net given training data the number of epochs.</p>
+</div>
+
 
                 </section>
-                <section id="neural_net_predictions">
-                            <div class="attr function"><a class="headerlink" href="#neural_net_predictions">#&nbsp;&nbsp</a>
+                <section id="train_and_forecast_next_day">
+                            <div class="attr function"><a class="headerlink" href="#train_and_forecast_next_day">#&nbsp;&nbsp</a>
 
         
             <span class="def">def</span>
-            <span class="name">neural_net_predictions</span><span class="signature">(all_X, all_y, epochs=20, model=None, save_file=None)</span>:
+            <span class="name">train_and_forecast_next_day</span><span class="signature">(all_X, all_y, epochs=20, save_file=None)</span>:
     </div>
 
             <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">neural_net_predictions</span><span class="p">(</span><span class="n">all_X</span><span class="p">,</span> <span class="n">all_y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span> <span class="o">=</span> <span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">],</span> <span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">train_and_forecast_next_day</span><span class="p">(</span><span class="n">all_X</span><span class="p">,</span> <span class="n">all_y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train a neural net and forecast the next day&#39;s load.&quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
-
-    <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
-    <span class="p">]</span>
-    <span class="n">train</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))]</span>
-    <span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">all_y</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]),</span>
-        <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]),</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="n">save_file</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_file</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="p">[</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
-    <span class="p">],</span> <span class="n">accuracy</span>
-</pre></div>
-
-        </details>
-
-    
-
-                </section>
-                <section id="neural_net_next_day">
-                            <div class="attr function"><a class="headerlink" href="#neural_net_next_day">#&nbsp;&nbsp</a>
-
-        
-            <span class="def">def</span>
-            <span class="name">neural_net_next_day</span><span class="signature">(
-    all_X,
-    all_y,
-    epochs=20,
-    hours_prior=24,
-    save_file=None,
-    model=None,
-    structure=None
-)</span>:
-    </div>
-
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">neural_net_next_day</span><span class="p">(</span>
-    <span class="n">all_X</span><span class="p">,</span> <span class="n">all_y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">hours_prior</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="kc">None</span>
-<span class="p">):</span>
-    <span class="n">all_X_n</span><span class="p">,</span> <span class="n">all_y_n</span> <span class="o">=</span> <span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="n">hours_prior</span><span class="p">],</span> <span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="n">hours_prior</span><span class="p">]</span>
+    <span class="n">all_X_n</span><span class="p">,</span> <span class="n">all_y_n</span> <span class="o">=</span> <span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="n">HOURS_PRIOR</span><span class="p">],</span> <span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="n">HOURS_PRIOR</span><span class="p">]</span>
     <span class="n">X_train</span> <span class="o">=</span> <span class="n">all_X_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span>
     <span class="n">y_train</span> <span class="o">=</span> <span class="n">all_y_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span>
     <span class="n">X_test</span> <span class="o">=</span> <span class="n">all_X_n</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span>
     <span class="n">y_test</span> <span class="o">=</span> <span class="n">all_y_n</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span>
 
-    <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">structure</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;3D&quot;</span><span class="p">:</span>
-        <span class="n">predictions_test</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="p">]</span>
-        <span class="n">train</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="p">]</span>
-        <span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">predictions_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span>
-            <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
-        <span class="p">}</span>
-        <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">24</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span>
-            <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
-        <span class="p">}</span>
-        <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="p">]</span>
+    <span class="n">predictions_test</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">train</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">predictions_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span>
+        <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">24</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">]</span>
 
     <span class="k">if</span> <span class="n">save_file</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_file</span><span class="p">)</span>
@@ -659,48 +457,9 @@ machine learning. Normalize values.</p>
 
         </details>
 
-    
+            <div class="docstring"><p>Train a neural net and forecast the next day's load.</p>
+</div>
 
-                </section>
-                <section id="add_day">
-                            <div class="attr function"><a class="headerlink" href="#add_day">#&nbsp;&nbsp</a>
-
-        
-            <span class="def">def</span>
-            <span class="name">add_day</span><span class="signature">(df, weather)</span>:
-    </div>
-
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">add_day</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">weather</span><span class="p">):</span>
-    <span class="n">lr</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">if</span> <span class="s2">&quot;dates&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-        <span class="n">last_day</span> <span class="o">=</span> <span class="n">lr</span><span class="o">.</span><span class="n">dates</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;dates&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># TODO: WHY?!</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">last_day</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">lr</span><span class="o">.</span><span class="n">year</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">lr</span><span class="o">.</span><span class="n">month</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">lr</span><span class="o">.</span><span class="n">day</span><span class="p">))</span>
-    <span class="n">predicted_day</span> <span class="o">=</span> <span class="n">last_day</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="n">d_24</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;load&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">999999</span><span class="p">,</span>
-            <span class="s2">&quot;tempc&quot;</span><span class="p">:</span> <span class="n">w</span><span class="p">,</span>
-            <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="n">predicted_day</span><span class="o">.</span><span class="n">year</span><span class="p">,</span>
-            <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="n">predicted_day</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
-            <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="n">predicted_day</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
-            <span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">weather</span><span class="p">)</span>
-    <span class="p">]</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d_24</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">predicted_day</span>
-</pre></div>
-
-        </details>
-
-    
 
                 </section>
     </main>
