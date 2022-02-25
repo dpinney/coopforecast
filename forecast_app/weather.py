@@ -55,12 +55,14 @@ class AsosRequest:
         }
 
     def send_request(self):
+        """Send the request to the ASOS server and return the response"""
         self.request = requests.get(self.base_url, params=self.params)
         if self.request.status_code == 404:
             raise Exception(f"Dataset URL does not exist. {self.request.url}")
         return self.request
 
     def write_response(self, filepath):
+        """Write the response to a file"""
         self.filepath = filepath
         if not hasattr(self, "request"):
             raise Exception("No request has been sent yet.")
@@ -70,6 +72,7 @@ class AsosRequest:
             f.write(self.request.text)
 
     def create_df(self):
+        """Create a dataframe from the response in the format we need for our models"""
         if not hasattr(self, "request"):
             raise Exception("No request has been sent yet.")
         df = pd.read_csv(StringIO(self.request.text), parse_dates=["valid"])
@@ -103,17 +106,20 @@ class NwsForecastRequest:
 
     @classmethod
     def fahrenheit_to_celcius(cls, fahrenheit):
+        """Class method to convert Fahrenheit to Celsius"""
         # TODO: We should be using fahrenheit instead of celcius, but it's baked into
         #  a lot of the structure. May not be worth switching back for a while.
         return round((fahrenheit - 32) * 5 / 9, 2)
 
     def send_request(self):
+        """Send the request to the NWS server and return the response"""
         self.request = requests.get(self.base_url + self.nws_code + "/forecast/hourly")
         if self.request.status_code == 404:
             raise Exception(f"Dataset URL does not exist. {self.request.url}")
         return self.request
 
     def write_response(self, filepath):
+        """Write the response to a file"""
         self.filepath = filepath
         if not hasattr(self, "request"):
             raise Exception("No request has been sent yet.")
@@ -123,6 +129,7 @@ class NwsForecastRequest:
             f.write(self.request.text)
 
     def create_df(self):
+        """Create a dataframe from the response in the format we need for our models"""
         if not hasattr(self, "request"):
             raise Exception("No request has been sent yet.")
         json_response = json.loads(self.request.text)
