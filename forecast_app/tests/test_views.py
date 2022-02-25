@@ -31,8 +31,6 @@ def test_templates(app, auth, client):
         "/historical-weather-data": "Historical Weather Data",
         "/latest-forecast": "Latest Forecast",
         "/instructions": "Instructions",
-        "/model-settings": "Model Settings",
-        "/user-settings": "User Settings",
         "/forecast-models": "Forecast Models",
     }
 
@@ -172,6 +170,18 @@ class TestDataViews:
         self.post_data_view(
             HistoricalLoadDataView, filename="historical-load.csv", final_count=72
         )
+
+    # def test_update_post(self, db, app, client, auth):
+    #     pytest.load_demo_db(app)
+
+    #     upload_file = pytest.FIXTURE_DIR / "historical-load-update.csv"
+
+    #     with app.test_request_context("/historical-load-data", method="POST"):
+    #         request.files = {"file": str(upload_file)}
+    #         HistoricalLoadData().post()
+
+    #     df = HistoricalLoadData().to_df()
+    #     breakpoint()
 
     # Tested more thoroughly via test_templates
 

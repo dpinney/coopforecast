@@ -33,14 +33,6 @@ class TestHistoricalLoadData:
         assert obj
         assert obj.value == 13319
 
-        # Ensure that a user can update the data
-        # FEATURE CURRENTLY DISABLED
-        # fixture_path2 = pytest.FIXTURE_DIR / "historical-load-update.csv"
-        # HistoricalLoadData.load_data(fixture_path2)
-        # obj = HistoricalLoadData.query.get(datetime(2002, 1, 2, 12))
-        # assert obj
-        # assert obj.value == 43
-
         fixture_path = pytest.FIXTURE_DIR / "uncontinuous.csv"
         HistoricalLoadData.load_data(fixture_path)
         assert pd.isna(HistoricalLoadData.query.get(datetime(2002, 1, 1, 6)).value)

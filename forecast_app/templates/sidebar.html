@@ -28,12 +28,6 @@
   </li>
   {% endwith %}
 
-  <!-- Divider -->
-  <hr class="sidebar-divider">
-
-  <div class="sidebar-heading">
-    Upload & Review Data
-  </div>
   {% with page='historical-load-data' %}
   <li class="nav-item {% include 'partials/is-active.html' %}">
     <a class="nav-link" href="{{ url_for( 'historical-load-data' ) }}">
@@ -60,18 +54,6 @@
   </li>
   {% endwith %}
 
-
-  <!-- Divider -->
-  <hr class="sidebar-divider">
-
-  {% with page='model-settings' %}
-  <li class="nav-item {% include 'partials/is-active.html' %}">
-    <a class="nav-link" href="{{ url_for( 'model-settings' ) }}">
-      <i class="fas fa-fw fa-cogs"></i>
-      <span>Model Settings</span></a>
-  </li>
-  {% endwith %}
-
   {% with page='instructions' %}
   <li class="nav-item {% include 'partials/is-active.html' %}">
     <a class="nav-link" href="{{ url_for( 'instructions' ) }}">
@@ -81,7 +63,7 @@
   {% endwith %}
 
   <!-- Sidebar Toggler (Sidebar) -->
-  <div class="text-center d-none d-md-inline">
+  <div class="text-center d-none d-md-inline" style="margin-top: 20px;">
     <button class="rounded-circle border-0" id="sidebarToggle"></button>
   </div>
 </ul>
