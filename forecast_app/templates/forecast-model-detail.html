@@ -60,7 +60,6 @@
       create_timeseries_chart(id = 'historical-chart-container', data = {{ training_chart | tojson }}, title = '')
     </script>
     <p>
-      {# TODO: Attach links here #}
       <a target="_blank" href="https://www.kmcelwee.com/load-forecasting" class="btn btn-secondary btn-sm">Read about
         how this models works</a>
       <a href="{{ url_for('download-model-files', slug=forecast_model.slug, filename=forecast_model.model_filename )}}"
