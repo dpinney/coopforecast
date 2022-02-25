@@ -6,6 +6,7 @@
   - [Forecast Weather Data](#forecast-weather-data)
   - [Forecast Model](#forecast-model)
   - [Posting Data Automatically](#posting-data-automatically)
+  - [How is accuracy measured?](#how-is-accuracy-measured)
   - [Read More](#read-more)
 
 ## Historical Load Data
@@ -65,6 +66,12 @@ Options:
 You can write your own code by looking at the `post_data` in `cli.py` to inform your
 own script. Regardless, using `request.Session` to login, and posting a file to the data views
 will upload your file.
+
+## How is accuracy measured?
+
+The goal of the model is to minimize “Mean Absolute Percent Error” or [MAPE](https://en.m.wikipedia.org/wiki/Mean_absolute_percentage_error). MAPE is a measure of the error between the actual and predicted values.
+
+When creating any model, data is split into a "train" and a "test" dataset. Usually this is an 80/20 split respectively. The model learns from training data while the test data is hidden from it. After the model has trained, we then compare the model’s forecasts on the test data set. This ensures that it’s actually learning general relationships instead of fitting narrowly to the data we give it. It's similar to making sure a student doesn’t just memorize the answers to a test instead of learning the underlying concepts. For a grid engineer's purposes, expect that the "test" error reflects the amount of certainty you should invest the day’s forecast.
 
 ## Read More
 
