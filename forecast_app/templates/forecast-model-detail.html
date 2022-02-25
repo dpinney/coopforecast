@@ -12,7 +12,7 @@
   </div>
   <div class="card-body">
     <p>
-      Displaying a forecast of <b class="text-primary">{{ forecast_model.start_date.strftime('%b %d, %Y %H:%M') }}</b>
+      Displaying a forecast from <b class="text-primary">{{ forecast_model.start_date.strftime('%b %d, %Y %H:%M') }}</b>
       to <b class="text-primary">{{ forecast_model.end_date.strftime('%b %d, %Y %H:%M') }}</b>.
     </p>
     {% if peak_info %}
