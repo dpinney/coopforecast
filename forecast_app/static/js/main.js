@@ -13,6 +13,16 @@ function create_timeseries_chart(id = null, series = null, title = null) {
     series: series,
     tooltip: {
       valueDecimals: 2
+    },
+
+    exporting: {
+      csv: {
+        // Replace column header name so that it can be automatically reingested
+        columnHeaderFormatter: function (item, key, keyLength) {
+          // HACK: Best logic I could come up with is the key is not defined for the x-axis
+          return key ? item.name : 'timestamp';
+        }
+      }
     }
   });
 };
