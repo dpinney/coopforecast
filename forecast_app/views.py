@@ -255,23 +255,13 @@ class ForecastModelListView(MethodView):
     view_name = "forecast-model-list"
     view_url = "/forecast-models"
 
-    # TODO: Create a boolean to split post requests or shift to cancelling specific models
-    # def post(self):
-    #     # Cancel all models
-    #     for model in ForecastModel.query.all():
-    #         if model.is_running:
-    #             model.cancel()
-    #     messages = [{"level": "info", "text": "All running models were terminated."}]
-    #     return self.get(messages=messages)
-
-    def post(self, mock=False):
+    def post(self):
         """Generate a new forecast model."""
-        # TODO: mock=False is a hack
         new_model = ForecastModel()
         new_model.save()
         print(f"Starting model {new_model.creation_date}")
         # NOTE: For testing, send 'mock' as a parameter to avoid lengthy training
-        # NOTE: "submit_stored" doesn't seem to work as expected
+        # TODO: This is a hacky way to do this.
         if request.values.get("mock") == "true":
             process = Process(target=time.sleep, args=(3,))
         else:
@@ -322,8 +312,14 @@ class ForecastModelDetailView(MethodView):
     view_name = "forecast-model-detail"
     view_url = "/forecast-models/<slug>"
     decorators = [flask_login.login_required]
-    # TODO:
-    # - make model downloadable
+
+    def post(self, slug):
+        """Cancel a specific model"""
+        model = ForecastModel.query.filter_by(slug=slug).first()
+        if model.is_running:
+            model.cancel()
+            safe_flash(f"Model {model.slug} was cancelled.", "info")
+        return redirect(url_for("forecast-model-list"))
 
     def get_training_chart(self, df):
         if df is None or ("forecasted_load" not in df.columns):

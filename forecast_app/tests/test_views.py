@@ -215,8 +215,16 @@ class TestForecastModelDetailView:
     def test_get(self):
         pass
 
-    def test_post(self):
-        pass
+    def test_post(self, app, db, client, auth):
+        auth.login()
+        upload_demo_data(models=False)
+        assert ForecastModel.query.count() == 0
+        client.post("/forecast-models", data={"mock": "true"})
+        assert ForecastModel.query.count() == 1
+        model = ForecastModel.query.first()
+        client.post(f"/forecast-models/{model.slug}")
+        assert not model.is_running
+        assert model.status == "Failed"
 
 
 class TestHistoricalWeatherDataSync:
