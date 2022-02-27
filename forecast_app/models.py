@@ -82,7 +82,6 @@ class ForecastModel(db.Model):
     @property
     def status(self):
         """Return the status of the model."""
-        # TODO: Can I just make a status property and nothing else?
         pid = self.get_process_id()
         if pid is None:
             return self.NOT_STARTED
@@ -205,8 +204,10 @@ class ForecastModel(db.Model):
 
     def get_model(self):
         """Return the model."""
-        # TODO: Raise an exception if the model doesn't exist
-        return tf.keras.models.load_model(self.model_file)
+        if os.path.exists(self.model_file):
+            return tf.keras.models.load_model(self.model_file)
+        else:
+            return None
 
     def _execute_forecast(self):
         """Execute the forecast (outside a thread.) And save all info after finishing.

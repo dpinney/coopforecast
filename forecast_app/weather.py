@@ -22,9 +22,6 @@ class AsosRequest:
     * ASOS User's Guide: https://www.weather.gov/media/asos/aum-toc.pdf
     """
 
-    # TODO: The user should be able to access the request url before sending the request
-    #  both this and the Nws API should be changed
-
     base_url = "https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py"
 
     def __init__(
@@ -47,12 +44,12 @@ class AsosRequest:
             "tz": tz,
             "format": "onlycomma",
             "missing": missing_value,
-            "trace": "T",  # What does this mean?
+            "trace": "T",  # TODO: What does this mean?
             "latlon": "no",
             "elev": "no",
             "direct": "no",
             "report_type": 1,
-            "report_type": 2,  # Why?
+            "report_type": 2,  # TODO: Why?
         }
 
     def send_request(self):
