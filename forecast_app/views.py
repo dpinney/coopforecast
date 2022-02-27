@@ -41,7 +41,6 @@ class DataView(MethodView):
     title = None
     gist_example = None
     instructions = None
-    hide_table = None
     # Variable for whether user can sync data with external API
     sync_request = None
 
@@ -120,7 +119,6 @@ class DataView(MethodView):
                 "title": self.title,
                 "gist_example": self.gist_example,
                 "instructions": self.instructions,
-                "hide_table": self.hide_table,
                 "sync_request": self.sync_request,
                 "summary": self.get_summary(),
             },
@@ -135,7 +133,6 @@ class ForecastWeatherDataView(DataView):
     title = "Forecast Weather Data"
     gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
     instructions = "/instructions#forecast-weather-data"
-    hide_table = False
     sync_request = "The National Weather Service"
 
 
@@ -147,7 +144,6 @@ class HistoricalLoadDataView(DataView):
     title = "Historical Load Data"
     gist_example = "https://gist.github.com/kmcelwee/ce163d8c9d2871ab4c652382431c7801"
     instructions = "/instructions#historical-load-data"
-    hide_table = True
 
 
 class HistoricalWeatherDataView(DataView):
@@ -158,7 +154,6 @@ class HistoricalWeatherDataView(DataView):
     title = "Historical Weather Data"
     gist_example = "https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4"
     instructions = "/instructions#historical-weather-data"
-    hide_table = True
     sync_request = "ASOS"
 
 

@@ -1,3 +1,4 @@
+{% with hide_table=(table|length > 2000) %}
 <div class="table-responsive {% if hide_table %}d-none{% endif %}" id="large-table">
   <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
     <thead>
@@ -18,3 +19,4 @@
     </tbody>
   </table>
 </div>
+{% endwith %}

@@ -110,6 +110,7 @@
 {% endif %}
 
 {% if table %}
+{% with hide_table=(table|length > 2000) %}
 {% if hide_table %}
 <div class="card shadow mb-4" id="table">
   <!-- Card Header - Accordion -->
@@ -149,6 +150,7 @@
   </div>
 </div>
 {% endif %}
+{% endwith %}
 {% endif %}
 
 {% endblock %}
