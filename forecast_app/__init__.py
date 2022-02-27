@@ -1,5 +1,7 @@
 """Base module for the application, imports of all utilities, models, and views go through here."""
 
+import logging
+
 from flask import Flask, render_template, redirect
 from forecast_app.utils import (
     login_manager,
@@ -74,5 +76,10 @@ def create_app(config: str):
     def unauthorized(e):
         """If a user tries to access a page that requires authentication, redirect them to the login page."""
         return redirect("/", code=302)
+
+    # Link Gunicorn logging
+    gunicorn_logger = logging.getLogger("gunicorn.error")
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
 
     return app
