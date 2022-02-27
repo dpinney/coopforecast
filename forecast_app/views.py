@@ -24,7 +24,7 @@ from forecast_app.models import (
     HistoricalWeatherData,
     ForecastModel,
 )
-from forecast_app.utils import db, ADMIN_USER, upload_file
+from forecast_app.utils import db, ADMIN_USER, upload_file, safe_error, safe_flash
 from forecast_app.weather import AsosRequest, NwsForecastRequest
 from forecast_app import burtcoppd
 
@@ -101,14 +101,11 @@ class DataView(MethodView):
     def post(self):
         """Given a POST request to the data view's endpoint, upload the file and load it into the database"""
         filepath = upload_file("file")
-        messages = self.model.load_data(filepath)
-        return self.get(messages=messages)  # NOTE: A redirect wouldn't work here
+        self.model.load_data(filepath)
+        return redirect(url_for(self.view_name))
 
-    def get(self, messages=None):
+    def get(self):
         """Render the data view"""
-        if not messages:
-            messages = []
-
         # NOTE: Just pass self?
         return render_template(
             f"data-view.html",
@@ -116,7 +113,6 @@ class DataView(MethodView):
                 "name": self.view_name,
                 "table": self.get_table(),
                 "chart": self.get_chart(),
-                "messages": messages,
                 "title": self.title,
                 "gist_example": self.gist_example,
                 "instructions": self.instructions,
@@ -209,7 +205,8 @@ class LoginView(MethodView):
             return redirect(url_for("latest-forecast"))
         # NOTE: Some kind of attribute error is preventing me from simply using
         #  self.get(error=error). It's not occuring in other pages.
-        return redirect(url_for("login", error="Incorrect username and/or password."))
+        safe_flash("Incorrect username and/or password.")
+        return redirect(url_for("login"))
 
     def get(self):
         """Render the login page"""
@@ -279,12 +276,11 @@ class ForecastModelListView(MethodView):
             )
         process.start()
         new_model.store_process_id(process.pid)
+        safe_flash("Model has begun training.", "info")
         return redirect(url_for("forecast-model-list"))
 
-    def get(self, messages=None):
+    def get(self):
         """Render the list of all forecast models and show the state of all data views"""
-        # messages = request.args.get("messages", [])
-        messages = [] if messages is None else messages
         models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()
         model_is_prepared = ForecastModel.is_prepared()
         data_is_prepared = {
@@ -298,7 +294,6 @@ class ForecastModelListView(MethodView):
             models=models,
             model_is_prepared=model_is_prepared,
             data_is_prepared=data_is_prepared,
-            messages=messages,
         )
 
 
@@ -390,9 +385,7 @@ class ForecastModelDetailView(MethodView):
         df = df.set_index("dates", drop=False)
         return df.loc[month_id].load.max()
 
-    def get(self, slug, messages=None):
-        if not messages:
-            messages = []
+    def get(self, slug):
         forecast_model = ForecastModel.query.filter_by(slug=slug).first()
 
         # NOTE: Easier to just munge one dataframe for all queries
@@ -410,7 +403,6 @@ class ForecastModelDetailView(MethodView):
             training_chart=self.get_training_chart(df),
             peak_info=burtcoppd.get_on_and_off_peak_info(df, forecast_model),
             forecast_model=forecast_model,
-            messages=messages,
         )
 
 

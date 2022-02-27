@@ -8,7 +8,7 @@ from flask import current_app
 import signal
 import tensorflow as tf
 
-from forecast_app.utils import db
+from forecast_app.utils import db, safe_flash
 import forecast_app.forecast as lf
 
 
@@ -349,7 +349,6 @@ class TrainingData:
         #  The columns parameter can prevent this.
         # TODO: validation should happen here
         # TODO: This is a mess. Separate out into different functions for easier testing.
-        messages = []
         LOAD_COL = current_app.config["LOAD_COL"]
         TEMP_COL = current_app.config["TEMP_COL"]
         HOUR_COL = current_app.config["HOUR_COL"]
@@ -365,9 +364,9 @@ class TrainingData:
                 elif str(filepath).endswith("xlsx"):
                     df = pd.read_excel(filepath)
                 elif str(filepath) == "":
-                    raise Exception("Please attach a file before uploading.")
+                    safe_flash("Please attach a file before uploading.", "danger")
                 else:
-                    raise Exception("File extension not recognized.")
+                    safe_flash("File extension not recognized.", "danger")
 
             # Some columns have spaces and quotes in their names.
             df.columns = [col.lower().strip(' "') for col in df.columns]
@@ -376,11 +375,8 @@ class TrainingData:
 
             for column in df.columns:
                 if column not in ["timestamp", VAL_COL, HOUR_COL, DATE_COL]:
-                    messages.append(
-                        {
-                            "level": "warning",
-                            "text": f'Warning: column "{column}" will not be imported.',
-                        }
+                    safe_flash(
+                        f'Warning: column "{column}" will not be imported.', "warning"
                     )
 
             # Select only the columns relevant for this class
@@ -408,23 +404,10 @@ class TrainingData:
                     db.session.add(instance)
                 db.session.commit()
 
-            messages.append(
-                {
-                    "level": "success",
-                    "text": f"Success! Loaded {len(df)} historical data points",
-                }
-            )
+            safe_flash(f"Success! Loaded {len(df)} historical data points", "success")
+
         except Exception as e:
-            messages.append(
-                {
-                    "level": "danger",
-                    "text": f"Failed to load data. {e}",
-                }
-            )
-            # TODO: Add this logic to all try/excepts
-            if current_app.config["DEBUG"]:
-                raise e
-        return messages
+            safe_flash("Error: failed to load data. " + str(e), "danger")
 
 
 class ForecastWeatherData(TrainingData, db.Model):
