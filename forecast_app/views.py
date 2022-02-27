@@ -28,6 +28,8 @@ from forecast_app.utils import db, ADMIN_USER, upload_file, safe_error, safe_fla
 from forecast_app.weather import AsosRequest, NwsForecastRequest
 from forecast_app import burtcoppd
 
+# TODO: Set default ordering to milliseconds / timestamps to prevent chart mixups
+
 
 class DataView(MethodView):
     """Abstract class for handling the various views for uploading and
@@ -94,7 +96,9 @@ class DataView(MethodView):
 
     def get_chart(self):
         """Put data into a format that can be rendered by highstock as a chart"""
-        query = db.session.query(self.model.milliseconds, self.model.value)
+        query = db.session.query(self.model.milliseconds, self.model.value).order_by(
+            self.model.milliseconds
+        )
         data = [list(row) for row in query]
         return [{"data": data, "name": self.model.column_name}]
 
@@ -325,6 +329,7 @@ class ForecastModelDetailView(MethodView):
         if df is None or ("forecasted_load" not in df.columns):
             return None
 
+        df = df.sort_values("timestamp")
         load_data = [[row.timestamp, row.load] for row in df.itertuples()]
         forecast_data = [
             [row.timestamp, row.forecasted_load] for row in df.itertuples()
@@ -344,6 +349,8 @@ class ForecastModelDetailView(MethodView):
     def get_forecast_chart(self, df):
         if df is None or ("forecasted_load" not in df.columns):
             return None
+
+        df = df.sort_values("timestamp")
         # Get end of load data
         lvi = df["load"].last_valid_index()
         CONTEXT = 72
