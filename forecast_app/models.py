@@ -342,6 +342,26 @@ class TrainingData:
         return df
 
     @classmethod
+    def is_prepared(cls):
+        """Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.
+
+        A model is prepared if there is there are at least `minimum_data_required` values in the database.
+        """
+        df = cls.to_df()
+        if df.empty:
+            return {}
+
+        df = df.dropna(subset=[cls.column_name])
+        if df.shape[0] < cls.minimum_data_required:
+            return {}
+
+        start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
+        return {
+            "start_date": start_date,
+            "end_date": end_date,
+        }
+
+    @classmethod
     def load_data(cls, filepath, df=None):
         """Given a filepath or a dataframe, parse the data and load it into the database of the given model."""
 
@@ -413,25 +433,10 @@ class TrainingData:
 class ForecastWeatherData(TrainingData, db.Model):
     """Table of forecasted weather data."""
 
-    # TODO: Shift is_prepared to the abstract class.
-
     __tablename__ = "forecast_weather_data"
     friendly_name = "Forecast Temperature"
     column_name = "tempc"
-
-    @classmethod
-    def is_prepared(cls):
-        """Return the start and end dates of the data if it is prepared. Return an empty dict otherwise."""
-        df = cls.to_df()
-        if df.shape[0] < 24:
-            return {}
-
-        df = df.dropna(subset=["tempc"])
-        start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
-        return {
-            "start_date": start_date,
-            "end_date": end_date,
-        }
+    minimum_data_required = 24
 
 
 class HistoricalWeatherData(TrainingData, db.Model):
@@ -440,20 +445,7 @@ class HistoricalWeatherData(TrainingData, db.Model):
     __tablename__ = "historical_weather_data"
     friendly_name = "Historical Temperature"
     column_name = "tempc"
-
-    @classmethod
-    def is_prepared(cls):
-        """Return the start and end dates of the data if it is prepared. Return an empty dict otherwise."""
-
-        df = cls.to_df().dropna()
-        if df.shape[0] < 24 * 365 * 3:
-            return {}
-
-        start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
-        return {
-            "start_date": start_date,
-            "end_date": end_date,
-        }
+    minimum_data_required = 24 * 365 * 3
 
 
 class HistoricalLoadData(TrainingData, db.Model):
@@ -462,15 +454,4 @@ class HistoricalLoadData(TrainingData, db.Model):
     __tablename__ = "historical_load_data"
     friendly_name = "Historical Load"
     column_name = "load"
-
-    @classmethod
-    def is_prepared(cls):
-        """Return the start and end dates of the data if it is prepared. Return an empty dict otherwise."""
-        df = cls.to_df().dropna()
-        if df.shape[0] < 24 * 365 * 3:
-            return {}
-        start_date, end_date = df.sort_values("dates")["dates"].agg(["min", "max"])
-        return {
-            "start_date": start_date,
-            "end_date": end_date,
-        }
+    minimum_data_required = 24 * 365 * 3

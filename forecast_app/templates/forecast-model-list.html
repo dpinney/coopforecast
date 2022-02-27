@@ -22,7 +22,7 @@
           %H:%M')
           }}</b> to <b class="text-primary">{{ prepared.end_date.strftime('%b %d, %Y %H:%M') }}</b>.</p>
       {% else %}
-      <p>{{ data_name }} is not prepared. Check that data is uploaded properly.</p>
+      <p>{{ data_name }} is not prepared. Check that enough data is uploaded.</p>
       {% endif %}
       {% endfor %}
 
