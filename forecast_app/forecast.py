@@ -13,11 +13,8 @@ from scipy.stats import zscore
 import tensorflow as tf
 from tensorflow.keras import layers
 
-# TODO: generalize hours_prior
-HOURS_PRIOR = 24
 
-
-def generate_x_and_ys(df, noise=2.5):
+def generate_x_and_ys(df, noise=2.5, hours_prior=24):
     """Turn a dataframe of datetime and load data into a dataframe useful for machine learning.
 
     Normalize values, expload categorical data, and add noise to the temperature data to simulate
@@ -53,7 +50,7 @@ def generate_x_and_ys(df, noise=2.5):
     # LOAD
     r_df["load_n"] = df["load"] / (df["load"].max() - df["load"].min())
     # NOTE: This requires a continuous dataframe!
-    r_df["load_prev_n"] = r_df["load_n"].shift(HOURS_PRIOR)
+    r_df["load_prev_n"] = r_df["load_n"].shift(hours_prior)
     r_df["load_prev_n"].bfill(inplace=True)
 
     def _chunks(l, n):
@@ -63,7 +60,7 @@ def generate_x_and_ys(df, noise=2.5):
     l = ["l" + str(i) for i in range(24)]
     for i, s in enumerate(l):
         r_df[s] = n[:, i]
-        r_df[s] = r_df[s].shift(HOURS_PRIOR)
+        r_df[s] = r_df[s].shift(hours_prior)
         r_df[s] = r_df[s].bfill()
 
     # Remove normalized load from Xs, otherwise you're just feeding the answers into the model.
@@ -138,10 +135,9 @@ def train_neural_net(X_train, y_train, epochs):
     return model
 
 
-def train_and_forecast_next_day(all_X, all_y, epochs=20, save_file=None):
+def train_and_forecast(all_X, all_y, epochs=20, save_file=None, hours_prior=24):
     """Train a neural net and forecast the next day's load."""
-
-    all_X_n, all_y_n = all_X[:-HOURS_PRIOR], all_y[:-HOURS_PRIOR]
+    all_X_n, all_y_n = all_X[:-hours_prior], all_y[:-hours_prior]
     X_train = all_X_n[:-8760]
     y_train = all_y_n[:-8760]
     X_test = all_X_n[-8760:]
@@ -161,7 +157,9 @@ def train_and_forecast_next_day(all_X, all_y, epochs=20, save_file=None):
     }
     predictions = [
         float(f)
-        for f in model.predict(np.asarray(all_X[-24:].values.tolist()), verbose=0)
+        for f in model.predict(
+            np.asarray(all_X[-hours_prior:].values.tolist()), verbose=0
+        )
     ]
 
     if save_file != None:

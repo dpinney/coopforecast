@@ -59,6 +59,7 @@ class Config(object):
 
     """Machine learning config"""
     EPOCHS = 1
+    HOURS_PRIOR = 24
 
     """External API config"""
     # Info for data syncing with external APIs

@@ -1,4 +1,4 @@
-"""TODO: These can be shifted to utils.py. Otherwise things would just end up in cli.py."""
+"""Model-specific utilities that would otherwise cause circular imports if placed elsewhere."""
 
 import os
 from pathlib import Path

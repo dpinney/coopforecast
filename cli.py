@@ -45,7 +45,6 @@ def deploy(
     config: str = "dev", no_gunicorn: bool = typer.Option(False, "--no-gunicorn")
 ):
     """Launch the app"""
-    # TODO: Combine logging: https://www.linkedin.com/pulse/logs-flask-gunicorn-pedro-henrique-schleder/
 
     config_class = config_map.get(config)
     if not config_class:

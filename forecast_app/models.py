@@ -66,7 +66,7 @@ class ForecastModel(db.Model):
         # TODO: This should span start_date to end_date
         self.milliseconds = [
             (self.start_date + datetime.timedelta(hours=i)).timestamp() * 1000
-            for i in range(24)
+            for i in range(current_app.config["HOURS_PRIOR"])
         ]
         self.epochs = current_app.config["EPOCHS"]
 
@@ -217,18 +217,20 @@ class ForecastModel(db.Model):
         information in the database.
         """
         # TODO: Separate this into three functions for easier testing.
+        hours_prior = current_app.config["HOURS_PRIOR"]
 
         df = self.get_df()
-        self.all_X, self.all_y = lf.generate_x_and_ys(df)
+        all_X, all_y = lf.generate_x_and_ys(df, hours_prior=hours_prior)
 
-        tomorrow_load, model, tomorrow_accuracy = lf.train_and_forecast_next_day(
-            self.all_X,
-            self.all_y,
+        tomorrow_load, model, tomorrow_accuracy = lf.train_and_forecast(
+            all_X,
+            all_y,
             epochs=self.epochs,
             save_file=self.model_file,
+            hours_prior=hours_prior,
         )
 
-        df["forecasted_load"] = model.predict(self.all_X.values.tolist())
+        df["forecasted_load"] = model.predict(all_X.values.tolist())
         self.store_df(df)
 
         self.accuracy = tomorrow_accuracy
@@ -246,14 +248,18 @@ class ForecastModel(db.Model):
         if not all([hld_is_prepared, hwd_is_prepared, fwd_is_prepared]):
             return {}
 
-        # Ensure that there are at least 24 hours of forecast data
+        # Ensure that there are at least HOURS_PRIOR hours of forecast data
+        hours_prior = current_app.config["HOURS_PRIOR"]
+
         hd_end_date = min([hld_is_prepared["end_date"], hwd_is_prepared["end_date"]])
-        if hd_end_date - fwd_is_prepared["end_date"] > datetime.timedelta(hours=24):
+        if fwd_is_prepared["end_date"] - hd_end_date < datetime.timedelta(
+            hours=hours_prior
+        ):
             return {}
 
         return {
             "start_date": hd_end_date + datetime.timedelta(hours=1),
-            "end_date": hd_end_date + datetime.timedelta(hours=24),
+            "end_date": hd_end_date + datetime.timedelta(hours=hours_prior),
         }
 
 
