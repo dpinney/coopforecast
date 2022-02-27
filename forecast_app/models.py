@@ -95,8 +95,7 @@ class ForecastModel(db.Model):
 
     @property
     def exited_successfully(self):
-        """Return True if the model exited successfully."""
-
+        """Return True if the model exited successfully. Return None if the question doesn't make sense."""
         if self.status in ["Not started", "Running"]:
             return None
         else:
@@ -170,24 +169,24 @@ class ForecastModel(db.Model):
         #  to make a continuous datetime index.
         df_h = pd.merge(df_hl, df_hw, on="dates", how="inner")
         df_h = df_h.set_index("dates", drop=False)
-        df_h = df_h.resample("h").ffill()
+        df_h = df_h.resample("h").last()
 
         # Fill Nans for training data
-        # TODO: Have configuration to set the maximum number of missing values filled
-        #  this is configured via the pandas "limit" parameter
-        # TODO: This would ideally be replaced with interpolation
-        df_h = df_h.fillna(method="ffill").fillna(method="bfill")
+        df_h["load"] = df_h["load"].interpolate(limit_direction="both")
+        df_h["tempc"] = df_h["tempc"].interpolate(limit_direction="both")
 
         df_f = ForecastWeatherData.to_df().sort_values("dates")
         df_f = df_f[
             (self.start_date <= df_f["dates"]) & (df_f["dates"] <= self.end_date)
         ]
+        df_f["tempc"] = df_f["tempc"].interpolate(limit_direction="both")
 
         # TODO: Allow for different sized days
         # Remove all days that are not the same size
         df = pd.concat([df_h, df_f])
         d = dict(df.groupby(df.dates.dt.date)["dates"].count())
         df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]
+
         return df
 
     @property
