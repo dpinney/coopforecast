@@ -24,6 +24,11 @@ from forecast_app.models import (
 
 class TestHistoricalLoadData:
     def test_load_data(self, db, app):
+        fixture_path = pytest.FIXTURE_DIR / "uncontinuous.csv"
+        HistoricalLoadData.load_data(fixture_path)
+        assert pd.isna(HistoricalLoadData.query.get(datetime(2002, 1, 1, 6)).value)
+        assert HistoricalLoadData.query.count() == 72
+
         fixture_path = pytest.FIXTURE_DIR / "historical-load.csv"
         HistoricalLoadData.load_data(fixture_path)
         obj = HistoricalLoadData.query.get(datetime(2002, 1, 1, 3))
@@ -33,10 +38,11 @@ class TestHistoricalLoadData:
         assert obj
         assert obj.value == 13319
 
-        fixture_path = pytest.FIXTURE_DIR / "uncontinuous.csv"
+        fixture_path = pytest.FIXTURE_DIR / "historical-load-update.csv"
         HistoricalLoadData.load_data(fixture_path)
-        assert pd.isna(HistoricalLoadData.query.get(datetime(2002, 1, 1, 6)).value)
-        assert HistoricalLoadData.query.count() == 72
+        assert HistoricalLoadData.query.get(datetime(2002, 1, 1, 3)).value == 42
+        # ensure that values in between the timestamps aren't overwritten with NaN
+        assert not pd.isna(HistoricalLoadData.query.get(datetime(2002, 1, 1, 5)).value)
 
     def test_init(self, db):
         obj = HistoricalLoadData(timestamp=datetime(2020, 1, 1), value=42.0)

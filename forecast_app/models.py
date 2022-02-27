@@ -331,7 +331,7 @@ class TrainingData:
             )
         df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-        # Ignoreing DST for now
+        # Ignoring DST for now
         df.drop_duplicates(subset=["timestamp"], inplace=True)
 
         # Make datetime continuous. Don't fill with values right now.
@@ -365,9 +365,6 @@ class TrainingData:
     def load_data(cls, filepath, df=None):
         """Given a filepath or a dataframe, parse the data and load it into the database of the given model."""
 
-        # NOTE: Entering a csv with both weather and load will overwrite both.
-        #  The columns parameter can prevent this.
-        # TODO: validation should happen here
         # TODO: This is a mess. Separate out into different functions for easier testing.
         LOAD_COL = current_app.config["LOAD_COL"]
         TEMP_COL = current_app.config["TEMP_COL"]
@@ -403,6 +400,7 @@ class TrainingData:
             df = df[[VAL_COL, "timestamp"]]
 
             # If uploading data for the first time, don't perform tens of thousands of queries
+            new_values = 0
             if cls.query.count() == 0:
                 for _, row in df.iterrows():
                     instance = cls(
@@ -410,21 +408,32 @@ class TrainingData:
                         value=row.get(VAL_COL),
                     )
                     db.session.add(instance)
+                    new_values += 1
                 db.session.commit()
             else:
                 for _, row in df.iterrows():
+                    new_value = row.get(VAL_COL)
                     instance = cls.query.get(row["timestamp"])
-                    if instance:
-                        instance.update_value(row.get(VAL_COL, instance.value))
-                    else:
+                    # If the timestamp doesn't exist yet, create a new row.
+                    if not instance:
                         instance = cls(
                             timestamp=row["timestamp"],
                             value=row.get(VAL_COL),
                         )
-                    db.session.add(instance)
+                        db.session.add(instance)
+                        new_values += 1
+                    # If the timestamp does exist, only update if the value isn't null.
+                    #  This is particularly important for CSVs with discontinuous updates;
+                    #  If a user inputs a CSV with multiple, random timestamps, we resample
+                    #  to create a continuous datetime index. If we allow overwriting with null values,
+                    #  we'd set all values between the largest and smallest timestamps to None.)
+                    elif not pd.isna(new_value):
+                        instance.update_value(new_value)
+                        db.session.add(instance)
+                        new_values += 1
                 db.session.commit()
 
-            safe_flash(f"Success! Loaded {len(df)} historical data points", "success")
+            safe_flash(f"Success! Loaded {new_values} data points", "success")
 
         except Exception as e:
             safe_flash("Error: failed to load data. " + str(e), "danger")
