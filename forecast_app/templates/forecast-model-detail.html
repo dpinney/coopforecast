@@ -31,6 +31,9 @@
     </script>
   </div>
 </div>
+{% else %}
+<div class="alert alert-info">The model {{ forecast_model.slug }} doesn't seem to have finished successfully. No data to
+  display.</div>
 {% endif %}
 
 {% if forecast_model.accuracy %}

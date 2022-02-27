@@ -212,7 +212,7 @@ class TestForecastModelDetailView:
         model = ForecastModel.query.first()
         client.post(f"/forecast-models/{model.slug}")
         assert not model.is_running
-        assert model.status == "Failed"
+        assert model.status == model.FAILURE
 
 
 class TestHistoricalWeatherDataSync:

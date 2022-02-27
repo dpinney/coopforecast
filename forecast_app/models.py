@@ -32,6 +32,12 @@ class ForecastModel(db.Model):
 
     df_filename = "cached-dataframe.csv"
 
+    # Status messages
+    NOT_STARTED = "NOT STARTED"
+    RUNNING = "RUNNING"
+    COMPLETED_SUCCESSFULLY = "COMPLETED"
+    FAILURE = "FAILURE"
+
     def __init__(self):
         """Collect the current state of the database and prepare a model for training."""
 
@@ -75,31 +81,26 @@ class ForecastModel(db.Model):
 
     @property
     def status(self):
-        """Return the status of the model, either "Not started", "Finished", "Failed", or "Running"."""
-        # TODO: Manage strings with class variables
+        """Return the status of the model."""
         # TODO: Can I just make a status property and nothing else?
         pid = self.get_process_id()
         if pid is None:
-            return "Not started"
-        elif pid == "COMPLETED":
-            return "Finished"
-        elif pid == "FAILURE" or int(pid) == signal.SIGKILL:
-            return "Failed"
+            return self.NOT_STARTED
+        elif pid in [self.COMPLETED_SUCCESSFULLY, self.FAILURE]:
+            return pid
         else:
-            return "Running"
+            # If pid is a number, it is a running process
+            return self.RUNNING
 
     @property
     def is_running(self):
         """Return True if the model is currently running."""
-        return self.status == "Running"
+        return self.status == self.RUNNING
 
     @property
     def exited_successfully(self):
-        """Return True if the model exited successfully. Return None if the question doesn't make sense."""
-        if self.status in ["Not started", "Running"]:
-            return None
-        else:
-            return self.status == "Finished"
+        """Return True if the model exited successfully."""
+        return self.status == self.COMPLETED_SUCCESSFULLY
 
     def store_process_id(self, process_id):
         """Store the process id of the model in a text file to help with multiprocessing."""
@@ -108,7 +109,7 @@ class ForecastModel(db.Model):
             f.write(str(process_id))
 
     def get_process_id(self):
-        """Extract the process id from the process file to help with multiprocessing."""
+        """Extract the process id from the process file to help with multiprocessing. Return None if not found."""
 
         if os.path.exists(self.process_file):
             with open(self.process_file, "r") as f:
@@ -122,7 +123,7 @@ class ForecastModel(db.Model):
         pid = self.get_process_id()
         if self.is_running:
             os.kill(int(pid), signal.SIGKILL)
-            self.store_process_id(int(signal.SIGKILL))
+            self.store_process_id(self.FAILURE)
         else:
             raise Exception("Model is not running.")
 
@@ -150,9 +151,9 @@ class ForecastModel(db.Model):
             print("Executing forecast...")
             self._execute_forecast()
             print("Finished with forecast...")
-            self.store_process_id("COMPLETED")
+            self.store_process_id(self.COMPLETED_SUCCESSFULLY)
         except Exception as e:
-            self.store_process_id("FAILURE")
+            self.store_process_id(self.FAILURE)
             raise Exception(f"Model failed: {e}")
 
     def collect_training_data(self):
@@ -227,7 +228,6 @@ class ForecastModel(db.Model):
             save_file=self.model_file,
         )
 
-        # HACK: Set forecasted load on cached dataframe
         df["forecasted_load"] = model.predict(self.all_X.values.tolist())
         self.store_df(df)
 
@@ -280,12 +280,6 @@ class TrainingData:
 
     def __repr__(self):
         return f"<{self.timestamp}: {self.friendly_name} {self.value}>"
-
-    def update_value(self, value):
-        """Safely update the value of the object."""
-        # TODO: Implement privacy so that users can't update the value of the object
-        #  https://stackoverflow.com/questions/10929004/how-to-restrict-setting-an-attribute-outside-of-constructor
-        self.value = None if pd.isna(value) else value
 
     @classmethod
     def load_df(cls, df):
@@ -427,7 +421,7 @@ class TrainingData:
                     #  to create a continuous datetime index. If we allow overwriting with null values,
                     #  we'd set all values between the largest and smallest timestamps to None.)
                     elif not pd.isna(new_value):
-                        instance.update_value(new_value)
+                        instance.value = new_value
                         db.session.add(instance)
                         new_values += 1
                 db.session.commit()

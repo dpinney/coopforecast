@@ -114,14 +114,14 @@ class TestForecastModel:
         pytest.load_demo_db(app)
         new_model = ForecastModel()
         assert not new_model.is_running
-        assert new_model.exited_successfully is None
+        assert not new_model.exited_successfully
         assert not os.path.exists(new_model.process_file)
 
         process = Process(target=new_model.launch_model)
         process.start()
         new_model.store_process_id(process.pid)
         assert new_model.is_running
-        assert new_model.exited_successfully is None
+        assert not new_model.exited_successfully
         assert os.path.exists(new_model.process_file)
         assert new_model.get_process_id() == str(process.pid)
 
@@ -129,7 +129,7 @@ class TestForecastModel:
         sleep(2)  # Give the process time to cancel
         assert process.exitcode == -signal.SIGKILL
         assert not new_model.is_running
-        assert new_model.exited_successfully is False
+        assert not new_model.exited_successfully
 
     def test_launch_model(self):
         pass

@@ -47,7 +47,7 @@ def upload_demo_data(models=True):
         mock_model = ForecastModel()
         mock_model.loads = mock_load
         mock_model.accuracy = {"test": 96.5, "train": 98.5}
-        mock_model.store_process_id("COMPLETED")
+        mock_model.store_process_id(mock_model.COMPLETED_SUCCESSFULLY)
 
         # Copy the cached dataframe to this mock model's
         df = pd.read_csv(demo_data / "cached-dataframe.csv")

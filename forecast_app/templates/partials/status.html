@@ -1,7 +1,7 @@
-{% if model.status == 'Finished' %}
+{% if model.status == model.COMPLETED_SUCCESSFULLY %}
 <i class="fas fa-fw fa-check" style="color: green;"></i>
-{% elif model.status == 'Running' %}
+{% elif model.status == model.RUNNING %}
 <i class="fas fa-fw fa-spinner" style="color: orange;"></i>
-{% else %}
+{% elif model.status == model.FAILURE %}
 <i class="fas fa-fw fa-times" style="color: red;"></i>
 {% endif %}
