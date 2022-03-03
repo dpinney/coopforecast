@@ -22,16 +22,26 @@ def generate_exploded_df(df, noise=2.5, hours_prior=24):
     """
 
     # TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.
+    # TODO: Forecast from any hour not just the first hour of the day
+    # TODO: Sort the dataframe by datetime.
 
-    df["year"] = df["dates"].dt.year
-    df["month"] = df["dates"].dt.month
-    df["day"] = df["dates"].dt.day
+    # def get_previous_days_load(row, hour, col):
+    #     day_before = row.name.date - timedelta(days=1)
+    #     return r_df.loc[day_before.replace(hour=hour)][col]
+
+    DT_COL = "dates"
+    LOAD_COL = "load"
+    # breakpoint()
+
+    df["year"] = df[DT_COL].dt.year
+    df["month"] = df[DT_COL].dt.month
+    df["day"] = df[DT_COL].dt.day
 
     r_df = pd.DataFrame()
 
     # LOAD
-    r_df["load_n"] = df["load"] / (df["load"].max() - df["load"].min())
-    # NOTE: This requires a continuous dataframe!
+    r_df["load_n"] = df[LOAD_COL] / (df[LOAD_COL].max() - df[LOAD_COL].min())
+    # NOTE: This requires a sorted, continuous dataframe!
     r_df["load_prev_n"] = r_df["load_n"].shift(hours_prior)
     r_df["load_prev_n"].bfill(inplace=True)
 
@@ -50,7 +60,7 @@ def generate_exploded_df(df, noise=2.5, hours_prior=24):
 
     # DATE
     # NOTE: zscore will be all nans if any are nans!
-    r_df["years_n"] = zscore(df["dates"].dt.year)
+    r_df["years_n"] = zscore(df[DT_COL].dt.year)
     r_df = pd.concat(
         [
             r_df,
@@ -67,7 +77,7 @@ def generate_exploded_df(df, noise=2.5, hours_prior=24):
     r_df["temp_n^2"] = zscore([x * x for x in temp_noise])
 
     # Append the y mapping to the dataframe
-    r_df["load"] = df["load"]
+    r_df[LOAD_COL] = df[LOAD_COL]
 
     return r_df
 
@@ -75,10 +85,14 @@ def generate_exploded_df(df, noise=2.5, hours_prior=24):
 class DataSplit:
     """A class to make the data split consistent across all operations."""
 
-    def __init__(self, exploded_df, train_size=0.8, hours_prior=24):
+    def __init__(self, df, train_size=0.8, hours_prior=24, LOAD_COL="load"):
         """Initialize the data split."""
-        self.exploded_df = exploded_df.copy()
-        self.all_X, self.all_y = exploded_df.drop(["load"], axis=1), exploded_df["load"]
+
+        self.df = df.copy()
+        self.all_X, self.all_y = (
+            df.drop([LOAD_COL], axis=1),
+            df[LOAD_COL],
+        )
 
         # TODO: Use last valid index to get the training data.
         self.test_train_X, self.test_train_y = (
