@@ -1,9 +1,12 @@
-import typer
 import datetime
 import os
 from subprocess import Popen
+
+import typer
 import requests
 from urllib.parse import urljoin
+import pandas as pd
+
 
 from forecast_app import create_app
 from forecast_app.commands import init_db, upload_demo_data
@@ -15,6 +18,7 @@ from forecast_app.models import (
 )
 from forecast_app.views import HistoricalWeatherDataSync, ForecastWeatherDataSync
 from forecast_app.tests.test_weather import TestAsosRequest, TestNwsForecastRequest
+import forecast_app.forecast as lf
 
 typer_app = typer.Typer()
 
@@ -208,6 +212,41 @@ def launch_new_model(
     print("Posting request to launch new model...")
     session.post(urljoin(BASE_URL, "/forecast-models"))
     print("Forecast model has begun training ✓")
+
+
+@typer_app.command()
+def test_forecaster(
+    num_tests: int = typer.Option(1, "--num-tests"),
+    epochs: int = typer.Option(1, "--epochs"),
+):
+    """Test the forecaster"""
+
+    # Here "utility-cached-dataframe.csv" is the latest data available from the utility
+    #  as output from the site. This private data can help us iterate on improving
+    #  the model.
+    df = pd.read_csv("~/utility-cached-dataframe.csv", parse_dates=["dates"])
+    all_X, all_y = lf.generate_x_and_ys(df)
+
+    accuracies = []
+    for _ in range(num_tests):
+        tomorrow_load, model, tomorrow_accuracy = lf.train_and_forecast(
+            all_X,
+            all_y,
+            epochs=epochs,
+        )
+        accuracies.append(tomorrow_accuracy)
+        print(
+            f"Epochs: {epochs},  Train: {tomorrow_accuracy['train']}, Test: {tomorrow_accuracy['test']}"
+        )
+
+    if num_tests > 1:
+        print(f"Epochs: {epochs}")
+        train_accuracies = [acc["train"] for acc in accuracies]
+        print("Average test accuracy:", sum(train_accuracies) / len(train_accuracies))
+        test_accuracies = [acc["test"] for acc in accuracies]
+        print(
+            f"Average training accuracy: {sum(test_accuracies) / len(test_accuracies)}"
+        )
 
 
 if __name__ == "__main__":
