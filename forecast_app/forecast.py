@@ -14,7 +14,7 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 
-def generate_x_and_ys(df, noise=2.5, hours_prior=24):
+def generate_exploded_df(df, noise=2.5, hours_prior=24):
     """Turn a dataframe of datetime and load data into a dataframe useful for machine learning.
 
     Normalize values, expload categorical data, and add noise to the temperature data to simulate
@@ -22,11 +22,6 @@ def generate_x_and_ys(df, noise=2.5, hours_prior=24):
     """
 
     # TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.
-
-    with open("forecast_app/static/holidays.pickle", "rb") as f:
-        nerc6 = pickle.load(
-            f, encoding="latin_1"
-        )  # Is this the right codec? It might be cp1252
 
     df["year"] = df["dates"].dt.year
     df["month"] = df["dates"].dt.month
@@ -71,75 +66,69 @@ def generate_x_and_ys(df, noise=2.5, hours_prior=24):
     r_df["temp_n"] = zscore(temp_noise)
     r_df["temp_n^2"] = zscore([x * x for x in temp_noise])
 
-    return r_df, df["load"]
+    # Append the y mapping to the dataframe
+    r_df["load"] = df["load"]
+
+    return r_df
 
 
-def MAPE(predictions, answers):
-    """Calculate the mean absolute percentage error."""
+def split_data(exploded_df, train_size=0.8, hours_prior=24):
+    """document me!"""
+    # TODO: Make into a class / named tuple?
+    all_X, all_y = exploded_df.drop(["load"], axis=1), exploded_df["load"]
 
-    assert len(predictions) == len(answers)
-    return (
-        sum([abs(x - y) / (y + 1e-5) for x, y in zip(predictions, answers)])
-        / len(answers)
-        * 100
+    # TODO: Use last valid index to get the training data.
+    all_X_n, all_y_n = all_X[:-hours_prior], all_y[:-hours_prior]
+    train_X = all_X_n.sample(frac=train_size)
+    test_X = all_X_n.drop(train_X.index)
+    train_y = all_y_n[train_X.index]
+    test_y = all_y_n[test_X.index]
+
+    return {
+        "train_X": train_X,
+        "train_y": train_y,
+        "test_X": test_X,
+        "test_y": test_y,
+        # NOTE: `all_X` includes the Xs of the next day.
+        "all_X": all_X,
+    }
+
+
+def train_and_test_model(split_data, epochs=20, save_file=None):
+    """Train a neural net and forecast the next day's load."""
+
+    train_X, train_y, test_X, test_y = (
+        split_data["train_X"],
+        split_data["train_y"],
+        split_data["test_X"],
+        split_data["test_y"],
     )
-
-
-def train_neural_net(X_train, y_train, epochs):
-    """Train a new neural net given training data the number of epochs."""
 
     model = tf.keras.Sequential(
         [
             layers.Dense(
-                X_train.shape[1],
+                train_X.shape[1],
                 activation=tf.nn.relu,
-                input_shape=[len(X_train.keys())],
+                input_shape=[len(train_X.keys())],
             ),
-            layers.Dense(X_train.shape[1], activation=tf.nn.relu),
-            layers.Dense(X_train.shape[1], activation=tf.nn.relu),
-            layers.Dense(X_train.shape[1], activation=tf.nn.relu),
-            layers.Dense(X_train.shape[1], activation=tf.nn.relu),
+            layers.Dense(train_X.shape[1], activation=tf.nn.relu),
+            layers.Dense(train_X.shape[1], activation=tf.nn.relu),
+            layers.Dense(train_X.shape[1], activation=tf.nn.relu),
+            layers.Dense(train_X.shape[1], activation=tf.nn.relu),
             layers.Dense(1),
         ]
     )
 
     nadam = tf.keras.optimizers.Nadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999)
     model.compile(optimizer=nadam, loss="mape")
+    model.fit(train_X, train_y, epochs=epochs)
 
-    x, y = np.asarray(X_train.values.tolist()), np.asarray(y_train.tolist())
-    model.fit(x, y, epochs=epochs)
-
-    return model
-
-
-def train_and_forecast(all_X, all_y, epochs=20, save_file=None, hours_prior=24):
-    """Train a neural net and forecast the next day's load."""
-    all_X_n, all_y_n = all_X[:-hours_prior], all_y[:-hours_prior]
-    X_train = all_X_n[:-8760]
-    y_train = all_y_n[:-8760]
-    X_test = all_X_n[-8760:]
-    y_test = all_y_n[-8760:]
-
-    model = train_neural_net(X_train, y_train, epochs)
-
-    predictions_test = [
-        float(f) for f in model.predict(np.asarray(X_test.values.tolist()), verbose=0)
-    ]
-    train = [
-        float(f) for f in model.predict(np.asarray(X_train.values.tolist()), verbose=0)
-    ]
     accuracy = {
-        "test": MAPE(predictions_test, y_test),
-        "train": MAPE(train, y_train),
+        "test": model.evaluate(split_data["test_X"], split_data["test_y"]),
+        "train": model.evaluate(split_data["train_X"], split_data["train_y"]),
     }
-    predictions = [
-        float(f)
-        for f in model.predict(
-            np.asarray(all_X[-hours_prior:].values.tolist()), verbose=0
-        )
-    ]
 
     if save_file != None:
         model.save(save_file)
 
-    return predictions, model, accuracy
+    return model, accuracy

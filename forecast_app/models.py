@@ -137,7 +137,7 @@ class ForecastModel(db.Model):
 
     def launch_model(self, app_config):
         """Launch the model's training in a separate process."""
-
+        # TODO: This should be `launch_model_suprocess`, and then `launch_model` should be the actual process
         try:
             # HACK: Because this is launched in another thread, we need to
             #       recreate the app context (!) Please think of a better way
@@ -217,25 +217,18 @@ class ForecastModel(db.Model):
         into training and testing sets, and train the model. Store all pertinent
         information in the database.
         """
-        # TODO: Separate this into three functions for easier testing.
         hours_prior = current_app.config["HOURS_PRIOR"]
 
         df = self.get_df()
-        all_X, all_y = lf.generate_x_and_ys(df, hours_prior=hours_prior)
+        exploded_df = lf.generate_exploded_df(df, hours_prior=hours_prior)
+        split_data = lf.split_data(exploded_df, hours_prior=hours_prior)
 
-        tomorrow_load, model, tomorrow_accuracy = lf.train_and_forecast(
-            all_X,
-            all_y,
-            epochs=self.epochs,
-            save_file=self.model_file,
-            hours_prior=hours_prior,
+        model, self.accuracy = lf.train_and_test_model(
+            split_data, epochs=self.epochs, save_file=self.model_file
         )
 
-        df["forecasted_load"] = model.predict(all_X.values.tolist())
+        df["forecasted_load"] = model.predict(split_data["all_X"])
         self.store_df(df)
-
-        self.accuracy = tomorrow_accuracy
-        self.loads = tomorrow_load
         self.save()
 
     @classmethod

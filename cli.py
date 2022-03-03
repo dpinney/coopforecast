@@ -219,24 +219,21 @@ def test_forecaster(
     num_tests: int = typer.Option(1, "--num-tests"),
     epochs: int = typer.Option(1, "--epochs"),
 ):
-    """Test the forecaster"""
+    """Test forecaster from command line, useful for iterating on the model"""
 
     # Here "utility-cached-dataframe.csv" is the latest data available from the utility
     #  as output from the site. This private data can help us iterate on improving
     #  the model.
     df = pd.read_csv("~/utility-cached-dataframe.csv", parse_dates=["dates"])
-    all_X, all_y = lf.generate_x_and_ys(df)
+    exploded_df = lf.generate_exploded_df(df)
+    split_data = lf.split_data(exploded_df)
 
     accuracies = []
     for _ in range(num_tests):
-        tomorrow_load, model, tomorrow_accuracy = lf.train_and_forecast(
-            all_X,
-            all_y,
-            epochs=epochs,
-        )
-        accuracies.append(tomorrow_accuracy)
+        model, accuracy = lf.train_and_test_model(split_data, epochs=epochs)
+        accuracies.append(accuracy)
         print(
-            f"Epochs: {epochs},  Train: {tomorrow_accuracy['train']}, Test: {tomorrow_accuracy['test']}"
+            f"Epochs: {epochs},  Train: {accuracy['train']}, Test: {accuracy['test']}"
         )
 
     if num_tests > 1:
