@@ -72,60 +72,50 @@ def generate_exploded_df(df, noise=2.5, hours_prior=24):
     return r_df
 
 
-def split_data(exploded_df, train_size=0.8, hours_prior=24):
-    """document me!"""
-    # TODO: Make into a class / named tuple?
-    all_X, all_y = exploded_df.drop(["load"], axis=1), exploded_df["load"]
+class DataSplit:
+    """A class to make the data split consistent across all operations."""
 
-    # TODO: Use last valid index to get the training data.
-    all_X_n, all_y_n = all_X[:-hours_prior], all_y[:-hours_prior]
-    train_X = all_X_n.sample(frac=train_size)
-    test_X = all_X_n.drop(train_X.index)
-    train_y = all_y_n[train_X.index]
-    test_y = all_y_n[test_X.index]
+    def __init__(self, exploded_df, train_size=0.8, hours_prior=24):
+        """Initialize the data split."""
+        self.exploded_df = exploded_df.copy()
+        self.all_X, self.all_y = exploded_df.drop(["load"], axis=1), exploded_df["load"]
 
-    return {
-        "train_X": train_X,
-        "train_y": train_y,
-        "test_X": test_X,
-        "test_y": test_y,
-        # NOTE: `all_X` includes the Xs of the next day.
-        "all_X": all_X,
-    }
+        # TODO: Use last valid index to get the training data.
+        self.test_train_X, self.test_train_y = (
+            self.all_X[:-hours_prior],
+            self.all_y[:-hours_prior],
+        )
+        self.train_X = self.test_train_X.sample(frac=train_size)
+        self.test_X = self.test_train_X.drop(self.train_X.index)
+        self.train_y = self.test_train_y[self.train_X.index]
+        self.test_y = self.test_train_y[self.test_X.index]
 
 
-def train_and_test_model(split_data, epochs=20, save_file=None):
+def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
     """Train a neural net and forecast the next day's load."""
-
-    train_X, train_y, test_X, test_y = (
-        split_data["train_X"],
-        split_data["train_y"],
-        split_data["test_X"],
-        split_data["test_y"],
-    )
 
     model = tf.keras.Sequential(
         [
             layers.Dense(
-                train_X.shape[1],
+                ds.train_X.shape[1],
                 activation=tf.nn.relu,
-                input_shape=[len(train_X.keys())],
+                input_shape=[len(ds.train_X.keys())],
             ),
-            layers.Dense(train_X.shape[1], activation=tf.nn.relu),
-            layers.Dense(train_X.shape[1], activation=tf.nn.relu),
-            layers.Dense(train_X.shape[1], activation=tf.nn.relu),
-            layers.Dense(train_X.shape[1], activation=tf.nn.relu),
+            layers.Dense(ds.train_X.shape[1], activation=tf.nn.relu),
+            layers.Dense(ds.train_X.shape[1], activation=tf.nn.relu),
+            layers.Dense(ds.train_X.shape[1], activation=tf.nn.relu),
+            layers.Dense(ds.train_X.shape[1], activation=tf.nn.relu),
             layers.Dense(1),
         ]
     )
 
     nadam = tf.keras.optimizers.Nadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999)
     model.compile(optimizer=nadam, loss="mape")
-    model.fit(train_X, train_y, epochs=epochs)
+    model.fit(ds.train_X, ds.train_y, epochs=epochs)
 
     accuracy = {
-        "test": model.evaluate(split_data["test_X"], split_data["test_y"]),
-        "train": model.evaluate(split_data["train_X"], split_data["train_y"]),
+        "train": model.evaluate(ds.train_X, ds.train_y, verbose=0),
+        "test": model.evaluate(ds.test_X, ds.test_y, verbose=0),
     }
 
     if save_file != None:

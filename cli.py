@@ -226,11 +226,11 @@ def test_forecaster(
     #  the model.
     df = pd.read_csv("~/utility-cached-dataframe.csv", parse_dates=["dates"])
     exploded_df = lf.generate_exploded_df(df)
-    split_data = lf.split_data(exploded_df)
+    data_split = lf.DataSplit(exploded_df)
 
     accuracies = []
     for _ in range(num_tests):
-        model, accuracy = lf.train_and_test_model(split_data, epochs=epochs)
+        _, accuracy = lf.train_and_test_model(data_split, epochs=epochs)
         accuracies.append(accuracy)
         print(
             f"Epochs: {epochs},  Train: {accuracy['train']}, Test: {accuracy['test']}"

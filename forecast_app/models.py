@@ -221,13 +221,13 @@ class ForecastModel(db.Model):
 
         df = self.get_df()
         exploded_df = lf.generate_exploded_df(df, hours_prior=hours_prior)
-        split_data = lf.split_data(exploded_df, hours_prior=hours_prior)
+        data_split = lf.DataSplit(exploded_df, hours_prior=hours_prior)
 
         model, self.accuracy = lf.train_and_test_model(
-            split_data, epochs=self.epochs, save_file=self.model_file
+            data_split, epochs=self.epochs, save_file=self.model_file
         )
 
-        df["forecasted_load"] = model.predict(split_data["all_X"])
+        df["forecasted_load"] = model.predict(data_split.all_X)
         self.store_df(df)
         self.save()
 
