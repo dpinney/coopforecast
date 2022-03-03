@@ -23,19 +23,6 @@ def generate_x_and_ys(df, noise=2.5, hours_prior=24):
 
     # TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.
 
-    def _isHoliday(holiday, df):
-        # TODO: Search for libraries that do this for you.
-        m1 = None
-        if holiday == "New Year's Day":
-            m1 = (df["dates"].dt.month == 1) & (df["dates"].dt.day == 1)
-        if holiday == "Independence Day":
-            m1 = (df["dates"].dt.month == 7) & (df["dates"].dt.day == 4)
-        if holiday == "Christmas Day":
-            m1 = (df["dates"].dt.month == 12) & (df["dates"].dt.day == 25)
-        m1 = df["dates"].dt.date.isin(nerc6[holiday]) if m1 is None else m1
-        m2 = df["dates"].dt.date.isin(nerc6.get(holiday + " (Observed)", []))
-        return m1 | m2
-
     with open("forecast_app/static/holidays.pickle", "rb") as f:
         nerc6 = pickle.load(
             f, encoding="latin_1"
@@ -78,16 +65,6 @@ def generate_x_and_ys(df, noise=2.5, hours_prior=24):
         ],
         axis=1,
     )
-
-    for holiday in [
-        "New Year's Day",
-        "Memorial Day",
-        "Independence Day",
-        "Labor Day",
-        "Thanksgiving",
-        "Christmas Day",
-    ]:
-        r_df[holiday] = _isHoliday(holiday, df)
 
     # TEMP
     temp_noise = df["tempc"] + np.random.normal(0, noise, df.shape[0])
