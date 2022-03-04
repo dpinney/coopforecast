@@ -122,7 +122,9 @@ def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
             layers.Dense(ds.train_X.shape[2], activation=tf.nn.relu),
             layers.Dense(ds.train_X.shape[2], activation=tf.nn.relu),
             layers.Flatten(),
+            layers.Dense(ds.train_X.shape[2] * HOURS_AHEAD, activation=tf.nn.relu),
             layers.Dense(ds.train_X.shape[2] * HOURS_AHEAD // 2, activation=tf.nn.relu),
+            layers.Dense(ds.train_X.shape[2] * HOURS_AHEAD // 4, activation=tf.nn.relu),
             layers.Dense(HOURS_AHEAD),
         ]
     )
