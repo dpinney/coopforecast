@@ -48,23 +48,33 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ["csv", "xlsx"]
 
 
+def prepare_filename_for_upload(filename):
+    """Secure and add a timestamp to the filename."""
+    filename = secure_filename(filename)
+    filename_group = filename.split(".")
+    timestamp = pd.Timestamp.now().strftime("%Y-%m-%d.%H-%M-%S")
+    filename_group.insert(-1, timestamp)
+    return ".".join(filename_group)
+
+
 def upload_file(name):
     """In a request context, upload a file to the upload directory."""
-    # check if the post request has the file part
+
     if name not in request.files:
         safe_flash("Cannot find a file with that name", "danger")
         return None
     file = request.files[name]
-    # If the user does not select a file, the browser submits an
-    # empty file without a filename.
-    if file.filename == "":
-        safe_flash("No selected file", "danger")
+    if not file:
+        safe_flash("No file selected", "danger")
         return None
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-        file.save(filepath)
-        return filepath
+    if not allowed_file(file.filename):
+        safe_flash("Filetype not allowed", "danger")
+        return None
+
+    filename = prepare_filename_for_upload(file.filename)
+    filepath = os.path.join(current_app.config["UPLOAD_DIR"], filename)
+    file.save(filepath)
+    return filepath
 
 
 def safe_error(error_message):

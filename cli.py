@@ -137,7 +137,7 @@ def post_data(
 
     response = session.post(urljoin(BASE_URL, endpoint_map[type]), files=files)
     assert (
-        response.status_code == 200
+        response.status_code == 302  # HACK: Status code is redirect if successful
     ), f"Upload failed. Status code: {response.status_code}"
 
 
