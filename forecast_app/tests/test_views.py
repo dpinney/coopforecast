@@ -123,9 +123,9 @@ class TestDataViews:
 
         pytest.load_demo_db(app)
         forecast_summary = ForecastWeatherDataView().get_summary()
-        assert forecast_summary["count"] == 24
-        assert forecast_summary["start_datetime"] == datetime(2019, 1, 1, 0, 0, 0)
-        assert forecast_summary["end_datetime"] == datetime(2019, 1, 1, 23, 0, 0)
+        assert forecast_summary["count"] == 96
+        assert forecast_summary["start_datetime"] == datetime(2018, 12, 18, 0, 0)
+        assert forecast_summary["end_datetime"] == datetime(2018, 12, 21, 23, 0, 0)
         assert forecast_summary["missing_values"]["count"] == 0
 
         init_db()
@@ -224,7 +224,7 @@ class TestHistoricalWeatherDataSync:
         pytest.load_demo_db(app)
 
         request = HistoricalWeatherDataSync().build_request()
-        assert request.start_date == date(2019, 1, 1)
+        assert request.start_date == date(2018, 12, 23)
 
     def test_post(self, app, client, auth, db):
         auth.login()
