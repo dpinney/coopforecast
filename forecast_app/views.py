@@ -1,32 +1,33 @@
 """All the views for the forecast app. Each view corresponds to a route."""
 
+import datetime
 import os
+import time
+from datetime import date, timedelta
+from multiprocessing import Process
+
+import flask_login
 import pandas as pd
 from flask import (
-    render_template,
-    redirect,
-    url_for,
-    request,
     current_app,
+    redirect,
+    render_template,
+    request,
     send_from_directory,
+    url_for,
 )
 from flask.views import MethodView, View
-import flask_login
 from sqlalchemy import desc, null
-import time
-import datetime
-from multiprocessing import Process
-from datetime import date, timedelta
 
+from forecast_app import burtcoppd
 from forecast_app.models import (
+    ForecastModel,
     ForecastWeatherData,
     HistoricalLoadData,
     HistoricalWeatherData,
-    ForecastModel,
 )
-from forecast_app.utils import db, ADMIN_USER, upload_file, safe_error, safe_flash
+from forecast_app.utils import ADMIN_USER, db, safe_error, safe_flash, upload_file
 from forecast_app.weather import AsosRequest, NwsForecastRequest
-from forecast_app import burtcoppd
 
 # TODO: Set default ordering to milliseconds / timestamps to prevent chart mixups
 

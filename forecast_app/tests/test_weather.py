@@ -1,9 +1,10 @@
-from datetime import date
-from unittest.mock import patch, Mock
-import pytest
-import os
 import filecmp
+import os
+from datetime import date
+from unittest.mock import Mock, patch
+
 import pandas as pd
+import pytest
 
 from forecast_app import create_app
 from forecast_app.weather import AsosRequest, NwsForecastRequest

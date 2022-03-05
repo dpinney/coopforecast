@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from forecast_app.models import HistoricalLoadData
 
 

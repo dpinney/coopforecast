@@ -1,13 +1,13 @@
 import datetime
 import os
 from subprocess import Popen
-
-import typer
-import requests
 from urllib.parse import urljoin
+
 import pandas as pd
+import requests
+import typer
 
-
+import forecast_app.forecast as lf
 from forecast_app import create_app
 from forecast_app.commands import init_db, upload_demo_data
 from forecast_app.config import config_map
@@ -16,9 +16,8 @@ from forecast_app.models import (
     HistoricalLoadData,
     HistoricalWeatherData,
 )
-from forecast_app.views import HistoricalWeatherDataSync, ForecastWeatherDataSync
 from forecast_app.tests.test_weather import TestAsosRequest, TestNwsForecastRequest
-import forecast_app.forecast as lf
+from forecast_app.views import ForecastWeatherDataSync, HistoricalWeatherDataSync
 
 typer_app = typer.Typer()
 

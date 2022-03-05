@@ -1,15 +1,16 @@
 """A collection of ORMs for the forecast_app, configured with sqlalchemy."""
 
-import os
 import datetime
-import pandas as pd
-from sqlalchemy import Column, Integer, Float, String, DateTime, JSON
-from flask import current_app
+import os
 import signal
-import tensorflow as tf
 
-from forecast_app.utils import db, safe_flash
+import pandas as pd
+import tensorflow as tf
+from flask import current_app
+from sqlalchemy import JSON, Column, DateTime, Float, Integer, String
+
 import forecast_app.forecast as lf
+from forecast_app.utils import db, safe_flash
 
 
 class ForecastModel(db.Model):

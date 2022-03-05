@@ -1,16 +1,17 @@
 """A collection of utilities to help with building and executing the machine learning model."""
 
+import datetime
+import os
+import pickle
+from datetime import date
+from datetime import datetime as dt
+from datetime import timedelta
+from os.path import join as pJoin
+
 import numpy as np
 import pandas as pd
-import os
-from os.path import join as pJoin
-import datetime
-from datetime import datetime as dt
-from datetime import timedelta, date
-import pickle
-from scipy.stats import zscore
-
 import tensorflow as tf
+from scipy.stats import zscore
 from tensorflow.keras import layers
 
 

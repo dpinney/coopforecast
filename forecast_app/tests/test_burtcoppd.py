@@ -1,6 +1,7 @@
+from unittest.mock import Mock
+
 import pandas as pd
 import pytest
-from unittest.mock import Mock
 
 from forecast_app.burtcoppd import get_on_and_off_peak_info
 

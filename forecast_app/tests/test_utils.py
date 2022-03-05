@@ -1,15 +1,17 @@
-import pandas as pd
-import re
-import pytest
 import os
+import re
+from datetime import datetime
 from unittest.mock import patch
+
+import pandas as pd
+import pytest
 from flask import request
 from werkzeug.datastructures import FileStorage
-from datetime import datetime
 
 import forecast_app
 from forecast_app import create_app
-from forecast_app.utils import allowed_file, upload_file, prepare_filename_for_upload
+from forecast_app.utils import allowed_file, prepare_filename_for_upload, upload_file
+
 
 # TEST CONFIG
 @patch("forecast_app.config.ProductionConfig.ADMIN_USER", None)

@@ -1,12 +1,12 @@
 """Collection of utility functions, db configurations, and authentication."""
-import os
 import logging
-import pandas as pd
+import os
 
-from flask import request, flash, current_app, has_request_context
-from werkzeug.utils import secure_filename
+import pandas as pd
+from flask import current_app, flash, has_request_context, request
 from flask_login import LoginManager, UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.utils import secure_filename
 
 db = SQLAlchemy()
 

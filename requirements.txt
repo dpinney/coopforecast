@@ -4,6 +4,7 @@ flask-executor
 flask-login
 Flask-SQLAlchemy
 gunicorn
+isort
 numpy
 openpyxl
 pandas

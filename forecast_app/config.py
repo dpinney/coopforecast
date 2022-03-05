@@ -4,11 +4,7 @@ from datetime import datetime
 
 # Import the secret configurations
 try:
-    from forecast_app.secret_config import (
-        ADMIN_USER,
-        ADMIN_PASSWORD,
-        SECRET_KEY,
-    )
+    from forecast_app.secret_config import ADMIN_PASSWORD, ADMIN_USER, SECRET_KEY
 except ImportError:
     # It's okay if this isn't defined for local development and testing
     ADMIN_USER = "admin"

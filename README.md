@@ -67,9 +67,9 @@ python cli.py demo --config dev
 
 ## Development
 
-### Install black pre-commit
+### Install pre-commit
 
-In order to follow black style guidelines, simply run the following command:
+In order to follow `black` and `isort` style guidelines, simply run the following command:
 
 ```sh
 pre-commit install

@@ -2,14 +2,11 @@
 
 import logging
 
-from flask import Flask, render_template, redirect
-from forecast_app.utils import (
-    login_manager,
-    ADMIN_USER,
-    db,
-)
+from flask import Flask, redirect, render_template
+
 from forecast_app import views
-from forecast_app.config import config_map, SECRET_VARS
+from forecast_app.config import SECRET_VARS, config_map
+from forecast_app.utils import ADMIN_USER, db, login_manager
 
 
 def create_app(config: str):

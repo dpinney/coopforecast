@@ -1,16 +1,17 @@
-import pytest
-from datetime import datetime
-import pandas as pd
 import os
-from multiprocessing import Process
 import signal
+from datetime import datetime
+from multiprocessing import Process
 from time import sleep
 
+import pandas as pd
+import pytest
+
 from forecast_app.models import (
+    ForecastModel,
+    ForecastWeatherData,
     HistoricalLoadData,
     HistoricalWeatherData,
-    ForecastWeatherData,
-    ForecastModel,
 )
 
 # TODO: Test that submitting a temperature csv to the load data view works

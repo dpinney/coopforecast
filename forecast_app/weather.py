@@ -2,10 +2,11 @@
 A collection of utilities to help collect and parse historical and forecast weather data.
 """
 
-import requests
-from io import StringIO
-import pandas as pd
 import json
+from io import StringIO
+
+import pandas as pd
+import requests
 
 
 class AsosRequest:

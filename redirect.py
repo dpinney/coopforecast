@@ -3,7 +3,7 @@ Small redirect app to redirect HTTP traffic to HTTPS.
 See CLI for usage and configuration
 """
 
-from flask import Flask, request, redirect
+from flask import Flask, redirect, request
 
 reApp = Flask("HTTPS_REDIRECT")
 

@@ -1,25 +1,26 @@
-import pandas as pd
-from flask import request
-import pytest
-from werkzeug.datastructures import FileStorage
 from datetime import date, datetime
 
-from forecast_app.views import (
-    ForecastModelDetailView,
-    LatestForecastView,
-    ForecastWeatherDataSync,
-    HistoricalLoadDataView,
-    HistoricalWeatherDataSync,
-    HistoricalWeatherDataView,
-    ForecastWeatherDataView,
-)
+import pandas as pd
+import pytest
+from flask import request
+from werkzeug.datastructures import FileStorage
+
+from forecast_app.commands import init_db, upload_demo_data
 from forecast_app.models import (
     ForecastModel,
     ForecastWeatherData,
-    HistoricalWeatherData,
     HistoricalLoadData,
+    HistoricalWeatherData,
 )
-from forecast_app.commands import upload_demo_data, init_db
+from forecast_app.views import (
+    ForecastModelDetailView,
+    ForecastWeatherDataSync,
+    ForecastWeatherDataView,
+    HistoricalLoadDataView,
+    HistoricalWeatherDataSync,
+    HistoricalWeatherDataView,
+    LatestForecastView,
+)
 
 
 def test_templates(app, auth, client):

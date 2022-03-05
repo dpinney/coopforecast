@@ -2,13 +2,13 @@ import os
 import shutil
 from pathlib import Path
 from unittest.mock import patch
-import pytest
 
-from forecast_app import create_app
-from forecast_app.config import TestingConfig
-from forecast_app.commands import init_db, upload_demo_data
+import pytest
 from flask_sqlalchemy import SQLAlchemy
 
+from forecast_app import create_app
+from forecast_app.commands import init_db, upload_demo_data
+from forecast_app.config import TestingConfig
 
 BACKUP_DB_PATH = "forecast_app/db/backup.db"
 

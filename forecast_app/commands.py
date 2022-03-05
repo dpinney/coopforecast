@@ -1,18 +1,19 @@
 """Model-specific utilities that would otherwise cause circular imports if placed elsewhere."""
 
 import os
-from pathlib import Path
-import pandas as pd
 import time
+from pathlib import Path
+
+import pandas as pd
 from flask import current_app
 
-from forecast_app.utils import db
 from forecast_app.models import (
-    ForecastWeatherData,
     ForecastModel,
+    ForecastWeatherData,
     HistoricalLoadData,
     HistoricalWeatherData,
 )
+from forecast_app.utils import db
 
 
 def init_db():
