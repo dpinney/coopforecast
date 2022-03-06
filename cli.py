@@ -224,8 +224,7 @@ def test_forecaster(
     #  as output from the site. This private data can help us iterate on improving
     #  the model.
     df = pd.read_csv("~/utility-cached-dataframe.csv", parse_dates=["dates"])
-    all_X, all_y = lf.generate_exploded_df(df)
-    data_split = lf.DataSplit(all_X, all_y)
+    data_split = lf.DataSplit(df)
 
     accuracies = []
     for _ in range(num_tests):

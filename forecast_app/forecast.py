@@ -16,84 +16,19 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras import layers
 
 
-def _data_transform_3d(data, timesteps=24, var="x"):
-    # TODO: make this clearer
-    m = []
-    s = data.to_numpy()
-    for i in range(s.shape[0] - timesteps):
-        m.append(s[i : i + timesteps].tolist())
-
-    if var == "x":
-        t = np.zeros((len(m), len(m[0]), len(m[0][0])))
-        for i, x in enumerate(m):
-            for j, y in enumerate(x):
-                for k, z in enumerate(y):
-                    t[i, j, k] = z
-    else:
-        t = np.zeros((len(m), len(m[0])))
-        for i, x in enumerate(m):
-            for j, y in enumerate(x):
-                t[i, j] = y
-    return t
-
-
-def generate_exploded_df(df, noise=2.5, hours_prior=24):
-    """Turn a dataframe of datetime and load data into a dataframe useful for machine learning.
-
-    Normalize values, expload categorical data, and add noise to the temperature data to simulate
-    uncertainty in a forecast.
-    """
-
-    # TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.
-    # TODO: Forecast from any hour not just the first hour of the day
-    # TODO: Sort the dataframe by datetime.
-
-    DT_COL = "dates"
-    LOAD_COL = "load"
-
-    df["year"] = df[DT_COL].dt.year
-    df["month"] = df[DT_COL].dt.month
-    df["day"] = df[DT_COL].dt.day
-
-    r_df = pd.DataFrame()
-
-    # LOAD
-    r_df["load_n"] = df[LOAD_COL] / (df[LOAD_COL].max() - df[LOAD_COL].min())
-    # NOTE: This requires a sorted, continuous dataframe!
-    r_df["load_prev_n"] = r_df["load_n"].shift(hours_prior)
-    r_df["load_prev_n"].bfill(inplace=True)
-
-    # Remove normalized load from Xs, otherwise you're just feeding the answers into the model.
-    r_df.drop(["load_n"], axis=1, inplace=True)
-
-    # DATE
-    # NOTE: zscore will be all nans if any are nans!
-    r_df["years_n"] = zscore(df[DT_COL].dt.year)
-    r_df = pd.concat(
-        [
-            r_df,
-            pd.get_dummies(df.dates.dt.hour, prefix="hour"),
-            pd.get_dummies(df.dates.dt.dayofweek, prefix="day"),
-            pd.get_dummies(df.dates.dt.month, prefix="month"),
-        ],
-        axis=1,
-    )
-
-    # TEMP
-    temp_noise = df["tempc"] + np.random.normal(0, noise, df.shape[0])
-    r_df["temp_n"] = zscore(temp_noise)
-    r_df["temp_n^2"] = zscore([x * x for x in temp_noise])
-
-    return _data_transform_3d(r_df, var="x"), _data_transform_3d(df["load"], var="y")
-
-
 class DataSplit:
     """A class to make the data split consistent across all operations."""
 
-    def __init__(self, all_X, all_y, train_size=0.8, hours_prior=24, LOAD_COL="load"):
+    def __init__(
+        self, df, train_size=0.8, hours_prior=24, load_col="load", dt_col="dates"
+    ):
         """Initialize the data split."""
+        self.df = df
+        self.hours_prior = hours_prior
+        self.load_col = load_col
+        self.dt_col = dt_col
 
-        self.all_X, self.all_y = all_X, all_y
+        self.generate_exploded_data()
 
         # TODO: Use last valid index to get the training data.
         self.test_train_X, self.test_train_y = (
@@ -104,6 +39,74 @@ class DataSplit:
         self.train_X, self.test_X, self.train_y, self.test_y = train_test_split(
             self.test_train_X, self.test_train_y, train_size=train_size
         )
+
+    def generate_exploded_data(self, noise=2.5):
+        """Turn a dataframe of datetime and load data into a dataframe useful for machine learning.
+
+        Normalize values, expload categorical data, and add noise to the temperature data to simulate
+        uncertainty in a forecast.
+        """
+
+        # TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.
+        # TODO: Forecast from any hour not just the first hour of the day
+        # TODO: Sort the dataframe by datetime.
+
+        DT_COL = self.dt_col
+        LOAD_COL = self.load_col
+        hours_prior = self.hours_prior
+        df = self.df
+
+        df["year"] = df[DT_COL].dt.year
+        df["month"] = df[DT_COL].dt.month
+        df["day"] = df[DT_COL].dt.day
+
+        r_df = pd.DataFrame()
+
+        # LOAD
+        r_df["load_n"] = df[LOAD_COL] / (df[LOAD_COL].max() - df[LOAD_COL].min())
+        # NOTE: This requires a sorted, continuous dataframe!
+        r_df["load_prev_n"] = r_df["load_n"].shift(hours_prior)
+        r_df["load_prev_n"].bfill(inplace=True)
+
+        # Remove normalized load from Xs, otherwise you're just feeding the answers into the model.
+        r_df.drop(["load_n"], axis=1, inplace=True)
+
+        # DATE
+        # NOTE: zscore will be all nans if any are nans!
+        r_df["years_n"] = zscore(df[DT_COL].dt.year)
+        r_df = pd.concat(
+            [
+                r_df,
+                pd.get_dummies(df.dates.dt.hour, prefix="hour"),
+                pd.get_dummies(df.dates.dt.dayofweek, prefix="day"),
+                pd.get_dummies(df.dates.dt.month, prefix="month"),
+            ],
+            axis=1,
+        )
+
+        # TEMP
+        temp_noise = df["tempc"] + np.random.normal(0, noise, df.shape[0])
+        r_df["temp_n"] = zscore(temp_noise)
+        r_df["temp_n^2"] = zscore([x * x for x in temp_noise])
+
+        # Set the dataframe for training and testing.
+        self.all_X = self._data_transform_3d(r_df)
+        self.all_y = self._data_transform_3d(df[LOAD_COL])
+
+    @staticmethod
+    def _data_transform_3d(data, timesteps=24):
+        """Group the data into a 24-day 3D array."""
+        # return_l = []
+        # np_a = data.to_numpy()
+        # for i in range(np_a.shape[0] - timesteps):  # Iterate by timestamps? This should then use .reshape
+        #     return_l.append(np_a[i : i + timesteps].tolist())
+        # return np.array(return_l)
+        # [number of tests, timesteps, features] OR [number of tests, features, timestamps]
+        a = -1
+        b = 1 if len(data.shape) == 1 else data.shape[1]
+        c = timesteps
+        reshape_t = (a, c, b)  # a, c, b; a, b, c
+        return data.to_numpy().reshape(reshape_t)
 
 
 def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
@@ -144,13 +147,13 @@ def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
     return model, accuracy
 
 
-def load_predictions_to_df(df, model, ds: DataSplit):
-    """Load the predictions from the model into a dataframe."""
-    df = df.set_index("dates", drop=False)
-    pred_df = pd.DataFrame(
-        model.predict(ds.all_X),
-        columns=[f"load_in_{hour+1}_hours" for hour in range(24)],
-        index=df.index[:-24],
-    )
-    df = pd.concat([df, pred_df], axis=1)
-    return df
+# def get_forecasted_load(df, model, ds: DataSplit):
+#     """Load the predictions from the model into a dataframe."""
+#     df = df.set_index("dates", drop=False)
+#     breakpoint()
+#     pred_df = pd.DataFrame(
+#         model.predict(ds.all_X),
+#         columns=[f"load_in_{hour+1}_hours" for hour in range(24)],
+#         index=df.index[:-24],
+#     )
+#     df = pd.concat([df, pred_df], axis=1)
