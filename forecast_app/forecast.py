@@ -12,7 +12,29 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from scipy.stats import zscore
+from sklearn.model_selection import train_test_split
 from tensorflow.keras import layers
+
+
+def _data_transform_3d(data, timesteps=24, var="x"):
+    # TODO: make this clearer
+    m = []
+    s = data.to_numpy()
+    for i in range(s.shape[0] - timesteps):
+        m.append(s[i : i + timesteps].tolist())
+
+    if var == "x":
+        t = np.zeros((len(m), len(m[0]), len(m[0][0])))
+        for i, x in enumerate(m):
+            for j, y in enumerate(x):
+                for k, z in enumerate(y):
+                    t[i, j, k] = z
+    else:
+        t = np.zeros((len(m), len(m[0])))
+        for i, x in enumerate(m):
+            for j, y in enumerate(x):
+                t[i, j] = y
+    return t
 
 
 def generate_exploded_df(df, noise=2.5, hours_prior=24):
@@ -26,13 +48,8 @@ def generate_exploded_df(df, noise=2.5, hours_prior=24):
     # TODO: Forecast from any hour not just the first hour of the day
     # TODO: Sort the dataframe by datetime.
 
-    # def get_previous_days_load(row, hour, col):
-    #     day_before = row.name.date - timedelta(days=1)
-    #     return r_df.loc[day_before.replace(hour=hour)][col]
-
     DT_COL = "dates"
     LOAD_COL = "load"
-    # breakpoint()
 
     df["year"] = df[DT_COL].dt.year
     df["month"] = df[DT_COL].dt.month
@@ -45,16 +62,6 @@ def generate_exploded_df(df, noise=2.5, hours_prior=24):
     # NOTE: This requires a sorted, continuous dataframe!
     r_df["load_prev_n"] = r_df["load_n"].shift(hours_prior)
     r_df["load_prev_n"].bfill(inplace=True)
-
-    def _chunks(l, n):
-        return [l[i : i + n] for i in range(0, len(l), n)]
-
-    n = np.array([val for val in _chunks(list(r_df["load_n"]), 24) for _ in range(24)])
-    l = ["l" + str(i) for i in range(24)]
-    for i, s in enumerate(l):
-        r_df[s] = n[:, i]
-        r_df[s] = r_df[s].shift(hours_prior)
-        r_df[s] = r_df[s].bfill()
 
     # Remove normalized load from Xs, otherwise you're just feeding the answers into the model.
     r_df.drop(["load_n"], axis=1, inplace=True)
@@ -77,50 +84,46 @@ def generate_exploded_df(df, noise=2.5, hours_prior=24):
     r_df["temp_n"] = zscore(temp_noise)
     r_df["temp_n^2"] = zscore([x * x for x in temp_noise])
 
-    # Append the y mapping to the dataframe
-    r_df[LOAD_COL] = df[LOAD_COL]
-
-    return r_df
+    return _data_transform_3d(r_df, var="x"), _data_transform_3d(df["load"], var="y")
 
 
 class DataSplit:
     """A class to make the data split consistent across all operations."""
 
-    def __init__(self, df, train_size=0.8, hours_prior=24, LOAD_COL="load"):
+    def __init__(self, all_X, all_y, train_size=0.8, hours_prior=24, LOAD_COL="load"):
         """Initialize the data split."""
 
-        self.df = df.copy()
-        self.all_X, self.all_y = (
-            df.drop([LOAD_COL], axis=1),
-            df[LOAD_COL],
-        )
+        self.all_X, self.all_y = all_X, all_y
 
         # TODO: Use last valid index to get the training data.
         self.test_train_X, self.test_train_y = (
             self.all_X[:-hours_prior],
             self.all_y[:-hours_prior],
         )
-        self.train_X = self.test_train_X.sample(frac=train_size)
-        self.test_X = self.test_train_X.drop(self.train_X.index)
-        self.train_y = self.test_train_y[self.train_X.index]
-        self.test_y = self.test_train_y[self.test_X.index]
+
+        self.train_X, self.test_X, self.train_y, self.test_y = train_test_split(
+            self.test_train_X, self.test_train_y, train_size=train_size
+        )
 
 
 def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
     """Train a neural net and forecast the next day's load."""
+    HOURS_AHEAD = 24
 
     model = tf.keras.Sequential(
         [
             layers.Dense(
-                ds.train_X.shape[1],
+                ds.train_X.shape[2],
                 activation=tf.nn.relu,
-                input_shape=[len(ds.train_X.keys())],
+                input_shape=(HOURS_AHEAD, ds.train_X.shape[2]),
             ),
-            layers.Dense(ds.train_X.shape[1], activation=tf.nn.relu),
-            layers.Dense(ds.train_X.shape[1], activation=tf.nn.relu),
-            layers.Dense(ds.train_X.shape[1], activation=tf.nn.relu),
-            layers.Dense(ds.train_X.shape[1], activation=tf.nn.relu),
-            layers.Dense(1),
+            layers.Dense(ds.train_X.shape[2], activation=tf.nn.relu),
+            layers.Dense(ds.train_X.shape[2], activation=tf.nn.relu),
+            layers.Dense(ds.train_X.shape[2], activation=tf.nn.relu),
+            layers.Dense(ds.train_X.shape[2], activation=tf.nn.relu),
+            layers.Flatten(),
+            layers.Dense(ds.train_X.shape[2] * HOURS_AHEAD // 2, activation=tf.nn.relu),
+            layers.Dense(HOURS_AHEAD),
         ]
     )
 
@@ -137,3 +140,15 @@ def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
         model.save(save_file)
 
     return model, accuracy
+
+
+def load_predictions_to_df(df, model, ds: DataSplit):
+    """Load the predictions from the model into a dataframe."""
+    df = df.set_index("dates", drop=False)
+    pred_df = pd.DataFrame(
+        model.predict(ds.all_X),
+        columns=[f"load_in_{hour+1}_hours" for hour in range(24)],
+        index=df.index[:-24],
+    )
+    df = pd.concat([df, pred_df], axis=1)
+    return df

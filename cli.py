@@ -224,12 +224,14 @@ def test_forecaster(
     #  as output from the site. This private data can help us iterate on improving
     #  the model.
     df = pd.read_csv("~/utility-cached-dataframe.csv", parse_dates=["dates"])
-    exploded_df = lf.generate_exploded_df(df)
-    data_split = lf.DataSplit(exploded_df)
+    all_X, all_y = lf.generate_exploded_df(df)
+    data_split = lf.DataSplit(all_X, all_y)
 
     accuracies = []
     for _ in range(num_tests):
-        _, accuracy = lf.train_and_test_model(data_split, epochs=epochs)
+        model, accuracy = lf.train_and_test_model(data_split, epochs=epochs)
+        breakpoint()
+
         accuracies.append(accuracy)
         print(
             f"Epochs: {epochs},  Train: {accuracy['train']}, Test: {accuracy['test']}"

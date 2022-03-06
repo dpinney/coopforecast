@@ -230,7 +230,7 @@ class ForecastModel(db.Model):
             data_split, epochs=self.epochs, save_file=self.model_file
         )
 
-        df["forecasted_load"] = model.predict(data_split.all_X)
+        df = lf.load_predictions_to_df(df, model, data_split)
         self.store_df(df)
         self.save()
 
