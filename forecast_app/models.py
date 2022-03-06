@@ -376,8 +376,6 @@ class TrainingData:
                     df = pd.read_csv(filepath)
                 elif str(filepath).endswith("xlsx"):
                     df = pd.read_excel(filepath)
-                elif str(filepath) == "":
-                    safe_flash("Please attach a file before uploading.", "danger")
                 else:
                     safe_flash("File extension not recognized.", "danger")
 
