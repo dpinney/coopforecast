@@ -57,6 +57,9 @@ class Config(object):
     EPOCHS = 1
     HOURS_PRIOR = 24
 
+    """Logo path"""
+    LOGO_PATH = "img/demo.png"
+
     """External API config"""
     # Info for data syncing with external APIs
     ASOS_STATION = "TQE"
@@ -91,6 +94,8 @@ class ProductionConfig(Config):
     GUNICORN_PATH = "/home/ubuntu/.local/bin/gunicorn"
 
     EPOCHS = 20
+
+    LOGO_PATH = "img/burt.png"
 
 
 class DevelopmentConfig(Config):
