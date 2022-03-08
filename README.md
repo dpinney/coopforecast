@@ -67,6 +67,25 @@ python cli.py demo --config dev
 
 ## Development
 
+### Launch tensorboard
+
+[Tensorboard](https://www.tensorflow.org/tensorboard) logs are placed in the `tb-logs` directory (ignored in version control).
+To view detailed visualizations of the model's training and structure, launch tensorboard from the command line:
+
+```sh
+tensorboard --logdir=tb-logs
+```
+
+### Generate documentation
+
+[`pdoc`](https://pdoc.dev/) library is used to generate documentation. To rebuild documentation, run
+
+```sh
+pdoc -o docs forecast_app
+```
+
+and commit updates to publish to the static site.
+
 ### Install pre-commit
 
 In order to follow `black` and `isort` style guidelines, simply run the following command:

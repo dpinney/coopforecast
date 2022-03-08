@@ -185,9 +185,9 @@ class ForecastModel(db.Model):
         # TODO: Allow for different sized days
         # Remove all days that are not the same size
         df = pd.concat([df_h, df_f])
-        d = dict(df.groupby(df.dates.dt.date)["dates"].count())
         # TODO: This is preventing the model from training past midnight / dispatching
         #  at any point in the day!
+        d = dict(df.groupby(df.dates.dt.date)["dates"].count())
         df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]
 
         return df
@@ -223,14 +223,13 @@ class ForecastModel(db.Model):
         hours_prior = current_app.config["HOURS_PRIOR"]
 
         df = self.get_df()
-        exploded_df = lf.generate_exploded_df(df, hours_prior=hours_prior)
-        data_split = lf.DataSplit(exploded_df, hours_prior=hours_prior)
+        data_split = lf.DataSplit(df, hours_prior=hours_prior)
 
         model, self.accuracy = lf.train_and_test_model(
             data_split, epochs=self.epochs, save_file=self.model_file
         )
 
-        df["forecasted_load"] = model.predict(data_split.all_X)
+        df["forecasted_load"] = model.predict(data_split.important_X).flatten()
         self.store_df(df)
         self.save()
 
@@ -376,8 +375,6 @@ class TrainingData:
                     df = pd.read_csv(filepath)
                 elif str(filepath).endswith("xlsx"):
                     df = pd.read_excel(filepath)
-                elif str(filepath) == "":
-                    safe_flash("Please attach a file before uploading.", "danger")
                 else:
                     safe_flash("File extension not recognized.", "danger")
 

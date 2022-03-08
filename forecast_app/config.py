@@ -90,7 +90,7 @@ class ProductionConfig(Config):
     WORKERS = 4
     GUNICORN_PATH = "/home/ubuntu/.local/bin/gunicorn"
 
-    EPOCHS = 10
+    EPOCHS = 20
 
 
 class DevelopmentConfig(Config):
