@@ -76,6 +76,16 @@ To view detailed visualizations of the model's training and structure, launch te
 tensorboard --logdir=tb-logs
 ```
 
+### Generate documentation
+
+[`pdoc`](https://pdoc.dev/) library is used to generate documentation. To rebuild documentation, run
+
+```sh
+pdoc -o docs forecast_app
+```
+
+and commit updates to publish to the static site.
+
 ### Install pre-commit
 
 In order to follow `black` and `isort` style guidelines, simply run the following command:
