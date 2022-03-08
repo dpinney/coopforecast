@@ -93,7 +93,7 @@ class ProductionConfig(Config):
     WORKERS = 4
     GUNICORN_PATH = "/home/ubuntu/.local/bin/gunicorn"
 
-    EPOCHS = 20
+    EPOCHS = 75
 
     LOGO_PATH = "img/burt.png"
 
