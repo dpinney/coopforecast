@@ -148,7 +148,7 @@ class TestForecastModel:
         model_df = model.get_df()
         assert pd.isnull(model_df.tail(1).load.values[0])
         model_df = model_df.set_index("dates")
-        assert pd.isna(model_df.loc[datetime(2019, 1, 1), "load"])
+        assert pd.isna(model_df.loc[datetime(2018, 12, 19, 23), "load"])
         # assert model_df.shape[0] == HistoricalLoadData.to_df().shape[0] + 24
         # TODO: Test that intersection of data is correct
 
