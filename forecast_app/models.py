@@ -226,7 +226,7 @@ class ForecastModel(db.Model):
         data_split = lf.DataSplit(df, hours_prior=hours_prior)
 
         model, self.accuracy = lf.train_and_test_model(
-            data_split, epochs=self.epochs, save_file=self.model_file
+            data_split, epochs=self.epochs, save_file=self.model_file, tensorboard=False
         )
 
         df["forecasted_load"] = model.predict(data_split.important_X).flatten()

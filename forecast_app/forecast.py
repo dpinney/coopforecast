@@ -120,7 +120,7 @@ class DataSplit:
         )
 
 
-def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
+def train_and_test_model(ds: DataSplit, epochs=20, save_file=None, tensorboard=False):
     """Train a neural net and forecast the next day's load."""
     HOURS_AHEAD = 24
 
@@ -147,15 +147,22 @@ def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
 
     nadam = tf.keras.optimizers.Nadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999)
     model.compile(optimizer=nadam, loss="mape")
+
+    model_callbacks = [
+        callbacks.TerminateOnNaN(),
+        callbacks.EarlyStopping(monitor="loss", patience=3),
+    ]
+
+    if tensorboard:
+        model_callbacks.append(
+            callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1, write_graph=True)
+        )
+
     model.fit(
         ds.train_X,
         ds.train_y,
         epochs=epochs,
-        callbacks=[
-            callbacks.TerminateOnNaN(),
-            callbacks.EarlyStopping(monitor="loss", patience=3),
-            callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1, write_graph=True),
-        ],
+        callbacks=model_callbacks,
     )
 
     accuracy = {

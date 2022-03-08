@@ -228,7 +228,9 @@ def test_forecaster(
 
     accuracies = []
     for _ in range(num_tests):
-        model, accuracy = lf.train_and_test_model(data_split, epochs=epochs)
+        model, accuracy = lf.train_and_test_model(
+            data_split, epochs=epochs, tensorboard=True
+        )
         accuracies.append(accuracy)
         print(
             f"Epochs: {epochs},  Train: {accuracy['train']}, Test: {accuracy['test']}"
