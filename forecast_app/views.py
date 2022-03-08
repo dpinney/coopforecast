@@ -288,6 +288,8 @@ class ForecastModelListView(MethodView):
 
 
 class DownloadModelFiles(MethodView):
+    """View for downloading the model files"""
+
     view_url = "/forecast-models/<slug>/output/<path:filename>"
     view_name = "download-model-files"
     decorators = [flask_login.login_required]
@@ -305,6 +307,8 @@ class DownloadModelFiles(MethodView):
 
 
 class ForecastModelDetailView(MethodView):
+    """View for the details of a single forecast model"""
+
     view_name = "forecast-model-detail"
     view_url = "/forecast-models/<slug>"
     decorators = [flask_login.login_required]

@@ -93,20 +93,24 @@ class DataSplit:
         self.all_X = self._data_transform_3d(r_df)
         self.all_y = self._data_transform_3d(df[LOAD_COL])
 
+        feature_count = r_df.shape[1]
+        # The important predictions of the model are those that start at the hour we care about.
+        #  Because we're cutting off the input df at the model.end_date, this should be evenly
+        #  divisible by 24.
+        # TODO: Double check that the start_date is equal to the model's starting hour.
+        self.important_X = r_df.to_numpy().reshape((-1, hours_prior, feature_count))
+
     @staticmethod
     def _data_transform_3d(data, timesteps=24):
-        """Group the data into a 24-day 3D array."""
-        # return_l = []
-        # np_a = data.to_numpy()
-        # for i in range(np_a.shape[0] - timesteps):  # Iterate by timestamps? This should then use .reshape
-        #     return_l.append(np_a[i : i + timesteps].tolist())
-        # return np.array(return_l)
-        # [number of tests, timesteps, features] OR [number of tests, features, timestamps]
-        a = -1
-        b = 1 if len(data.shape) == 1 else data.shape[1]
-        c = timesteps
-        reshape_t = (a, c, b)  # a, c, b; a, b, c
-        return data.to_numpy().reshape(reshape_t)
+        """Group the data into a 24-day 3D array.
+
+        The input dimensions are [number of tests, features] and we need  [number of tests, timestamps, features].
+        """
+        return_l = []
+        np_a = data.to_numpy()
+        for i in range(np_a.shape[0] - timesteps):
+            return_l.append(np_a[i : i + timesteps])
+        return np.array(return_l)
 
 
 def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
