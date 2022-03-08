@@ -67,6 +67,15 @@ python cli.py demo --config dev
 
 ## Development
 
+### Launch tensorboard
+
+[Tensorboard](https://www.tensorflow.org/tensorboard) logs are placed in the `tb-logs` directory (ignored in version control).
+To view detailed visualizations of the model's training and structure, launch tensorboard from the command line:
+
+```sh
+tensorboard --logdir=tb-logs
+```
+
 ### Install pre-commit
 
 In order to follow `black` and `isort` style guidelines, simply run the following command:

@@ -13,7 +13,7 @@ import pandas as pd
 import tensorflow as tf
 from scipy.stats import zscore
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import layers
+from tensorflow.keras import callbacks, layers
 
 
 class DataSplit:
@@ -137,9 +137,20 @@ def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
         ]
     )
 
+    log_dir = "tf-logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+
     nadam = tf.keras.optimizers.Nadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999)
     model.compile(optimizer=nadam, loss="mape")
-    model.fit(ds.train_X, ds.train_y, epochs=epochs)
+    model.fit(
+        ds.train_X,
+        ds.train_y,
+        epochs=epochs,
+        callbacks=[
+            callbacks.TerminateOnNaN(),
+            callbacks.EarlyStopping(monitor="loss", patience=3),
+            callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1, write_graph=True),
+        ],
+    )
 
     accuracy = {
         "train": model.evaluate(ds.train_X, ds.train_y, verbose=0),
