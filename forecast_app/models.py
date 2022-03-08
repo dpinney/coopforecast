@@ -185,9 +185,9 @@ class ForecastModel(db.Model):
         # TODO: Allow for different sized days
         # Remove all days that are not the same size
         df = pd.concat([df_h, df_f])
-        d = dict(df.groupby(df.dates.dt.date)["dates"].count())
         # TODO: This is preventing the model from training past midnight / dispatching
         #  at any point in the day!
+        d = dict(df.groupby(df.dates.dt.date)["dates"].count())
         df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]
 
         return df

@@ -90,8 +90,8 @@ class DataSplit:
         r_df["temp_n^2"] = zscore([x * x for x in temp_noise])
 
         # Set the dataframe for training and testing.
-        self.all_X = self._data_transform_3d(r_df)
-        self.all_y = self._data_transform_3d(df[LOAD_COL])
+        self.all_X = self._3d_transform(r_df)
+        self.all_y = self._3d_transform(df[LOAD_COL])
 
         feature_count = r_df.shape[1]
         # The important predictions of the model are those that start at the hour we care about.
@@ -100,17 +100,18 @@ class DataSplit:
         # TODO: Double check that the start_date is equal to the model's starting hour.
         self.important_X = r_df.to_numpy().reshape((-1, hours_prior, feature_count))
 
-    @staticmethod
-    def _data_transform_3d(data, timesteps=24):
-        """Group the data into a 24-day 3D array.
+    def _3d_transform(self, data):
+        """Group the data into 24-hour, 3D tests.
 
-        The input dimensions are [number of tests, features] and we need  [number of tests, timestamps, features].
+        The input dimensions are [number of tests, features] and returns dimensions [number of tests, hours_prior, features].
         """
-        return_l = []
         np_a = data.to_numpy()
-        for i in range(np_a.shape[0] - timesteps):
-            return_l.append(np_a[i : i + timesteps])
-        return np.array(return_l)
+        return np.array(
+            [
+                np_a[i : i + self.hours_prior]
+                for i in range(np_a.shape[0] - self.hours_prior)
+            ]
+        )
 
 
 def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
