@@ -14,5 +14,6 @@ pytest
 pytest-cov
 requests
 scipy
+sklearn
 tensorflow==2.7
 typer

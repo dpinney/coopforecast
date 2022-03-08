@@ -150,15 +150,3 @@ def train_and_test_model(ds: DataSplit, epochs=20, save_file=None):
         model.save(save_file)
 
     return model, accuracy
-
-
-# def get_forecasted_load(df, model, ds: DataSplit):
-#     """Load the predictions from the model into a dataframe."""
-#     df = df.set_index("dates", drop=False)
-#     breakpoint()
-#     pred_df = pd.DataFrame(
-#         model.predict(ds.all_X),
-#         columns=[f"load_in_{hour+1}_hours" for hour in range(24)],
-#         index=df.index[:-24],
-#     )
-#     df = pd.concat([df, pred_df], axis=1)
