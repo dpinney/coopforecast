@@ -13,7 +13,7 @@ except ImportError:
 
 # Email and domain need to be set here so that they can be easily imported in bash scripts
 EMAIL = "admin@coopforecast.com"
-DOMAIN = "coopforecast.com"
+DOMAIN = "burtcoppd.coopforecast.com"
 
 
 class Config(object):

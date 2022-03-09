@@ -9,7 +9,8 @@ export DOMAIN=$(python3 -c "from forecast_app.config import DOMAIN; print(DOMAIN
 if [ $(crontab -l | grep -v "^#" | wc -l) -eq 0 ]; then
     export ADMIN_USER=$(python3 -c "from forecast_app.secret_config import ADMIN_USER; print(ADMIN_USER)")
     export ADMIN_PASSWORD=$(python3 -c "from forecast_app.secret_config import ADMIN_PASSWORD; print(ADMIN_PASSWORD)")
-    export LOGIN_CONFIG="--username $ADMIN_USER --password='$ADMIN_PASSWORD' --url https://coopforecast.com"
+    # TODO: Update this login config to use the domain
+    export LOGIN_CONFIG="--username $ADMIN_USER --password='$ADMIN_PASSWORD' --url https://burtcoppd.coopforecast.com"
 
     # Pull from the weather APIs every hour
     export WEATHER_SYNC_CRON="0 * * * * /usr/bin/python3 $REPO/cli.py sync-weather-data $LOGIN_CONFIG"
