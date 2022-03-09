@@ -2,6 +2,17 @@
 
 export REPO="/opt/coopforecast"
 
+# Install all packages
+DEBIAN_FRONTEND=noninteractive sudo apt-get install -y systemd letsencrypt python3-pip authbind
+pip3 install tensorflow==2.7.0
+pip3 install -r $REPO/requirements.txt
+export PATH=/home/ubuntu/.local/bin:$PATH
+
+sudo ln -s $REPO/systemd/coopforecast.service /etc/systemd/system/coopforecast.service
+sudo ln -s $REPO/systemd/cert.service /etc/systemd/system/cert.service
+sudo ln -s $REPO/systemd/cert.timer /etc/systemd/system/cert.timer
+
+# NOTE: Make sure these environment variables are set after all the packages are installed
 export EMAIL=$(python3 -c "from forecast_app.config import EMAIL; print(EMAIL)")
 export DOMAIN=$(python3 -c "from forecast_app.config import DOMAIN; print(DOMAIN)")
 
@@ -20,15 +31,6 @@ if [ $(crontab -l | grep -v "^#" | wc -l) -eq 0 ]; then
     export FORECAST_INIT_CRON="05 07 * * * /usr/bin/python3 $REPO/cli.py launch-new-model $LOGIN_CONFIG"
     (crontab -l ; echo "$FORECAST_INIT_CRON")| crontab -
 fi
-
-DEBIAN_FRONTEND=noninteractive sudo apt-get install -y systemd letsencrypt python3-pip authbind
-pip3 install tensorflow==2.7.0
-pip3 install -r $REPO/requirements.txt
-export PATH=/home/ubuntu/.local/bin:$PATH
-
-sudo ln -s $REPO/systemd/coopforecast.service /etc/systemd/system/coopforecast.service
-sudo ln -s $REPO/systemd/cert.service /etc/systemd/system/cert.service
-sudo ln -s $REPO/systemd/cert.timer /etc/systemd/system/cert.timer
 
 # Setup TLS
 sudo certbot certonly --standalone --agree-tos -n -m $EMAIL -d $DOMAIN
