@@ -5,6 +5,14 @@ Electric Utility Load Forecaster Application
 [![run_pytest](https://github.com/dpinney/coopforecast/actions/workflows/run_pytest.yaml/badge.svg)](https://github.com/dpinney/coopforecast/actions/workflows/run_pytest.yaml)
 [![codecov](https://codecov.io/gh/dpinney/coopforecast/branch/main/graph/badge.svg?token=MUTWHY0DJE)](https://codecov.io/gh/dpinney/coopforecast)
 
+## Overview
+
+Coopforecast is a web application that generates a day-ahead load forecast for purposes of demand management. It automatically pulls in historical demand data, past weather behavior, and multi-day-ahead weather forecasts. 
+
+For an overview of the application please see our report (coming soon) or the documentation (also coming soon).
+
+<img width="468" alt="Picture1" src="https://user-images.githubusercontent.com/2131438/157679134-f577f822-da5d-4f9b-8771-a93a322adbc4.png">
+
 ## Application Deployment
 
 * Bring up an [Ubuntu 20.04 LTS](https://releases.ubuntu.com/20.04/) machine.
