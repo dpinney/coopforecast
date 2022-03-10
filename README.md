@@ -14,6 +14,11 @@ Electric Utility Load Forecaster Application
 * Ensure `config.py` (especially the `prod` config) reflects the client's needs.
 * Configure the app's secrets. You can copy the sample file `cp forecast_app/secret_config.py.sample forecast_app/secret_config.py`.
 * Run the install script `install.sh`. This will set up TLS certs, cron commands, and timezone.
+  * It may be easier to first install the major apt packages and then run the install script: `sudo apt-get install -y systemd letsencrypt python3-pip authbind`
+  * You may need to add the python packages to the PATH: `export PATH=/home/ubuntu/.local/bin:$PATH`
+* Double check that the crontab is properly configured with `crontab -e`.
+* Double check that all tests pass with `pytest`.
+* Setup the new database with the CLI: `python3 cli.py restart-db --config=prod`
 
 The install script is idempotent, so when updating the application, simply 
 run the `install.sh` again. Depending on the change, you may also have to 
