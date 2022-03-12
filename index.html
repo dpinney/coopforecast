@@ -6,19 +6,86 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>coopforecast.com</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡️</text></svg>">
+
+  <!-- Everything for bootstrap theme -->
+  <link rel="stylesheet" href="forecast_app/static/css/sb-admin-2.css">
+  <link href="forecast_app/static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <script src="forecast_app/static/vendor/jquery/jquery.min.js"></script>
+  <script src="forecast_app/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="forecast_app/static/vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="forecast_app/static/js/sb-admin-2.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+
 </head>
 
-<body>
+<body class="bg-gradient-light" style="padding: 50px;">
+  <div class="container text-center">
+    <h1>Welcome to <br><code>coopforecast.com</code></h1>
+  </div>
   <div class="container">
-    <h1>Welcome to coopforecast!</h1>
-    <div>
-      <a href="/docs">Read the docs</a>
+    <div class="row">
+      <div class="col" style="min-width: 250px; margin: 20px">
+        <a href="/docs">
+          <div class="card shadow-lg">
+            <div class="card-body text-center">
+              <p>
+                <i class="fas fa-fw fa-book fa-5x"></i>
+              </p>
+              <p>
+                Read the docs
+              </p>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col" style="min-width: 250px; margin: 20px">
+        <a href="/demo-site/">
+          <div class="card shadow-lg">
+            <div class="card-body text-center">
+              <p>
+                <i class="fas fa-binoculars fa-5x" width="300px"></i>
+              </p>
+              <p>
+                See the static demo site
+              </p>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col" style="min-width: 250px; margin: 20px">
+        <a href="https://github.com/dpinney/coopforecast">
+          <div class="card shadow-lg">
+            <div class="card-body text-center">
+              <p>
+                <img src="forecast_app/static/img/github-brands.svg" alt="github" width="77em">
+              </p>
+              <p>
+                Explore the repo
+              </p>
+            </div>
+          </div>
+      </div>
+      </a>
     </div>
-    <div>
-      <a href="/demo-site/">See the static demo site</a>
-    </div>
-    <div>
-      <a href="https://github.com/dpinney/coopforecast">Explore the repo</a>
+    <div class="row">
+      <div class="col" style="margin: 20px">
+        <div class="card shadow-lg">
+          <div class="card-body">
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nihil recusandae quos at ut, corporis
+              exercitationem
+              a, excepturi aut enim labore, vitae magni? Expedita nulla impedit voluptatem voluptatibus, praesentium
+              culpa
+              recusandae!</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </body>
