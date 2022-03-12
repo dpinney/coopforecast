@@ -57,12 +57,14 @@ def upload_demo_data(models=True):
         print("First forecast model uploaded.")
 
         mock_model = ForecastModel()
+        mock_model.store_df(df)
         mock_model.loads = mock_load
         mock_model.accuracy = None
         mock_model.save()
         print("Second forecast model uploaded.")
 
         mock_model = ForecastModel()
+        mock_model.store_df(df)
         mock_model.loads = mock_load
         mock_model.accuracy = None
         mock_model.save()
