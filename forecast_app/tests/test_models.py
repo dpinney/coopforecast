@@ -2,6 +2,7 @@ import os
 import signal
 from datetime import datetime
 from multiprocessing import Process
+from pathlib import Path
 from time import sleep
 
 import pandas as pd
@@ -151,6 +152,22 @@ class TestForecastModel:
         assert pd.isna(model_df.loc[datetime(2018, 12, 19, 23), "load"])
         # assert model_df.shape[0] == HistoricalLoadData.to_df().shape[0] + 24
         # TODO: Test that intersection of data is correct
+
+    def test_delete(self, app, db):
+        pytest.load_demo_db(app)
+
+        model = ForecastModel.query.first()
+        assert os.path.exists(model.output_dir)
+
+        model.delete()
+        assert not os.path.exists(model.output_dir)
+        assert ForecastModel.query.count() == 2
+
+        # HACK: Put the model's files back
+        os.makedirs(model.output_dir)
+        demo_data = Path("forecast_app/static/demo-data")
+        df = pd.read_csv(demo_data / "cached-dataframe.csv")
+        model.store_df(df)
 
 
 def test_is_prepared(app, db):

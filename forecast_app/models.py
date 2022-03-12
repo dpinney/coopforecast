@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import shutil
 import signal
 
 import pandas as pd
@@ -131,6 +132,16 @@ class ForecastModel(db.Model):
         """Save the model's state to the database. WARNING: Other queued changes will also be committed."""
 
         db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        """Delete the model's output directory and the database entry."""
+        # Delete the output directory
+        if os.path.exists(self.output_dir):
+            shutil.rmtree(self.output_dir)
+
+        # Delete the database entry
+        db.session.delete(self)
         db.session.commit()
 
     def __repr__(self):
