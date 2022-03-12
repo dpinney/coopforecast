@@ -12,6 +12,7 @@ from forecast_app import create_app
 from forecast_app.commands import init_db, upload_demo_data
 from forecast_app.config import config_map
 from forecast_app.models import (
+    ForecastModel,
     ForecastWeatherData,
     HistoricalLoadData,
     HistoricalWeatherData,
@@ -173,6 +174,49 @@ def backup(
     os.popen(f"cp {db_path} {backup_db_path}")
 
     # TODO: BACKUP MODELS
+
+
+@typer_app.command()
+def remove_old_models(
+    config: str = "dev",
+    days: int = typer.Option(
+        30, "--days", help="How many days of models should be kept?"
+    ),
+    assume_yes: bool = typer.Option(
+        False, "--assume-yes", help="Assume yes to delete confirmation."
+    ),
+    model_minimum: int = typer.Option(
+        20,
+        "--model-minimum",
+        help="Don't delete anything if there are fewer than this number of models.",
+    ),
+):
+    """Remove models older than a certain number of days."""
+    app = create_app(config)
+    with app.app_context():
+        # First confirm that there are too many models.
+        model_count = len(ForecastModel.query.all())
+        if model_count < model_minimum:
+            print(
+                f"There are only {model_count} models. This is fewer than the model minimum of {model_minimum}. Not deleting."
+            )
+            return
+
+        # Get the old models and delete if there are any and the user confirms, abort otherwise.
+        old_models = ForecastModel.query.filter(
+            ForecastModel.creation_date
+            < datetime.datetime.now() - datetime.timedelta(days=days)
+        ).all()
+
+        if len(old_models) == 0:
+            print(f"No models are older than {days} days.")
+            return
+
+        if assume_yes or typer.confirm(
+            f"Are you sure you want to delete {len(old_models)} models?", abort=True
+        ):
+            for model in old_models:
+                model.delete()
 
 
 @typer_app.command()
