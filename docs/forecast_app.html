@@ -64,14 +64,13 @@ forecast_app    </h1>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;Base module for the application, imports of all utilities, models, and views go through here.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">redirect</span>
-<span class="kn">from</span> <span class="nn">forecast_app.utils</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">login_manager</span><span class="p">,</span>
-    <span class="n">ADMIN_USER</span><span class="p">,</span>
-    <span class="n">db</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">render_template</span>
+
 <span class="kn">from</span> <span class="nn">forecast_app</span> <span class="kn">import</span> <span class="n">views</span>
-<span class="kn">from</span> <span class="nn">forecast_app.config</span> <span class="kn">import</span> <span class="n">config_map</span><span class="p">,</span> <span class="n">SECRET_VARS</span>
+<span class="kn">from</span> <span class="nn">forecast_app.config</span> <span class="kn">import</span> <span class="n">SECRET_VARS</span><span class="p">,</span> <span class="n">config_map</span>
+<span class="kn">from</span> <span class="nn">forecast_app.utils</span> <span class="kn">import</span> <span class="n">ADMIN_USER</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">login_manager</span>
 
 
 <span class="k">def</span> <span class="nf">create_app</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -138,6 +137,11 @@ forecast_app    </h1>
     <span class="k">def</span> <span class="nf">unauthorized</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;If a user tries to access a page that requires authentication, redirect them to the login page.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">302</span><span class="p">)</span>
+
+    <span class="c1"># Link Gunicorn logging</span>
+    <span class="n">gunicorn_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gunicorn.error&quot;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span> <span class="o">=</span> <span class="n">gunicorn_logger</span><span class="o">.</span><span class="n">handlers</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">gunicorn_logger</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">app</span>
 </pre></div>
@@ -219,6 +223,11 @@ forecast_app    </h1>
     <span class="k">def</span> <span class="nf">unauthorized</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;If a user tries to access a page that requires authentication, redirect them to the login page.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">302</span><span class="p">)</span>
+
+    <span class="c1"># Link Gunicorn logging</span>
+    <span class="n">gunicorn_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gunicorn.error&quot;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span> <span class="o">=</span> <span class="n">gunicorn_logger</span><span class="o">.</span><span class="n">handlers</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">gunicorn_logger</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">app</span>
 </pre></div>

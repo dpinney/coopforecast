@@ -42,6 +42,9 @@
             <li>
                     <a class="function" href="#test_allowed_file">test_allowed_file</a>
             </li>
+            <li>
+                    <a class="function" href="#test_prepare_filename_for_upload">test_prepare_filename_for_upload</a>
+            </li>
     </ul>
 
 
@@ -61,17 +64,20 @@
                 
                         <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">pytest</span>
-<span class="kn">import</span> <span class="nn">os</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">patch</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
 <span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">request</span>
 <span class="kn">from</span> <span class="nn">werkzeug.datastructures</span> <span class="kn">import</span> <span class="n">FileStorage</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 
 <span class="kn">import</span> <span class="nn">forecast_app</span>
 <span class="kn">from</span> <span class="nn">forecast_app</span> <span class="kn">import</span> <span class="n">create_app</span>
-<span class="kn">from</span> <span class="nn">forecast_app.utils</span> <span class="kn">import</span> <span class="n">allowed_file</span><span class="p">,</span> <span class="n">upload_file</span>
+<span class="kn">from</span> <span class="nn">forecast_app.utils</span> <span class="kn">import</span> <span class="n">allowed_file</span><span class="p">,</span> <span class="n">prepare_filename_for_upload</span><span class="p">,</span> <span class="n">upload_file</span>
+
 
 <span class="c1"># TEST CONFIG</span>
 <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;forecast_app.config.ProductionConfig.ADMIN_USER&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -88,7 +94,9 @@
 
 <span class="k">def</span> <span class="nf">test_upload_file</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;historical-load.csv&quot;</span>
-    <span class="n">dest_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;UPLOAD_DIR&quot;</span><span class="p">],</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">dest_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;UPLOAD_DIR&quot;</span><span class="p">],</span> <span class="n">prepare_filename_for_upload</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="p">)</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dest_path</span><span class="p">)</span>
 
     <span class="n">src_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="n">filename</span>
@@ -113,6 +121,14 @@
     <span class="k">assert</span> <span class="n">allowed_file</span><span class="p">(</span><span class="s2">&quot;test.CSV&quot;</span><span class="p">)</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">allowed_file</span><span class="p">(</span><span class="s2">&quot;test.foo&quot;</span><span class="p">)</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">allowed_file</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">test_prepare_filename_for_upload</span><span class="p">():</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;historical-load.test-t.t-t.csv&quot;</span>
+    <span class="n">new_filename</span> <span class="o">=</span> <span class="n">prepare_filename_for_upload</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">new_filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">new_filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;historical-load.test-t.t-t.&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;historical-load\.test-t\.t-t\..*\.csv&quot;</span><span class="p">,</span> <span class="n">new_filename</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -174,7 +190,9 @@
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">test_upload_file</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;historical-load.csv&quot;</span>
-    <span class="n">dest_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;UPLOAD_DIR&quot;</span><span class="p">],</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">dest_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;UPLOAD_DIR&quot;</span><span class="p">],</span> <span class="n">prepare_filename_for_upload</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="p">)</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dest_path</span><span class="p">)</span>
 
     <span class="n">src_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="n">filename</span>
@@ -214,6 +232,29 @@
     <span class="k">assert</span> <span class="n">allowed_file</span><span class="p">(</span><span class="s2">&quot;test.CSV&quot;</span><span class="p">)</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">allowed_file</span><span class="p">(</span><span class="s2">&quot;test.foo&quot;</span><span class="p">)</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">allowed_file</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
+</pre></div>
+
+        </details>
+
+    
+
+                </section>
+                <section id="test_prepare_filename_for_upload">
+                            <div class="attr function"><a class="headerlink" href="#test_prepare_filename_for_upload">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">test_prepare_filename_for_upload</span><span class="signature">()</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">test_prepare_filename_for_upload</span><span class="p">():</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;historical-load.test-t.t-t.csv&quot;</span>
+    <span class="n">new_filename</span> <span class="o">=</span> <span class="n">prepare_filename_for_upload</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">new_filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">new_filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;historical-load.test-t.t-t.&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;historical-load\.test-t\.t-t\..*\.csv&quot;</span><span class="p">,</span> <span class="n">new_filename</span><span class="p">)</span>
 </pre></div>
 
         </details>

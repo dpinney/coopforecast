@@ -31,16 +31,19 @@
         <h2>API Documentation</h2>
             <ul class="memberlist">
             <li>
-                    <a class="function" href="#generate_x_and_ys">generate_x_and_ys</a>
+                    <a class="class" href="#DataSplit">DataSplit</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#DataSplit.__init__">DataSplit</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#DataSplit.generate_exploded_data">generate_exploded_data</a>
+                        </li>
+                </ul>
+
             </li>
             <li>
-                    <a class="function" href="#MAPE">MAPE</a>
-            </li>
-            <li>
-                    <a class="function" href="#train_neural_net">train_neural_net</a>
-            </li>
-            <li>
-                    <a class="function" href="#train_and_forecast_next_day">train_and_forecast_next_day</a>
+                    <a class="function" href="#train_and_test_model">train_and_test_model</a>
             </li>
     </ul>
 
@@ -65,270 +68,413 @@
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;A collection of utilities to help with building and executing the machine learning model.&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span> <span class="k">as</span> <span class="n">dt</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">pJoin</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">pJoin</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span> <span class="k">as</span> <span class="n">dt</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">date</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
-<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">zscore</span>
-
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="kn">from</span> <span class="nn">tensorflow.keras</span> <span class="kn">import</span> <span class="n">layers</span>
-
-<span class="c1"># TODO: generalize hours_prior</span>
-<span class="n">HOURS_PRIOR</span> <span class="o">=</span> <span class="mi">24</span>
-
-
-<span class="k">def</span> <span class="nf">generate_x_and_ys</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">2.5</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Turn a dataframe of datetime and load data into a dataframe useful for machine learning.</span>
-
-<span class="sd">    Normalize values, expload categorical data, and add noise to the temperature data to simulate</span>
-<span class="sd">    uncertainty in a forecast.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.</span>
-
-    <span class="k">def</span> <span class="nf">_isHoliday</span><span class="p">(</span><span class="n">holiday</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
-        <span class="c1"># TODO: Search for libraries that do this for you.</span>
-        <span class="n">m1</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">holiday</span> <span class="o">==</span> <span class="s2">&quot;New Year&#39;s Day&quot;</span><span class="p">:</span>
-            <span class="n">m1</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">holiday</span> <span class="o">==</span> <span class="s2">&quot;Independence Day&quot;</span><span class="p">:</span>
-            <span class="n">m1</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">7</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">holiday</span> <span class="o">==</span> <span class="s2">&quot;Christmas Day&quot;</span><span class="p">:</span>
-            <span class="n">m1</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">25</span><span class="p">)</span>
-        <span class="n">m1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">nerc6</span><span class="p">[</span><span class="n">holiday</span><span class="p">])</span> <span class="k">if</span> <span class="n">m1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">m1</span>
-        <span class="n">m2</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">nerc6</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">holiday</span> <span class="o">+</span> <span class="s2">&quot; (Observed)&quot;</span><span class="p">,</span> <span class="p">[]))</span>
-        <span class="k">return</span> <span class="n">m1</span> <span class="o">|</span> <span class="n">m2</span>
-
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;forecast_app/static/holidays.pickle&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">nerc6</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
-            <span class="n">f</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;latin_1&quot;</span>
-        <span class="p">)</span>  <span class="c1"># Is this the right codec? It might be cp1252</span>
-
-    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span>
-    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span>
-    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span>
-
-    <span class="n">r_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-
-    <span class="c1"># LOAD</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
-    <span class="c1"># NOTE: This requires a continuous dataframe!</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">HOURS_PRIOR</span><span class="p">)</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_chunks</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">l</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">),</span> <span class="n">n</span><span class="p">)]</span>
-
-    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_chunks</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]),</span> <span class="mi">24</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)])</span>
-    <span class="n">l</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;l&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)]</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
-        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
-        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">HOURS_PRIOR</span><span class="p">)</span>
-        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">()</span>
-
-    <span class="c1"># Remove normalized load from Xs, otherwise you&#39;re just feeding the answers into the model.</span>
-    <span class="n">r_df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;load_n&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="c1"># DATE</span>
-    <span class="c1"># NOTE: zscore will be all nans if any are nans!</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;years_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
-    <span class="n">r_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="n">r_df</span><span class="p">,</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;hour&quot;</span><span class="p">),</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">dayofweek</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;day&quot;</span><span class="p">),</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;month&quot;</span><span class="p">),</span>
-        <span class="p">],</span>
-        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">holiday</span> <span class="ow">in</span> <span class="p">[</span>
-        <span class="s2">&quot;New Year&#39;s Day&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Memorial Day&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Independence Day&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Labor Day&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Thanksgiving&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Christmas Day&quot;</span><span class="p">,</span>
-    <span class="p">]:</span>
-        <span class="n">r_df</span><span class="p">[</span><span class="n">holiday</span><span class="p">]</span> <span class="o">=</span> <span class="n">_isHoliday</span><span class="p">(</span><span class="n">holiday</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
-
-    <span class="c1"># TEMP</span>
-    <span class="n">temp_noise</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">temp_noise</span><span class="p">)</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n^2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">([</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp_noise</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">r_df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">zscore</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras</span> <span class="kn">import</span> <span class="n">callbacks</span><span class="p">,</span> <span class="n">layers</span>
 
 
-<span class="k">def</span> <span class="nf">MAPE</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">answers</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Calculate the mean absolute percentage error.&quot;&quot;&quot;</span>
+<span class="k">class</span> <span class="nc">DataSplit</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A class to make the data split consistent across all operations.&quot;&quot;&quot;</span>
 
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="nb">sum</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mf">1e-5</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">answers</span><span class="p">)])</span>
-        <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
-        <span class="o">*</span> <span class="mi">100</span>
-    <span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">hours_prior</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">load_col</span><span class="o">=</span><span class="s2">&quot;load&quot;</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;dates&quot;</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the data split.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hours_prior</span> <span class="o">=</span> <span class="n">hours_prior</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_col</span> <span class="o">=</span> <span class="n">load_col</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span> <span class="o">=</span> <span class="n">dt_col</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_exploded_data</span><span class="p">()</span>
+
+        <span class="c1"># TODO: Use last valid index to get the training data.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_train_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_train_y</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="n">hours_prior</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="n">hours_prior</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_y</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_train_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_train_y</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="n">train_size</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">generate_exploded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">2.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Turn a dataframe of datetime and load data into a dataframe useful for machine learning.</span>
+
+<span class="sd">        Normalize values, expload categorical data, and add noise to the temperature data to simulate</span>
+<span class="sd">        uncertainty in a forecast.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.</span>
+        <span class="c1"># TODO: Forecast from any hour not just the first hour of the day</span>
+        <span class="c1"># TODO: Sort the dataframe by datetime.</span>
+
+        <span class="n">DT_COL</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span>
+        <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_col</span>
+        <span class="n">hours_prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hours_prior</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span>
+
+        <span class="n">r_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+        <span class="c1"># LOAD</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+        <span class="c1"># NOTE: This requires a sorted, continuous dataframe!</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">hours_prior</span><span class="p">)</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Remove normalized load from Xs, otherwise you&#39;re just feeding the answers into the model.</span>
+        <span class="n">r_df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;load_n&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># DATE</span>
+        <span class="c1"># NOTE: zscore will be all nans if any are nans!</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;years_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+        <span class="n">r_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">r_df</span><span class="p">,</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;hour&quot;</span><span class="p">),</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">dayofweek</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;day&quot;</span><span class="p">),</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;month&quot;</span><span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TEMP</span>
+        <span class="n">temp_noise</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">temp_noise</span><span class="p">)</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n^2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">([</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp_noise</span><span class="p">])</span>
+
+        <span class="c1"># Set the dataframe for training and testing.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_3d_transform</span><span class="p">(</span><span class="n">r_df</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_3d_transform</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">])</span>
+
+        <span class="n">feature_count</span> <span class="o">=</span> <span class="n">r_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># The important predictions of the model are those that start at the hour we care about.</span>
+        <span class="c1">#  Because we&#39;re cutting off the input df at the model.end_date, this should be evenly</span>
+        <span class="c1">#  divisible by 24.</span>
+        <span class="c1"># TODO: Double check that the start_date is equal to the model&#39;s starting hour.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">important_X</span> <span class="o">=</span> <span class="n">r_df</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">hours_prior</span><span class="p">,</span> <span class="n">feature_count</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_3d_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Group the data into 24-hour, 3D tests.</span>
+
+<span class="sd">        The input dimensions are [number of tests, features] and returns dimensions [number of tests, hours_prior, features].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">np_a</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">np_a</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hours_prior</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np_a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hours_prior</span><span class="p">)</span>
+                <span class="c1"># NOTE: Bumping up on RAM on VM since this 24x&#39;s the size of</span>
+                <span class="c1">#  the data we&#39;re working with. This&#39;ll take a fifth of the data</span>
+                <span class="c1">#  we&#39;re creating. It&#39;s important that this number not be divisible</span>
+                <span class="c1">#  by 24 so that we have a diverse dataset. It&#39;s important to also</span>
+                <span class="c1">#  increase the number of epochs.</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Train a new neural net given training data the number of epochs.&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">train_and_test_model</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">DataSplit</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tensorboard</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train a neural net and forecast the next day&#39;s load.&quot;&quot;&quot;</span>
+    <span class="n">HOURS_AHEAD</span> <span class="o">=</span> <span class="mi">24</span>
 
     <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
         <span class="p">[</span>
             <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
-                <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
                 <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span>
-                <span class="n">input_shape</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">keys</span><span class="p">())],</span>
+                <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="n">HOURS_AHEAD</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
             <span class="p">),</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">HOURS_AHEAD</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">HOURS_AHEAD</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">HOURS_AHEAD</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">HOURS_AHEAD</span><span class="p">),</span>
         <span class="p">]</span>
     <span class="p">)</span>
+
+    <span class="n">log_dir</span> <span class="o">=</span> <span class="s2">&quot;tb-logs/&quot;</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">-%H%M%S&quot;</span><span class="p">)</span>
 
     <span class="n">nadam</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Nadam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">beta_1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">beta_2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">nadam</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;mape&quot;</span><span class="p">)</span>
 
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">model</span>
-
-
-<span class="k">def</span> <span class="nf">train_and_forecast_next_day</span><span class="p">(</span><span class="n">all_X</span><span class="p">,</span> <span class="n">all_y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Train a neural net and forecast the next day&#39;s load.&quot;&quot;&quot;</span>
-
-    <span class="n">all_X_n</span><span class="p">,</span> <span class="n">all_y_n</span> <span class="o">=</span> <span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="n">HOURS_PRIOR</span><span class="p">],</span> <span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="n">HOURS_PRIOR</span><span class="p">]</span>
-    <span class="n">X_train</span> <span class="o">=</span> <span class="n">all_X_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span>
-    <span class="n">y_train</span> <span class="o">=</span> <span class="n">all_y_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span>
-    <span class="n">X_test</span> <span class="o">=</span> <span class="n">all_X_n</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span>
-    <span class="n">y_test</span> <span class="o">=</span> <span class="n">all_y_n</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span>
-
-    <span class="n">model</span> <span class="o">=</span> <span class="n">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
-
-    <span class="n">predictions_test</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">model_callbacks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">callbacks</span><span class="o">.</span><span class="n">TerminateOnNaN</span><span class="p">(),</span>
+        <span class="n">callbacks</span><span class="o">.</span><span class="n">EarlyStopping</span><span class="p">(</span><span class="n">monitor</span><span class="o">=</span><span class="s2">&quot;loss&quot;</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
     <span class="p">]</span>
-    <span class="n">train</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">tensorboard</span><span class="p">:</span>
+        <span class="n">model_callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">callbacks</span><span class="o">.</span><span class="n">TensorBoard</span><span class="p">(</span><span class="n">log_dir</span><span class="o">=</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">histogram_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">write_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="p">,</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">train_y</span><span class="p">,</span>
+        <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="o">=</span><span class="n">model_callbacks</span><span class="p">,</span>
+    <span class="p">)</span>
+
     <span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">predictions_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span>
-        <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
+        <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">train_y</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+        <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">test_X</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">test_y</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
     <span class="p">}</span>
-    <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">24</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="p">]</span>
 
     <span class="k">if</span> <span class="n">save_file</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_file</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">accuracy</span>
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">accuracy</span>
 </pre></div>
 
         </details>
 
             </section>
-                <section id="generate_x_and_ys">
-                            <div class="attr function"><a class="headerlink" href="#generate_x_and_ys">#&nbsp;&nbsp</a>
+                <section id="DataSplit">
+                                <div class="attr class">
+        <a class="headerlink" href="#DataSplit">#&nbsp;&nbsp</a>
 
         
-            <span class="def">def</span>
-            <span class="name">generate_x_and_ys</span><span class="signature">(df, noise=2.5)</span>:
+        <span class="def">class</span>
+        <span class="name">DataSplit</span>:
     </div>
 
             <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">generate_x_and_ys</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">2.5</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Turn a dataframe of datetime and load data into a dataframe useful for machine learning.</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">DataSplit</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A class to make the data split consistent across all operations.&quot;&quot;&quot;</span>
 
-<span class="sd">    Normalize values, expload categorical data, and add noise to the temperature data to simulate</span>
-<span class="sd">    uncertainty in a forecast.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">hours_prior</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">load_col</span><span class="o">=</span><span class="s2">&quot;load&quot;</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;dates&quot;</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the data split.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hours_prior</span> <span class="o">=</span> <span class="n">hours_prior</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_col</span> <span class="o">=</span> <span class="n">load_col</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span> <span class="o">=</span> <span class="n">dt_col</span>
 
-    <span class="c1"># TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_exploded_data</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_isHoliday</span><span class="p">(</span><span class="n">holiday</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
-        <span class="c1"># TODO: Search for libraries that do this for you.</span>
-        <span class="n">m1</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">holiday</span> <span class="o">==</span> <span class="s2">&quot;New Year&#39;s Day&quot;</span><span class="p">:</span>
-            <span class="n">m1</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">holiday</span> <span class="o">==</span> <span class="s2">&quot;Independence Day&quot;</span><span class="p">:</span>
-            <span class="n">m1</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">7</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">holiday</span> <span class="o">==</span> <span class="s2">&quot;Christmas Day&quot;</span><span class="p">:</span>
-            <span class="n">m1</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">25</span><span class="p">)</span>
-        <span class="n">m1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">nerc6</span><span class="p">[</span><span class="n">holiday</span><span class="p">])</span> <span class="k">if</span> <span class="n">m1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">m1</span>
-        <span class="n">m2</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">nerc6</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">holiday</span> <span class="o">+</span> <span class="s2">&quot; (Observed)&quot;</span><span class="p">,</span> <span class="p">[]))</span>
-        <span class="k">return</span> <span class="n">m1</span> <span class="o">|</span> <span class="n">m2</span>
+        <span class="c1"># TODO: Use last valid index to get the training data.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_train_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_train_y</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="n">hours_prior</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="n">hours_prior</span><span class="p">],</span>
+        <span class="p">)</span>
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;forecast_app/static/holidays.pickle&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">nerc6</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
-            <span class="n">f</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;latin_1&quot;</span>
-        <span class="p">)</span>  <span class="c1"># Is this the right codec? It might be cp1252</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_y</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_train_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_train_y</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="n">train_size</span>
+        <span class="p">)</span>
 
-    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span>
-    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span>
-    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span>
+    <span class="k">def</span> <span class="nf">generate_exploded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">2.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Turn a dataframe of datetime and load data into a dataframe useful for machine learning.</span>
 
-    <span class="n">r_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="sd">        Normalize values, expload categorical data, and add noise to the temperature data to simulate</span>
+<span class="sd">        uncertainty in a forecast.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-    <span class="c1"># LOAD</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
-    <span class="c1"># NOTE: This requires a continuous dataframe!</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">HOURS_PRIOR</span><span class="p">)</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.</span>
+        <span class="c1"># TODO: Forecast from any hour not just the first hour of the day</span>
+        <span class="c1"># TODO: Sort the dataframe by datetime.</span>
 
-    <span class="k">def</span> <span class="nf">_chunks</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">l</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">),</span> <span class="n">n</span><span class="p">)]</span>
+        <span class="n">DT_COL</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span>
+        <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_col</span>
+        <span class="n">hours_prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hours_prior</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
 
-    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_chunks</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]),</span> <span class="mi">24</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)])</span>
-    <span class="n">l</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;l&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)]</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
-        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
-        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">HOURS_PRIOR</span><span class="p">)</span>
-        <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">()</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span>
 
-    <span class="c1"># Remove normalized load from Xs, otherwise you&#39;re just feeding the answers into the model.</span>
-    <span class="n">r_df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;load_n&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">r_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
 
-    <span class="c1"># DATE</span>
-    <span class="c1"># NOTE: zscore will be all nans if any are nans!</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;years_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
-    <span class="n">r_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="n">r_df</span><span class="p">,</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;hour&quot;</span><span class="p">),</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">dayofweek</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;day&quot;</span><span class="p">),</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;month&quot;</span><span class="p">),</span>
-        <span class="p">],</span>
-        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="p">)</span>
+        <span class="c1"># LOAD</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+        <span class="c1"># NOTE: This requires a sorted, continuous dataframe!</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">hours_prior</span><span class="p">)</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">holiday</span> <span class="ow">in</span> <span class="p">[</span>
-        <span class="s2">&quot;New Year&#39;s Day&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Memorial Day&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Independence Day&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Labor Day&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Thanksgiving&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Christmas Day&quot;</span><span class="p">,</span>
-    <span class="p">]:</span>
-        <span class="n">r_df</span><span class="p">[</span><span class="n">holiday</span><span class="p">]</span> <span class="o">=</span> <span class="n">_isHoliday</span><span class="p">(</span><span class="n">holiday</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+        <span class="c1"># Remove normalized load from Xs, otherwise you&#39;re just feeding the answers into the model.</span>
+        <span class="n">r_df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;load_n&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="c1"># TEMP</span>
-    <span class="n">temp_noise</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">temp_noise</span><span class="p">)</span>
-    <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n^2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">([</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp_noise</span><span class="p">])</span>
+        <span class="c1"># DATE</span>
+        <span class="c1"># NOTE: zscore will be all nans if any are nans!</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;years_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+        <span class="n">r_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">r_df</span><span class="p">,</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;hour&quot;</span><span class="p">),</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">dayofweek</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;day&quot;</span><span class="p">),</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;month&quot;</span><span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">r_df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span>
+        <span class="c1"># TEMP</span>
+        <span class="n">temp_noise</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">temp_noise</span><span class="p">)</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n^2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">([</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp_noise</span><span class="p">])</span>
+
+        <span class="c1"># Set the dataframe for training and testing.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_3d_transform</span><span class="p">(</span><span class="n">r_df</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_3d_transform</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">])</span>
+
+        <span class="n">feature_count</span> <span class="o">=</span> <span class="n">r_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># The important predictions of the model are those that start at the hour we care about.</span>
+        <span class="c1">#  Because we&#39;re cutting off the input df at the model.end_date, this should be evenly</span>
+        <span class="c1">#  divisible by 24.</span>
+        <span class="c1"># TODO: Double check that the start_date is equal to the model&#39;s starting hour.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">important_X</span> <span class="o">=</span> <span class="n">r_df</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">hours_prior</span><span class="p">,</span> <span class="n">feature_count</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_3d_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Group the data into 24-hour, 3D tests.</span>
+
+<span class="sd">        The input dimensions are [number of tests, features] and returns dimensions [number of tests, hours_prior, features].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">np_a</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">np_a</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hours_prior</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np_a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hours_prior</span><span class="p">)</span>
+                <span class="c1"># NOTE: Bumping up on RAM on VM since this 24x&#39;s the size of</span>
+                <span class="c1">#  the data we&#39;re working with. This&#39;ll take a fifth of the data</span>
+                <span class="c1">#  we&#39;re creating. It&#39;s important that this number not be divisible</span>
+                <span class="c1">#  by 24 so that we have a diverse dataset. It&#39;s important to also</span>
+                <span class="c1">#  increase the number of epochs.</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>A class to make the data split consistent across all operations.</p>
+</div>
+
+
+                            <div id="DataSplit.__init__" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#DataSplit.__init__">#&nbsp;&nbsp</a>
+
+        
+            <span class="name">DataSplit</span><span class="signature">(df, train_size=0.8, hours_prior=24, load_col=&#39;load&#39;, dt_col=&#39;dates&#39;)</span>
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">hours_prior</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">load_col</span><span class="o">=</span><span class="s2">&quot;load&quot;</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;dates&quot;</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the data split.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hours_prior</span> <span class="o">=</span> <span class="n">hours_prior</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_col</span> <span class="o">=</span> <span class="n">load_col</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span> <span class="o">=</span> <span class="n">dt_col</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_exploded_data</span><span class="p">()</span>
+
+        <span class="c1"># TODO: Use last valid index to get the training data.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_train_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_train_y</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="n">hours_prior</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="n">hours_prior</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_y</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_train_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_train_y</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="n">train_size</span>
+        <span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Initialize the data split.</p>
+</div>
+
+
+                            </div>
+                            <div id="DataSplit.generate_exploded_data" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#DataSplit.generate_exploded_data">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">generate_exploded_data</span><span class="signature">(self, noise=2.5)</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">generate_exploded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">2.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Turn a dataframe of datetime and load data into a dataframe useful for machine learning.</span>
+
+<span class="sd">        Normalize values, expload categorical data, and add noise to the temperature data to simulate</span>
+<span class="sd">        uncertainty in a forecast.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO: Instead of shifting by hours prior, values should be explicitly grabbed by datetime.</span>
+        <span class="c1"># TODO: Forecast from any hour not just the first hour of the day</span>
+        <span class="c1"># TODO: Sort the dataframe by datetime.</span>
+
+        <span class="n">DT_COL</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span>
+        <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_col</span>
+        <span class="n">hours_prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hours_prior</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span>
+
+        <span class="n">r_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+        <span class="c1"># LOAD</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+        <span class="c1"># NOTE: This requires a sorted, continuous dataframe!</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">hours_prior</span><span class="p">)</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;load_prev_n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bfill</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Remove normalized load from Xs, otherwise you&#39;re just feeding the answers into the model.</span>
+        <span class="n">r_df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;load_n&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># DATE</span>
+        <span class="c1"># NOTE: zscore will be all nans if any are nans!</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;years_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">DT_COL</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+        <span class="n">r_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">r_df</span><span class="p">,</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;hour&quot;</span><span class="p">),</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">dayofweek</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;day&quot;</span><span class="p">),</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;month&quot;</span><span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TEMP</span>
+        <span class="n">temp_noise</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">temp_noise</span><span class="p">)</span>
+        <span class="n">r_df</span><span class="p">[</span><span class="s2">&quot;temp_n^2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">([</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp_noise</span><span class="p">])</span>
+
+        <span class="c1"># Set the dataframe for training and testing.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_3d_transform</span><span class="p">(</span><span class="n">r_df</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_3d_transform</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">LOAD_COL</span><span class="p">])</span>
+
+        <span class="n">feature_count</span> <span class="o">=</span> <span class="n">r_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># The important predictions of the model are those that start at the hour we care about.</span>
+        <span class="c1">#  Because we&#39;re cutting off the input df at the model.end_date, this should be evenly</span>
+        <span class="c1">#  divisible by 24.</span>
+        <span class="c1"># TODO: Double check that the start_date is equal to the model&#39;s starting hour.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">important_X</span> <span class="o">=</span> <span class="n">r_df</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">hours_prior</span><span class="p">,</span> <span class="n">feature_count</span><span class="p">))</span>
 </pre></div>
 
         </details>
@@ -340,119 +486,77 @@ uncertainty in a forecast.</p>
 </div>
 
 
+                            </div>
                 </section>
-                <section id="MAPE">
-                            <div class="attr function"><a class="headerlink" href="#MAPE">#&nbsp;&nbsp</a>
+                <section id="train_and_test_model">
+                            <div class="attr function"><a class="headerlink" href="#train_and_test_model">#&nbsp;&nbsp</a>
 
         
             <span class="def">def</span>
-            <span class="name">MAPE</span><span class="signature">(predictions, answers)</span>:
+            <span class="name">train_and_test_model</span><span class="signature">(
+    ds: <a href="#DataSplit">forecast_app.forecast.DataSplit</a>,
+    epochs=20,
+    save_file=None,
+    tensorboard=False
+)</span>:
     </div>
 
             <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">MAPE</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">answers</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Calculate the mean absolute percentage error.&quot;&quot;&quot;</span>
-
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="nb">sum</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mf">1e-5</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">answers</span><span class="p">)])</span>
-        <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
-        <span class="o">*</span> <span class="mi">100</span>
-    <span class="p">)</span>
-</pre></div>
-
-        </details>
-
-            <div class="docstring"><p>Calculate the mean absolute percentage error.</p>
-</div>
-
-
-                </section>
-                <section id="train_neural_net">
-                            <div class="attr function"><a class="headerlink" href="#train_neural_net">#&nbsp;&nbsp</a>
-
-        
-            <span class="def">def</span>
-            <span class="name">train_neural_net</span><span class="signature">(X_train, y_train, epochs)</span>:
-    </div>
-
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Train a new neural net given training data the number of epochs.&quot;&quot;&quot;</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">train_and_test_model</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">DataSplit</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tensorboard</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train a neural net and forecast the next day&#39;s load.&quot;&quot;&quot;</span>
+    <span class="n">HOURS_AHEAD</span> <span class="o">=</span> <span class="mi">24</span>
 
     <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
         <span class="p">[</span>
             <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
-                <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
                 <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span>
-                <span class="n">input_shape</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">keys</span><span class="p">())],</span>
+                <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="n">HOURS_AHEAD</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
             <span class="p">),</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">HOURS_AHEAD</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">HOURS_AHEAD</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">HOURS_AHEAD</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">),</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">HOURS_AHEAD</span><span class="p">),</span>
         <span class="p">]</span>
     <span class="p">)</span>
+
+    <span class="n">log_dir</span> <span class="o">=</span> <span class="s2">&quot;tb-logs/&quot;</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">-%H%M%S&quot;</span><span class="p">)</span>
 
     <span class="n">nadam</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Nadam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">beta_1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">beta_2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">nadam</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;mape&quot;</span><span class="p">)</span>
 
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">model</span>
-</pre></div>
-
-        </details>
-
-            <div class="docstring"><p>Train a new neural net given training data the number of epochs.</p>
-</div>
-
-
-                </section>
-                <section id="train_and_forecast_next_day">
-                            <div class="attr function"><a class="headerlink" href="#train_and_forecast_next_day">#&nbsp;&nbsp</a>
-
-        
-            <span class="def">def</span>
-            <span class="name">train_and_forecast_next_day</span><span class="signature">(all_X, all_y, epochs=20, save_file=None)</span>:
-    </div>
-
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">train_and_forecast_next_day</span><span class="p">(</span><span class="n">all_X</span><span class="p">,</span> <span class="n">all_y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Train a neural net and forecast the next day&#39;s load.&quot;&quot;&quot;</span>
-
-    <span class="n">all_X_n</span><span class="p">,</span> <span class="n">all_y_n</span> <span class="o">=</span> <span class="n">all_X</span><span class="p">[:</span><span class="o">-</span><span class="n">HOURS_PRIOR</span><span class="p">],</span> <span class="n">all_y</span><span class="p">[:</span><span class="o">-</span><span class="n">HOURS_PRIOR</span><span class="p">]</span>
-    <span class="n">X_train</span> <span class="o">=</span> <span class="n">all_X_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span>
-    <span class="n">y_train</span> <span class="o">=</span> <span class="n">all_y_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">8760</span><span class="p">]</span>
-    <span class="n">X_test</span> <span class="o">=</span> <span class="n">all_X_n</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span>
-    <span class="n">y_test</span> <span class="o">=</span> <span class="n">all_y_n</span><span class="p">[</span><span class="o">-</span><span class="mi">8760</span><span class="p">:]</span>
-
-    <span class="n">model</span> <span class="o">=</span> <span class="n">train_neural_net</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
-
-    <span class="n">predictions_test</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">model_callbacks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">callbacks</span><span class="o">.</span><span class="n">TerminateOnNaN</span><span class="p">(),</span>
+        <span class="n">callbacks</span><span class="o">.</span><span class="n">EarlyStopping</span><span class="p">(</span><span class="n">monitor</span><span class="o">=</span><span class="s2">&quot;loss&quot;</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
     <span class="p">]</span>
-    <span class="n">train</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">tensorboard</span><span class="p">:</span>
+        <span class="n">model_callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">callbacks</span><span class="o">.</span><span class="n">TensorBoard</span><span class="p">(</span><span class="n">log_dir</span><span class="o">=</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">histogram_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">write_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="p">,</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">train_y</span><span class="p">,</span>
+        <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="o">=</span><span class="n">model_callbacks</span><span class="p">,</span>
+    <span class="p">)</span>
+
     <span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">predictions_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span>
-        <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
+        <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">train_X</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">train_y</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+        <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">test_X</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">test_y</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
     <span class="p">}</span>
-    <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_X</span><span class="p">[</span><span class="o">-</span><span class="mi">24</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="p">]</span>
 
     <span class="k">if</span> <span class="n">save_file</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_file</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">accuracy</span>
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">accuracy</span>
 </pre></div>
 
         </details>

@@ -52,26 +52,27 @@
                     <h1 class="modulename">
 <a href="./../forecast_app.html">forecast_app</a><wbr>.commands    </h1>
 
-                        <div class="docstring"><p>TODO: These can be shifted to utils.py. Otherwise things would just end up in cli.py.</p>
+                        <div class="docstring"><p>Model-specific utilities that would otherwise cause circular imports if placed elsewhere.</p>
 </div>
 
                         <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;TODO: These can be shifted to utils.py. Otherwise things would just end up in cli.py.&quot;&quot;&quot;</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;Model-specific utilities that would otherwise cause circular imports if placed elsewhere.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
 
-<span class="kn">from</span> <span class="nn">forecast_app.utils</span> <span class="kn">import</span> <span class="n">db</span>
 <span class="kn">from</span> <span class="nn">forecast_app.models</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ForecastWeatherData</span><span class="p">,</span>
     <span class="n">ForecastModel</span><span class="p">,</span>
+    <span class="n">ForecastWeatherData</span><span class="p">,</span>
     <span class="n">HistoricalLoadData</span><span class="p">,</span>
     <span class="n">HistoricalWeatherData</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">forecast_app.utils</span> <span class="kn">import</span> <span class="n">db</span>
 
 
 <span class="k">def</span> <span class="nf">init_db</span><span class="p">():</span>
@@ -105,8 +106,8 @@
         <span class="n">mock_load</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">forecast_load_data</span><span class="p">)[</span><span class="s2">&quot;KW&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">mock_model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="p">()</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">loads</span> <span class="o">=</span> <span class="n">mock_load</span>
-        <span class="n">mock_model</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="mf">96.5</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="mf">98.5</span><span class="p">}</span>
-        <span class="n">mock_model</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;COMPLETED&quot;</span><span class="p">)</span>
+        <span class="n">mock_model</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="mf">4.3</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="mf">4.4</span><span class="p">}</span>
+        <span class="n">mock_model</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="n">mock_model</span><span class="o">.</span><span class="n">COMPLETED_SUCCESSFULLY</span><span class="p">)</span>
 
         <span class="c1"># Copy the cached dataframe to this mock model&#39;s</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">demo_data</span> <span class="o">/</span> <span class="s2">&quot;cached-dataframe.csv&quot;</span><span class="p">)</span>
@@ -115,12 +116,14 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First forecast model uploaded.&quot;</span><span class="p">)</span>
 
         <span class="n">mock_model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="p">()</span>
+        <span class="n">mock_model</span><span class="o">.</span><span class="n">store_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">loads</span> <span class="o">=</span> <span class="n">mock_load</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Second forecast model uploaded.&quot;</span><span class="p">)</span>
 
         <span class="n">mock_model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="p">()</span>
+        <span class="n">mock_model</span><span class="o">.</span><span class="n">store_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">loads</span> <span class="o">=</span> <span class="n">mock_load</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
@@ -186,8 +189,8 @@
         <span class="n">mock_load</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">forecast_load_data</span><span class="p">)[</span><span class="s2">&quot;KW&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">mock_model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="p">()</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">loads</span> <span class="o">=</span> <span class="n">mock_load</span>
-        <span class="n">mock_model</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="mf">96.5</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="mf">98.5</span><span class="p">}</span>
-        <span class="n">mock_model</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;COMPLETED&quot;</span><span class="p">)</span>
+        <span class="n">mock_model</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="mf">4.3</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="mf">4.4</span><span class="p">}</span>
+        <span class="n">mock_model</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="n">mock_model</span><span class="o">.</span><span class="n">COMPLETED_SUCCESSFULLY</span><span class="p">)</span>
 
         <span class="c1"># Copy the cached dataframe to this mock model&#39;s</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">demo_data</span> <span class="o">/</span> <span class="s2">&quot;cached-dataframe.csv&quot;</span><span class="p">)</span>
@@ -196,12 +199,14 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First forecast model uploaded.&quot;</span><span class="p">)</span>
 
         <span class="n">mock_model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="p">()</span>
+        <span class="n">mock_model</span><span class="o">.</span><span class="n">store_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">loads</span> <span class="o">=</span> <span class="n">mock_load</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Second forecast model uploaded.&quot;</span><span class="p">)</span>
 
         <span class="n">mock_model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="p">()</span>
+        <span class="n">mock_model</span><span class="o">.</span><span class="n">store_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">loads</span> <span class="o">=</span> <span class="n">mock_load</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">mock_model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
