@@ -78,11 +78,6 @@ class Config(object):
     NAME = None
     SQLALCHEMY_DATABASE_URI = None
 
-    """Freeze site configs"""
-    FREEZER_DESTINATION = "../build"
-    FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS = True
-    FREEZER_RELATIVE_URLS = True  # False?
-
 
 class ProductionConfig(Config):
     """Production configuration."""
@@ -123,7 +118,15 @@ class TestingConfig(Config):
     UPLOAD_DIR = "forecast_app/tests/user-content/tmp_upload"
 
 
-# Module level variables to help with app factory
-configs = [TestingConfig, ProductionConfig, DevelopmentConfig]
+class DemoConfig(Config):
+    # FREEZE CONFIGS
+    NAME = "demo"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///db/demo.db"
+    FREEZER_DESTINATION = "../build"
+    FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS = True
+    FREEZER_RELATIVE_URLS = True  # False?
+
+
+configs = [TestingConfig, ProductionConfig, DevelopmentConfig, DemoConfig]
 config_map = {config.NAME: config for config in configs}
 SECRET_VARS = ["ADMIN_USER", "ADMIN_PASSWORD", "SECRET_KEY"]

@@ -13,26 +13,21 @@
   <!-- Nav Item - Dashboard -->
   {% with page='latest-forecast' %}
   <li class="nav-item {% include 'partials/is-active.html' %}">
-    <a class="nav-link" href="{{ url_for( 'latest-forecast' ) }}">
-      <i class="fas fa-fw fa-binoculars"></i>
-      <span>Forecast</span>
-    </a>
+    <a class="nav-link" href="{{ url_for( 'latest-forecast' ) }}{% if config.NAME == 'demo' %}.html{% endif %}"><i
+        class="fas fa-fw fa-binoculars"></i><span>Forecast</span></a>
   </li>
   {% endwith %}
   {% with page='forecast-model-list' %}
   <li class="nav-item {% include 'partials/is-active.html' %}">
-    <a class="nav-link" href="{{ url_for( 'forecast-model-list' ) }}">
-      <i class="fas fa-fw fa-list"></i>
-      <span>All Models</span>
-    </a>
+    <a class="nav-link" href="{{ url_for( 'forecast-model-list' ) }}{% if config.NAME == 'demo' %}.html{% endif %}"><i
+        class="fas fa-fw fa-list"></i><span>All Models</span></a>
   </li>
   {% endwith %}
 
   {% with page='historical-load-data' %}
   <li class="nav-item {% include 'partials/is-active.html' %}">
-    <a class="nav-link" href="{{ url_for( 'historical-load-data' ) }}">
-      <i class="fas fa-fw fa-bolt"></i>
-      <span>Load Data</span></a>
+    <a class="nav-link" href="{{ url_for( 'historical-load-data' ) }}{% if config.NAME == 'demo' %}.html{% endif %}"><i
+        class="fas fa-fw fa-bolt"></i><span>Load Data</span></a>
   </li>
   {% endwith %}
 
@@ -47,8 +42,10 @@
     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
       <div class="bg-white py-2 collapse-inner rounded">
         <!-- <h6 class="collapse-header">Custom Components:</h6> -->
-        <a class="collapse-item" href="{{ url_for( 'historical-weather-data' ) }}">Historical</a>
-        <a class="collapse-item" href="{{ url_for( 'forecast-weather-data' ) }}">Forecast</a>
+        <a class="collapse-item"
+          href="{{ url_for( 'historical-weather-data' ) }}{% if config.NAME == 'demo' %}.html{% endif %}">Historical</a>
+        <a class="collapse-item"
+          href="{{ url_for( 'forecast-weather-data' ) }}{% if config.NAME == 'demo' %}.html{% endif %}">Forecast</a>
       </div>
     </div>
   </li>
@@ -56,7 +53,7 @@
 
   {% with page='instructions' %}
   <li class="nav-item {% include 'partials/is-active.html' %}">
-    <a class="nav-link" href="{{ url_for( 'instructions' ) }}">
+    <a class="nav-link" href="{{ url_for( 'instructions' ) }}{% if config.NAME == 'demo' %}.html{% endif %}">
       <i class="fas fa-fw fa-book"></i>
       <span>Instructions</span></a>
   </li>

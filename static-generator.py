@@ -13,7 +13,7 @@ views.RenderTemplateView.decorators = []
 views.ForecastModelListView.decorators = []
 views.ForecastModelDetailView.decorators = []
 
-app = create_app("prod")
+app = create_app("demo")
 # for view in dir(views):
 #     if hasattr(getattr(views, view), "decorators"):
 #         getattr(views, view).decorators = []
@@ -36,30 +36,19 @@ def url_generator():
     yield "/user-settings"
     yield "/model-settings"
 
-    for model in ForecastModel.query.all():
-        yield f"/forecast-models/{model.slug}"
+    # for model in ForecastModel.query.all():
+    #     yield f"/forecast-models/{model.slug}"
 
-    yield "/forecast-models"
-
-
-# @freezer.register_generator
-# def venues_generator():
-#     from forecast_app.models import HistoricalWeatherData
-
-#     all_routes = set([rule_obj.rule for rule_obj in app.url_map.iter_rules()])
-
-#     for route in all_routes:
-#         if "<" not in route:
-#             yield route
+    # yield "/forecast-models"
 
 
 if __name__ == "__main__":
     freezer.freeze()
 
     # HACK: Add .html to all files
-    # os.chdir("forecast_app")
-    # for file in os.listdir(app.config["FREEZER_DESTINATION"]):
-    #     path = os.path.join(app.config["FREEZER_DESTINATION"], file)
-    #     if os.path.isfile(path) and "." not in file:
-    #         new_name = path + ".html"
-    #         os.rename(path, new_name)
+    os.chdir("forecast_app")
+    for file in os.listdir(app.config["FREEZER_DESTINATION"]):
+        path = os.path.join(app.config["FREEZER_DESTINATION"], file)
+        if os.path.isfile(path) and "." not in file:
+            new_name = path + ".html"
+            os.rename(path, new_name)
