@@ -23,15 +23,50 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 
+  <style>
+    .col {
+      min-width: 250px;
+      margin: 20px
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+      transition: 200ms;
+    }
+
+    a:hover {
+      color: black;
+    }
+
+    .bg-gradient-light {
+      padding: 50px;
+    }
+
+    p:last-child {
+      margin-bottom: 0px;
+    }
+
+    @media only screen and (max-width: 600px) {
+      h1 {
+        font-size: 30px;
+      }
+
+      .bg-gradient-light {
+        padding-left: 0px;
+        padding-right: 0px;
+      }
+    }
+  </style>
+
 </head>
 
-<body class="bg-gradient-light" style="padding: 50px;">
+<body class="bg-gradient-light">
   <div class="container text-center">
     <h1>Welcome to <br><code>coopforecast.com</code></h1>
   </div>
   <div class="container">
     <div class="row">
-      <div class="col" style="min-width: 250px; margin: 20px">
+      <div class="col">
         <a href="/docs">
           <div class="card shadow-lg">
             <div class="card-body text-center">
@@ -40,34 +75,37 @@
               </p>
               <p>
                 Read the docs
+                <i class="fas fa-arrow-right"></i>
               </p>
             </div>
           </div>
         </a>
       </div>
-      <div class="col" style="min-width: 250px; margin: 20px">
+      <div class="col">
         <a href="/demo-site/">
           <div class="card shadow-lg">
             <div class="card-body text-center">
               <p>
-                <i class="fas fa-binoculars fa-5x" width="300px"></i>
+                <i class="fa fa-bar-chart fa-5x" aria-hidden="true"></i>
               </p>
               <p>
                 See the static demo site
+                <i class="fas fa-arrow-right"></i>
               </p>
             </div>
           </div>
         </a>
       </div>
-      <div class="col" style="min-width: 250px; margin: 20px">
+      <div class="col">
         <a href="https://github.com/dpinney/coopforecast">
           <div class="card shadow-lg">
             <div class="card-body text-center">
               <p>
-                <img src="forecast_app/static/img/github-brands.svg" alt="github" width="77em">
+                <i class="fab fa-github fa-5x" aria-hidden="true"></i>
               </p>
               <p>
                 Explore the repo
+                <i class="fas fa-arrow-right"></i>
               </p>
             </div>
           </div>
@@ -75,9 +113,14 @@
       </a>
     </div>
     <div class="row">
-      <div class="col" style="margin: 20px">
+      <div class="col">
         <div class="card shadow-lg">
           <div class="card-body">
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nihil recusandae quos at ut, corporis
+              exercitationem
+              a, excepturi aut enim labore, vitae magni? Expedita nulla impedit voluptatem voluptatibus, praesentium
+              culpa
+              recusandae!</p>
             <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nihil recusandae quos at ut, corporis
               exercitationem
               a, excepturi aut enim labore, vitae magni? Expedita nulla impedit voluptatem voluptatibus, praesentium
