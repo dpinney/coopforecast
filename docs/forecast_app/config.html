@@ -198,6 +198,30 @@
                 </ul>
 
             </li>
+            <li>
+                    <a class="class" href="#DemoConfig">DemoConfig</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#DemoConfig.__init__">DemoConfig</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#DemoConfig.NAME">NAME</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#DemoConfig.SQLALCHEMY_DATABASE_URI">SQLALCHEMY_DATABASE_URI</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#DemoConfig.FREEZER_DESTINATION">FREEZER_DESTINATION</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#DemoConfig.FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS">FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#DemoConfig.FREEZER_RELATIVE_URLS">FREEZER_RELATIVE_URLS</a>
+                        </li>
+                </ul>
+
+            </li>
     </ul>
 
 
@@ -339,8 +363,16 @@
     <span class="n">UPLOAD_DIR</span> <span class="o">=</span> <span class="s2">&quot;forecast_app/tests/user-content/tmp_upload&quot;</span>
 
 
-<span class="c1"># Module level variables to help with app factory</span>
-<span class="n">configs</span> <span class="o">=</span> <span class="p">[</span><span class="n">TestingConfig</span><span class="p">,</span> <span class="n">ProductionConfig</span><span class="p">,</span> <span class="n">DevelopmentConfig</span><span class="p">]</span>
+<span class="k">class</span> <span class="nc">DemoConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+    <span class="c1"># FREEZE CONFIGS</span>
+    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;demo&quot;</span>
+    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/demo.db&quot;</span>
+    <span class="n">FREEZER_DESTINATION</span> <span class="o">=</span> <span class="s2">&quot;../docs&quot;</span>
+    <span class="n">FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">FREEZER_RELATIVE_URLS</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># False?</span>
+
+
+<span class="n">configs</span> <span class="o">=</span> <span class="p">[</span><span class="n">TestingConfig</span><span class="p">,</span> <span class="n">ProductionConfig</span><span class="p">,</span> <span class="n">DevelopmentConfig</span><span class="p">,</span> <span class="n">DemoConfig</span><span class="p">]</span>
 <span class="n">config_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">config</span><span class="o">.</span><span class="n">NAME</span><span class="p">:</span> <span class="n">config</span> <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">configs</span><span class="p">}</span>
 <span class="n">SECRET_VARS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ADMIN_USER&quot;</span><span class="p">,</span> <span class="s2">&quot;ADMIN_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;SECRET_KEY&quot;</span><span class="p">]</span>
 </pre></div>
@@ -1121,6 +1153,128 @@
                 <dd id="TestingConfig.TIMEZONE" class="variable"><a href="#Config.TIMEZONE">TIMEZONE</a></dd>
                 <dd id="TestingConfig.NWS_CODE" class="variable"><a href="#Config.NWS_CODE">NWS_CODE</a></dd>
                 <dd id="TestingConfig.EARLIEST_SYNC_DATE" class="variable"><a href="#Config.EARLIEST_SYNC_DATE">EARLIEST_SYNC_DATE</a></dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="DemoConfig">
+                                <div class="attr class">
+        <a class="headerlink" href="#DemoConfig">#&nbsp;&nbsp</a>
+
+        
+        <span class="def">class</span>
+        <span class="name">DemoConfig</span><wbr>(<span class="base"><a href="#Config">Config</a></span>):
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">DemoConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+    <span class="c1"># FREEZE CONFIGS</span>
+    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;demo&quot;</span>
+    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///db/demo.db&quot;</span>
+    <span class="n">FREEZER_DESTINATION</span> <span class="o">=</span> <span class="s2">&quot;../docs&quot;</span>
+    <span class="n">FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">FREEZER_RELATIVE_URLS</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># False?</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Base configuration.</p>
+</div>
+
+
+                            <div id="DemoConfig.__init__" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#DemoConfig.__init__">#&nbsp;&nbsp</a>
+
+        
+            <span class="name">DemoConfig</span><span class="signature">()</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="DemoConfig.NAME" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#DemoConfig.NAME">#&nbsp;&nbsp</a>
+
+        <span class="name">NAME</span><span class="default_value"> = &#39;demo&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="DemoConfig.SQLALCHEMY_DATABASE_URI" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#DemoConfig.SQLALCHEMY_DATABASE_URI">#&nbsp;&nbsp</a>
+
+        <span class="name">SQLALCHEMY_DATABASE_URI</span><span class="default_value"> = &#39;sqlite:///db/demo.db&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="DemoConfig.FREEZER_DESTINATION" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#DemoConfig.FREEZER_DESTINATION">#&nbsp;&nbsp</a>
+
+        <span class="name">FREEZER_DESTINATION</span><span class="default_value"> = &#39;../docs&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="DemoConfig.FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#DemoConfig.FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS">#&nbsp;&nbsp</a>
+
+        <span class="name">FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS</span><span class="default_value"> = True</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="DemoConfig.FREEZER_RELATIVE_URLS" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#DemoConfig.FREEZER_RELATIVE_URLS">#&nbsp;&nbsp</a>
+
+        <span class="name">FREEZER_RELATIVE_URLS</span><span class="default_value"> = True</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt><a href="#Config">Config</a></dt>
+                                <dd id="DemoConfig.TESTING" class="variable"><a href="#Config.TESTING">TESTING</a></dd>
+                <dd id="DemoConfig.DEBUG" class="variable"><a href="#Config.DEBUG">DEBUG</a></dd>
+                <dd id="DemoConfig.SQLALCHEMY_TRACK_MODIFICATIONS" class="variable"><a href="#Config.SQLALCHEMY_TRACK_MODIFICATIONS">SQLALCHEMY_TRACK_MODIFICATIONS</a></dd>
+                <dd id="DemoConfig.OUTPUT_DIR" class="variable"><a href="#Config.OUTPUT_DIR">OUTPUT_DIR</a></dd>
+                <dd id="DemoConfig.UPLOAD_DIR" class="variable"><a href="#Config.UPLOAD_DIR">UPLOAD_DIR</a></dd>
+                <dd id="DemoConfig.PORT" class="variable"><a href="#Config.PORT">PORT</a></dd>
+                <dd id="DemoConfig.REDIRECT_PORT" class="variable"><a href="#Config.REDIRECT_PORT">REDIRECT_PORT</a></dd>
+                <dd id="DemoConfig.WORKERS" class="variable"><a href="#Config.WORKERS">WORKERS</a></dd>
+                <dd id="DemoConfig.GUNICORN_PATH" class="variable"><a href="#Config.GUNICORN_PATH">GUNICORN_PATH</a></dd>
+                <dd id="DemoConfig.ADMIN_USER" class="variable"><a href="#Config.ADMIN_USER">ADMIN_USER</a></dd>
+                <dd id="DemoConfig.ADMIN_PASSWORD" class="variable"><a href="#Config.ADMIN_PASSWORD">ADMIN_PASSWORD</a></dd>
+                <dd id="DemoConfig.SECRET_KEY" class="variable"><a href="#Config.SECRET_KEY">SECRET_KEY</a></dd>
+                <dd id="DemoConfig.CERT_DIR" class="variable"><a href="#Config.CERT_DIR">CERT_DIR</a></dd>
+                <dd id="DemoConfig.EMAIL" class="variable"><a href="#Config.EMAIL">EMAIL</a></dd>
+                <dd id="DemoConfig.DOMAIN" class="variable"><a href="#Config.DOMAIN">DOMAIN</a></dd>
+                <dd id="DemoConfig.LOAD_COL" class="variable"><a href="#Config.LOAD_COL">LOAD_COL</a></dd>
+                <dd id="DemoConfig.TEMP_COL" class="variable"><a href="#Config.TEMP_COL">TEMP_COL</a></dd>
+                <dd id="DemoConfig.HOUR_COL" class="variable"><a href="#Config.HOUR_COL">HOUR_COL</a></dd>
+                <dd id="DemoConfig.DATE_COL" class="variable"><a href="#Config.DATE_COL">DATE_COL</a></dd>
+                <dd id="DemoConfig.EPOCHS" class="variable"><a href="#Config.EPOCHS">EPOCHS</a></dd>
+                <dd id="DemoConfig.HOURS_PRIOR" class="variable"><a href="#Config.HOURS_PRIOR">HOURS_PRIOR</a></dd>
+                <dd id="DemoConfig.LOGO_PATH" class="variable"><a href="#Config.LOGO_PATH">LOGO_PATH</a></dd>
+                <dd id="DemoConfig.ASOS_STATION" class="variable"><a href="#Config.ASOS_STATION">ASOS_STATION</a></dd>
+                <dd id="DemoConfig.TIMEZONE" class="variable"><a href="#Config.TIMEZONE">TIMEZONE</a></dd>
+                <dd id="DemoConfig.NWS_CODE" class="variable"><a href="#Config.NWS_CODE">NWS_CODE</a></dd>
+                <dd id="DemoConfig.EARLIEST_SYNC_DATE" class="variable"><a href="#Config.EARLIEST_SYNC_DATE">EARLIEST_SYNC_DATE</a></dd>
 
             </div>
                                 </dl>
