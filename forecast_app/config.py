@@ -124,9 +124,9 @@ class DemoConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/demo.db"
     FREEZER_DESTINATION = "../demo"
     FREEZER_IGNORE_MIMETYPE_WARNINGS = True
-    FREEZER_RELATIVE_URLS = True  # False?
-    # FREEZER_REDIRECT_POLICY =
-    FREEZER_BASE_URL = "https://coopforecast.com/demo/"
+    FREEZER_RELATIVE_URLS = True  # Use relative URLs for static files
+    FREEZER_REMOVE_EXTRA_FILES = True  # Clear directory before every run
+    # FREEZER_BASE_URL = "https://coopforecast.com/demo/"
 
 
 configs = [TestingConfig, ProductionConfig, DevelopmentConfig, DemoConfig]

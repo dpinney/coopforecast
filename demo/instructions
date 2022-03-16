@@ -7,26 +7,26 @@
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡️</text></svg>">
 
   <!-- Everything for bootstrap theme -->
-  <link rel="stylesheet" href="demo/static/css/sb-admin-2.css">
-  <link href="demo/static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet"
+  <link rel="stylesheet" href="static/css/sb-admin-2.css">
+  <link href="static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet"
     type="text/css">
   <link
     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
     rel="stylesheet">
-  <script src="demo/static/vendor/jquery/jquery.min.js"></script>
-  <script src="demo/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="demo/static/vendor/jquery-easing/jquery.easing.min.js"></script>
-  <script src="demo/static/js/sb-admin-2.js"></script>
+  <script src="static/vendor/jquery/jquery.min.js"></script>
+  <script src="static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="static/vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="static/js/sb-admin-2.js"></script>
 
   <!-- Highcharts -->
-  <script src="demo/static/js/highstocks/highstock.js"></script>
-  <script src="demo/static/js/highstocks/modules/data.js"></script>
-  <script src="demo/static/js/highstocks/modules/exporting.js"></script>
-  <script src="demo/static/js/highstocks/modules/export-data.js"></script>
+  <script src="static/js/highstocks/highstock.js"></script>
+  <script src="static/js/highstocks/modules/data.js"></script>
+  <script src="static/js/highstocks/modules/exporting.js"></script>
+  <script src="static/js/highstocks/modules/export-data.js"></script>
 
   <!-- Add site-specific CSS and JS -->
-  <link href="demo/static/css/main.css" rel="stylesheet">
-  <script src="demo/static/js/main.js"></script>
+  <link href="static/css/main.css" rel="stylesheet">
+  <script src="static/js/main.js"></script>
 
   
 
@@ -68,7 +68,7 @@
 
 
 ">
-    <a class="nav-link" href="demo/latest-forecast">
+    <a class="nav-link" href="latest-forecast">
       <i class="fas fa-fw fa-binoculars"></i>
       <span>Forecast</span>
     </a>
@@ -81,7 +81,7 @@
 
 
 ">
-    <a class="nav-link" href="demo/forecast-models">
+    <a class="nav-link" href="forecast-models">
       <i class="fas fa-fw fa-list"></i>
       <span>All Models</span>
     </a>
@@ -95,7 +95,7 @@
 
 
 ">
-    <a class="nav-link" href="demo/historical-load-data">
+    <a class="nav-link" href="historical-load-data">
       <i class="fas fa-fw fa-bolt"></i>
       <span>Load Data</span></a>
   </li>
@@ -117,8 +117,8 @@
     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
       <div class="bg-white py-2 collapse-inner rounded">
         <!-- <h6 class="collapse-header">Custom Components:</h6> -->
-        <a class="collapse-item" href="demo/historical-weather-data">Historical</a>
-        <a class="collapse-item" href="demo/forecast-weather-data">Forecast</a>
+        <a class="collapse-item" href="historical-weather-data">Historical</a>
+        <a class="collapse-item" href="forecast-weather-data">Forecast</a>
       </div>
     </div>
   </li>
@@ -131,7 +131,7 @@ active
 
 
 ">
-    <a class="nav-link" href="demo/instructions">
+    <a class="nav-link" href="instructions">
       <i class="fas fa-fw fa-book"></i>
       <span>Instructions</span></a>
   </li>
@@ -162,7 +162,7 @@ active
             <li class="nav-item dropdown no-arrow">
               <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false">
-                <img height="65px" src="demo/static/img/demo.png">
+                <img height="65px" src="static/img/demo.png">
               </a>
               <!-- Dropdown - User Information -->
               <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
@@ -182,7 +182,7 @@ active
         <div class="container-fluid">
 
           
-<zero-md src="demo/static/instructions.md"></zero-md>
+<zero-md src="static/instructions.md"></zero-md>
 
 
         </div>
@@ -235,7 +235,7 @@ active
         <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
         <div class="modal-footer">
           <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-          <a class="btn btn-primary" href="demo/logout">Logout</a>
+          <a class="btn btn-primary" href="logout">Logout</a>
         </div>
       </div>
     </div>
