@@ -107,13 +107,13 @@
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">patch</span>
-<span class="kn">import</span> <span class="nn">pytest</span>
 
-<span class="kn">from</span> <span class="nn">forecast_app</span> <span class="kn">import</span> <span class="n">create_app</span>
-<span class="kn">from</span> <span class="nn">forecast_app.config</span> <span class="kn">import</span> <span class="n">TestingConfig</span>
-<span class="kn">from</span> <span class="nn">forecast_app.commands</span> <span class="kn">import</span> <span class="n">init_db</span><span class="p">,</span> <span class="n">upload_demo_data</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
 <span class="kn">from</span> <span class="nn">flask_sqlalchemy</span> <span class="kn">import</span> <span class="n">SQLAlchemy</span>
 
+<span class="kn">from</span> <span class="nn">forecast_app</span> <span class="kn">import</span> <span class="n">create_app</span>
+<span class="kn">from</span> <span class="nn">forecast_app.commands</span> <span class="kn">import</span> <span class="n">init_db</span><span class="p">,</span> <span class="n">upload_demo_data</span>
+<span class="kn">from</span> <span class="nn">forecast_app.config</span> <span class="kn">import</span> <span class="n">TestingConfig</span>
 
 <span class="n">BACKUP_DB_PATH</span> <span class="o">=</span> <span class="s2">&quot;forecast_app/db/backup.db&quot;</span>
 

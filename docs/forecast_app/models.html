@@ -76,6 +76,18 @@
                                 <a class="variable" href="#ForecastModel.df_filename">df_filename</a>
                         </li>
                         <li>
+                                <a class="variable" href="#ForecastModel.NOT_STARTED">NOT_STARTED</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ForecastModel.RUNNING">RUNNING</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ForecastModel.COMPLETED_SUCCESSFULLY">COMPLETED_SUCCESSFULLY</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ForecastModel.FAILURE">FAILURE</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#ForecastModel.model_filename">model_filename</a>
                         </li>
                         <li>
@@ -98,6 +110,9 @@
                         </li>
                         <li>
                                 <a class="function" href="#ForecastModel.save">save</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#ForecastModel.delete">delete</a>
                         </li>
                         <li>
                                 <a class="function" href="#ForecastModel.launch_model">launch_model</a>
@@ -145,13 +160,13 @@
                                 <a class="variable" href="#TrainingData.value">value</a>
                         </li>
                         <li>
-                                <a class="function" href="#TrainingData.update_value">update_value</a>
-                        </li>
-                        <li>
                                 <a class="function" href="#TrainingData.load_df">load_df</a>
                         </li>
                         <li>
                                 <a class="function" href="#TrainingData.to_df">to_df</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#TrainingData.is_prepared">is_prepared</a>
                         </li>
                         <li>
                                 <a class="function" href="#TrainingData.load_data">load_data</a>
@@ -172,7 +187,7 @@
                                 <a class="variable" href="#ForecastWeatherData.column_name">column_name</a>
                         </li>
                         <li>
-                                <a class="function" href="#ForecastWeatherData.is_prepared">is_prepared</a>
+                                <a class="variable" href="#ForecastWeatherData.minimum_data_required">minimum_data_required</a>
                         </li>
                         <li>
                                 <a class="variable" href="#ForecastWeatherData.timestamp">timestamp</a>
@@ -199,7 +214,7 @@
                                 <a class="variable" href="#HistoricalWeatherData.column_name">column_name</a>
                         </li>
                         <li>
-                                <a class="function" href="#HistoricalWeatherData.is_prepared">is_prepared</a>
+                                <a class="variable" href="#HistoricalWeatherData.minimum_data_required">minimum_data_required</a>
                         </li>
                         <li>
                                 <a class="variable" href="#HistoricalWeatherData.timestamp">timestamp</a>
@@ -226,7 +241,7 @@
                                 <a class="variable" href="#HistoricalLoadData.column_name">column_name</a>
                         </li>
                         <li>
-                                <a class="function" href="#HistoricalLoadData.is_prepared">is_prepared</a>
+                                <a class="variable" href="#HistoricalLoadData.minimum_data_required">minimum_data_required</a>
                         </li>
                         <li>
                                 <a class="variable" href="#HistoricalLoadData.timestamp">timestamp</a>
@@ -263,16 +278,18 @@
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;A collection of ORMs for the forecast_app, configured with sqlalchemy.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">JSON</span>
-<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">signal</span>
-<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 
-<span class="kn">from</span> <span class="nn">forecast_app.utils</span> <span class="kn">import</span> <span class="n">db</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">JSON</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span>
+
 <span class="kn">import</span> <span class="nn">forecast_app.forecast</span> <span class="k">as</span> <span class="nn">lf</span>
+<span class="kn">from</span> <span class="nn">forecast_app.utils</span> <span class="kn">import</span> <span class="n">db</span><span class="p">,</span> <span class="n">safe_flash</span>
 
 
 <span class="k">class</span> <span class="nc">ForecastModel</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
@@ -294,6 +311,12 @@
     <span class="n">epochs</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="n">df_filename</span> <span class="o">=</span> <span class="s2">&quot;cached-dataframe.csv&quot;</span>
+
+    <span class="c1"># Status messages</span>
+    <span class="n">NOT_STARTED</span> <span class="o">=</span> <span class="s2">&quot;NOT STARTED&quot;</span>
+    <span class="n">RUNNING</span> <span class="o">=</span> <span class="s2">&quot;RUNNING&quot;</span>
+    <span class="n">COMPLETED_SUCCESSFULLY</span> <span class="o">=</span> <span class="s2">&quot;COMPLETED&quot;</span>
+    <span class="n">FAILURE</span> <span class="o">=</span> <span class="s2">&quot;FAILURE&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Collect the current state of the database and prepare a model for training.&quot;&quot;&quot;</span>
@@ -323,7 +346,7 @@
         <span class="c1"># TODO: This should span start_date to end_date</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">milliseconds</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOURS_PRIOR&quot;</span><span class="p">])</span>
         <span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;EPOCHS&quot;</span><span class="p">]</span>
 
@@ -338,32 +361,25 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the status of the model, either &quot;Not started&quot;, &quot;Finished&quot;, &quot;Failed&quot;, or &quot;Running&quot;.&quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Manage strings with class variables</span>
-        <span class="c1"># TODO: Can I just make a status property and nothing else?</span>
+        <span class="sd">&quot;&quot;&quot;Return the status of the model.&quot;&quot;&quot;</span>
         <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">pid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;Not started&quot;</span>
-        <span class="k">elif</span> <span class="n">pid</span> <span class="o">==</span> <span class="s2">&quot;COMPLETED&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;Finished&quot;</span>
-        <span class="k">elif</span> <span class="n">pid</span> <span class="o">==</span> <span class="s2">&quot;FAILURE&quot;</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="o">==</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;Failed&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NOT_STARTED</span>
+        <span class="k">elif</span> <span class="n">pid</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">COMPLETED_SUCCESSFULLY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">FAILURE</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">pid</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;Running&quot;</span>
+            <span class="c1"># If pid is a number, it is a running process</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">RUNNING</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return True if the model is currently running.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Running&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">RUNNING</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">exited_successfully</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return True if the model exited successfully.&quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Not started&quot;</span><span class="p">,</span> <span class="s2">&quot;Running&quot;</span><span class="p">]:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Finished&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">COMPLETED_SUCCESSFULLY</span>
 
     <span class="k">def</span> <span class="nf">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Store the process id of the model in a text file to help with multiprocessing.&quot;&quot;&quot;</span>
@@ -372,7 +388,7 @@
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">process_id</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">get_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Extract the process id from the process file to help with multiprocessing.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Extract the process id from the process file to help with multiprocessing. Return None if not found.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">):</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -386,7 +402,7 @@
         <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FAILURE</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model is not running.&quot;</span><span class="p">)</span>
 
@@ -396,12 +412,22 @@
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete the model&#39;s output directory and the database entry.&quot;&quot;&quot;</span>
+        <span class="c1"># Delete the output directory</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+
+        <span class="c1"># Delete the database entry</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ForecastModel </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">creation_date</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
 
     <span class="k">def</span> <span class="nf">launch_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_config</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Launch the model&#39;s training in a separate process.&quot;&quot;&quot;</span>
-
+        <span class="c1"># TODO: This should be `launch_model_suprocess`, and then `launch_model` should be the actual process</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># HACK: Because this is launched in another thread, we need to</span>
             <span class="c1">#       recreate the app context (!) Please think of a better way</span>
@@ -414,9 +440,9 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executing forecast...&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_forecast</span><span class="p">()</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finished with forecast...&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;COMPLETED&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">COMPLETED_SUCCESSFULLY</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;FAILURE&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FAILURE</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">collect_training_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -433,24 +459,26 @@
         <span class="c1">#  to make a continuous datetime index.</span>
         <span class="n">df_h</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_hl</span><span class="p">,</span> <span class="n">df_hw</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;dates&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
         <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
+        <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span><span class="p">()</span>
 
         <span class="c1"># Fill Nans for training data</span>
-        <span class="c1"># TODO: Have configuration to set the maximum number of missing values filled</span>
-        <span class="c1">#  this is configured via the pandas &quot;limit&quot; parameter</span>
-        <span class="c1"># TODO: This would ideally be replaced with interpolation</span>
-        <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;ffill&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;bfill&quot;</span><span class="p">)</span>
+        <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+        <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
 
         <span class="n">df_f</span> <span class="o">=</span> <span class="n">ForecastWeatherData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
         <span class="n">df_f</span> <span class="o">=</span> <span class="n">df_f</span><span class="p">[</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">)</span>
         <span class="p">]</span>
+        <span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
 
         <span class="c1"># TODO: Allow for different sized days</span>
         <span class="c1"># Remove all days that are not the same size</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_h</span><span class="p">,</span> <span class="n">df_f</span><span class="p">])</span>
+        <span class="c1"># TODO: This is preventing the model from training past midnight / dispatching</span>
+        <span class="c1">#  at any point in the day!</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">())</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">==</span> <span class="mi">24</span><span class="p">)]</span>
+
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="nd">@property</span>
@@ -468,8 +496,10 @@
 
     <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the model.&quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Raise an exception if the model doesn&#39;t exist</span>
-        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_execute_forecast</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Execute the forecast (outside a thread.) And save all info after finishing.</span>
@@ -479,24 +509,17 @@
 <span class="sd">        into training and testing sets, and train the model. Store all pertinent</span>
 <span class="sd">        information in the database.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Separate this into three functions for easier testing.</span>
+        <span class="n">hours_prior</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOURS_PRIOR&quot;</span><span class="p">]</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_df</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">generate_x_and_ys</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">data_split</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">DataSplit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">hours_prior</span><span class="o">=</span><span class="n">hours_prior</span><span class="p">)</span>
 
-        <span class="n">tomorrow_load</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tomorrow_accuracy</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">train_and_forecast_next_day</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span><span class="p">,</span>
-            <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
-            <span class="n">save_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">train_and_test_model</span><span class="p">(</span>
+            <span class="n">data_split</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">,</span> <span class="n">tensorboard</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
 
-        <span class="c1"># HACK: Set forecasted load on cached dataframe</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;forecasted_load&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;forecasted_load&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data_split</span><span class="o">.</span><span class="n">important_X</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">store_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">tomorrow_accuracy</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">loads</span> <span class="o">=</span> <span class="n">tomorrow_load</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 
     <span class="nd">@classmethod</span>
@@ -510,14 +533,18 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">hld_is_prepared</span><span class="p">,</span> <span class="n">hwd_is_prepared</span><span class="p">,</span> <span class="n">fwd_is_prepared</span><span class="p">]):</span>
             <span class="k">return</span> <span class="p">{}</span>
 
-        <span class="c1"># Ensure that there are at least 24 hours of forecast data</span>
+        <span class="c1"># Ensure that there are at least HOURS_PRIOR hours of forecast data</span>
+        <span class="n">hours_prior</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOURS_PRIOR&quot;</span><span class="p">]</span>
+
         <span class="n">hd_end_date</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">hld_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">],</span> <span class="n">hwd_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]])</span>
-        <span class="k">if</span> <span class="n">hd_end_date</span> <span class="o">-</span> <span class="n">fwd_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">24</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fwd_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">hd_end_date</span> <span class="o">&lt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span>
+            <span class="n">hours</span><span class="o">=</span><span class="n">hours_prior</span>
+        <span class="p">):</span>
             <span class="k">return</span> <span class="p">{}</span>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">24</span><span class="p">),</span>
+            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">hours_prior</span><span class="p">),</span>
         <span class="p">}</span>
 
 
@@ -544,12 +571,6 @@
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">friendly_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">update_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Safely update the value of the object.&quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Implement privacy so that users can&#39;t update the value of the object</span>
-        <span class="c1">#  https://stackoverflow.com/questions/10929004/how-to-restrict-setting-an-attribute-outside-of-constructor</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load_df</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
@@ -594,7 +615,7 @@
             <span class="p">)</span>
         <span class="n">df</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">])</span>
 
-        <span class="c1"># Ignoreing DST for now</span>
+        <span class="c1"># Ignoring DST for now</span>
         <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Make datetime continuous. Don&#39;t fill with values right now.</span>
@@ -605,14 +626,30 @@
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.</span>
+
+<span class="sd">        A model is prepared if there is there are at least `minimum_data_required` values in the database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">column_name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">cls</span><span class="o">.</span><span class="n">minimum_data_required</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
+            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Given a filepath or a dataframe, parse the data and load it into the database of the given model.&quot;&quot;&quot;</span>
 
-        <span class="c1"># NOTE: Entering a csv with both weather and load will overwrite both.</span>
-        <span class="c1">#  The columns parameter can prevent this.</span>
-        <span class="c1"># TODO: validation should happen here</span>
         <span class="c1"># TODO: This is a mess. Separate out into different functions for easier testing.</span>
-        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LOAD_COL&quot;</span><span class="p">]</span>
         <span class="n">TEMP_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;TEMP_COL&quot;</span><span class="p">]</span>
         <span class="n">HOUR_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOUR_COL&quot;</span><span class="p">]</span>
@@ -627,10 +664,8 @@
                     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;xlsx&quot;</span><span class="p">):</span>
                     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Please attach a file before uploading.&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;File extension not recognized.&quot;</span><span class="p">)</span>
+                    <span class="n">safe_flash</span><span class="p">(</span><span class="s2">&quot;File extension not recognized.&quot;</span><span class="p">,</span> <span class="s2">&quot;danger&quot;</span><span class="p">)</span>
 
             <span class="c1"># Some columns have spaces and quotes in their names.</span>
             <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &quot;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
@@ -639,17 +674,15 @@
 
             <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="n">VAL_COL</span><span class="p">,</span> <span class="n">HOUR_COL</span><span class="p">,</span> <span class="n">DATE_COL</span><span class="p">]:</span>
-                    <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="p">{</span>
-                            <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Warning: column &quot;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s1">&quot; will not be imported.&#39;</span><span class="p">,</span>
-                        <span class="p">}</span>
+                    <span class="n">safe_flash</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;Warning: column &quot;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s1">&quot; will not be imported.&#39;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span>
                     <span class="p">)</span>
 
             <span class="c1"># Select only the columns relevant for this class</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="n">VAL_COL</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">]]</span>
 
             <span class="c1"># If uploading data for the first time, don&#39;t perform tens of thousands of queries</span>
+            <span class="n">new_values</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
                     <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
@@ -657,61 +690,44 @@
                         <span class="n">value</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">),</span>
                     <span class="p">)</span>
                     <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                    <span class="n">new_values</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                    <span class="n">new_value</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">)</span>
                     <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">instance</span><span class="p">:</span>
-                        <span class="n">instance</span><span class="o">.</span><span class="n">update_value</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">,</span> <span class="n">instance</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
-                    <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># If the timestamp doesn&#39;t exist yet, create a new row.</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">instance</span><span class="p">:</span>
                         <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
                             <span class="n">timestamp</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span>
                             <span class="n">value</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">),</span>
                         <span class="p">)</span>
-                    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                        <span class="n">new_values</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="c1"># If the timestamp does exist, only update if the value isn&#39;t null.</span>
+                    <span class="c1">#  This is particularly important for CSVs with discontinuous updates;</span>
+                    <span class="c1">#  If a user inputs a CSV with multiple, random timestamps, we resample</span>
+                    <span class="c1">#  to create a continuous datetime index. If we allow overwriting with null values,</span>
+                    <span class="c1">#  we&#39;d set all values between the largest and smallest timestamps to None.)</span>
+                    <span class="k">elif</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">new_value</span><span class="p">):</span>
+                        <span class="n">instance</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">new_value</span>
+                        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                        <span class="n">new_values</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
-            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Success! Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> historical data points&quot;</span><span class="p">,</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
+            <span class="n">safe_flash</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success! Loaded </span><span class="si">{</span><span class="n">new_values</span><span class="si">}</span><span class="s2"> data points&quot;</span><span class="p">,</span> <span class="s2">&quot;success&quot;</span><span class="p">)</span>
+
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;danger&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Failed to load data. </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
-            <span class="c1"># TODO: Add this logic to all try/excepts</span>
-            <span class="k">if</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="n">e</span>
-        <span class="k">return</span> <span class="n">messages</span>
+            <span class="n">safe_flash</span><span class="p">(</span><span class="s2">&quot;Error: failed to load data. &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="s2">&quot;danger&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">ForecastWeatherData</span><span class="p">(</span><span class="n">TrainingData</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Table of forecasted weather data.&quot;&quot;&quot;</span>
 
-    <span class="c1"># TODO: Shift is_prepared to the abstract class.</span>
-
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;forecast_weather_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Forecast Temperature&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;tempc&quot;</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-
-        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">])</span>
-        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
-        <span class="p">}</span>
+    <span class="n">minimum_data_required</span> <span class="o">=</span> <span class="mi">24</span>
 
 
 <span class="k">class</span> <span class="nc">HistoricalWeatherData</span><span class="p">(</span><span class="n">TrainingData</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
@@ -720,20 +736,7 @@
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;historical_weather_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Historical Temperature&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;tempc&quot;</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
-
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-
-        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
-        <span class="p">}</span>
+    <span class="n">minimum_data_required</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span>
 
 
 <span class="k">class</span> <span class="nc">HistoricalLoadData</span><span class="p">(</span><span class="n">TrainingData</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
@@ -742,18 +745,7 @@
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;historical_load_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Historical Load&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;load&quot;</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
-        <span class="p">}</span>
+    <span class="n">minimum_data_required</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span>
 </pre></div>
 
         </details>
@@ -790,6 +782,12 @@
 
     <span class="n">df_filename</span> <span class="o">=</span> <span class="s2">&quot;cached-dataframe.csv&quot;</span>
 
+    <span class="c1"># Status messages</span>
+    <span class="n">NOT_STARTED</span> <span class="o">=</span> <span class="s2">&quot;NOT STARTED&quot;</span>
+    <span class="n">RUNNING</span> <span class="o">=</span> <span class="s2">&quot;RUNNING&quot;</span>
+    <span class="n">COMPLETED_SUCCESSFULLY</span> <span class="o">=</span> <span class="s2">&quot;COMPLETED&quot;</span>
+    <span class="n">FAILURE</span> <span class="o">=</span> <span class="s2">&quot;FAILURE&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Collect the current state of the database and prepare a model for training.&quot;&quot;&quot;</span>
 
@@ -818,7 +816,7 @@
         <span class="c1"># TODO: This should span start_date to end_date</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">milliseconds</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOURS_PRIOR&quot;</span><span class="p">])</span>
         <span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;EPOCHS&quot;</span><span class="p">]</span>
 
@@ -833,32 +831,25 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the status of the model, either &quot;Not started&quot;, &quot;Finished&quot;, &quot;Failed&quot;, or &quot;Running&quot;.&quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Manage strings with class variables</span>
-        <span class="c1"># TODO: Can I just make a status property and nothing else?</span>
+        <span class="sd">&quot;&quot;&quot;Return the status of the model.&quot;&quot;&quot;</span>
         <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">pid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;Not started&quot;</span>
-        <span class="k">elif</span> <span class="n">pid</span> <span class="o">==</span> <span class="s2">&quot;COMPLETED&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;Finished&quot;</span>
-        <span class="k">elif</span> <span class="n">pid</span> <span class="o">==</span> <span class="s2">&quot;FAILURE&quot;</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="o">==</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;Failed&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NOT_STARTED</span>
+        <span class="k">elif</span> <span class="n">pid</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">COMPLETED_SUCCESSFULLY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">FAILURE</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">pid</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;Running&quot;</span>
+            <span class="c1"># If pid is a number, it is a running process</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">RUNNING</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return True if the model is currently running.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Running&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">RUNNING</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">exited_successfully</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return True if the model exited successfully.&quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Not started&quot;</span><span class="p">,</span> <span class="s2">&quot;Running&quot;</span><span class="p">]:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Finished&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">COMPLETED_SUCCESSFULLY</span>
 
     <span class="k">def</span> <span class="nf">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Store the process id of the model in a text file to help with multiprocessing.&quot;&quot;&quot;</span>
@@ -867,7 +858,7 @@
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">process_id</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">get_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Extract the process id from the process file to help with multiprocessing.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Extract the process id from the process file to help with multiprocessing. Return None if not found.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">):</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -881,7 +872,7 @@
         <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FAILURE</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model is not running.&quot;</span><span class="p">)</span>
 
@@ -891,12 +882,22 @@
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete the model&#39;s output directory and the database entry.&quot;&quot;&quot;</span>
+        <span class="c1"># Delete the output directory</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+
+        <span class="c1"># Delete the database entry</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ForecastModel </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">creation_date</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
 
     <span class="k">def</span> <span class="nf">launch_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_config</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Launch the model&#39;s training in a separate process.&quot;&quot;&quot;</span>
-
+        <span class="c1"># TODO: This should be `launch_model_suprocess`, and then `launch_model` should be the actual process</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># HACK: Because this is launched in another thread, we need to</span>
             <span class="c1">#       recreate the app context (!) Please think of a better way</span>
@@ -909,9 +910,9 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executing forecast...&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_forecast</span><span class="p">()</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finished with forecast...&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;COMPLETED&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">COMPLETED_SUCCESSFULLY</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;FAILURE&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FAILURE</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">collect_training_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -928,24 +929,26 @@
         <span class="c1">#  to make a continuous datetime index.</span>
         <span class="n">df_h</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_hl</span><span class="p">,</span> <span class="n">df_hw</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;dates&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
         <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
+        <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span><span class="p">()</span>
 
         <span class="c1"># Fill Nans for training data</span>
-        <span class="c1"># TODO: Have configuration to set the maximum number of missing values filled</span>
-        <span class="c1">#  this is configured via the pandas &quot;limit&quot; parameter</span>
-        <span class="c1"># TODO: This would ideally be replaced with interpolation</span>
-        <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;ffill&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;bfill&quot;</span><span class="p">)</span>
+        <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+        <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
 
         <span class="n">df_f</span> <span class="o">=</span> <span class="n">ForecastWeatherData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
         <span class="n">df_f</span> <span class="o">=</span> <span class="n">df_f</span><span class="p">[</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">)</span>
         <span class="p">]</span>
+        <span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
 
         <span class="c1"># TODO: Allow for different sized days</span>
         <span class="c1"># Remove all days that are not the same size</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_h</span><span class="p">,</span> <span class="n">df_f</span><span class="p">])</span>
+        <span class="c1"># TODO: This is preventing the model from training past midnight / dispatching</span>
+        <span class="c1">#  at any point in the day!</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">())</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">==</span> <span class="mi">24</span><span class="p">)]</span>
+
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="nd">@property</span>
@@ -963,8 +966,10 @@
 
     <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the model.&quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Raise an exception if the model doesn&#39;t exist</span>
-        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_execute_forecast</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Execute the forecast (outside a thread.) And save all info after finishing.</span>
@@ -974,24 +979,17 @@
 <span class="sd">        into training and testing sets, and train the model. Store all pertinent</span>
 <span class="sd">        information in the database.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Separate this into three functions for easier testing.</span>
+        <span class="n">hours_prior</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOURS_PRIOR&quot;</span><span class="p">]</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_df</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">generate_x_and_ys</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">data_split</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">DataSplit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">hours_prior</span><span class="o">=</span><span class="n">hours_prior</span><span class="p">)</span>
 
-        <span class="n">tomorrow_load</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tomorrow_accuracy</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">train_and_forecast_next_day</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">all_y</span><span class="p">,</span>
-            <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
-            <span class="n">save_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">lf</span><span class="o">.</span><span class="n">train_and_test_model</span><span class="p">(</span>
+            <span class="n">data_split</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">,</span> <span class="n">tensorboard</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
 
-        <span class="c1"># HACK: Set forecasted load on cached dataframe</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;forecasted_load&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_X</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;forecasted_load&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data_split</span><span class="o">.</span><span class="n">important_X</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">store_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">tomorrow_accuracy</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">loads</span> <span class="o">=</span> <span class="n">tomorrow_load</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 
     <span class="nd">@classmethod</span>
@@ -1005,14 +1003,18 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">hld_is_prepared</span><span class="p">,</span> <span class="n">hwd_is_prepared</span><span class="p">,</span> <span class="n">fwd_is_prepared</span><span class="p">]):</span>
             <span class="k">return</span> <span class="p">{}</span>
 
-        <span class="c1"># Ensure that there are at least 24 hours of forecast data</span>
+        <span class="c1"># Ensure that there are at least HOURS_PRIOR hours of forecast data</span>
+        <span class="n">hours_prior</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOURS_PRIOR&quot;</span><span class="p">]</span>
+
         <span class="n">hd_end_date</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">hld_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">],</span> <span class="n">hwd_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]])</span>
-        <span class="k">if</span> <span class="n">hd_end_date</span> <span class="o">-</span> <span class="n">fwd_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">24</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fwd_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">hd_end_date</span> <span class="o">&lt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span>
+            <span class="n">hours</span><span class="o">=</span><span class="n">hours_prior</span>
+        <span class="p">):</span>
             <span class="k">return</span> <span class="p">{}</span>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">24</span><span class="p">),</span>
+            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">hours_prior</span><span class="p">),</span>
         <span class="p">}</span>
 </pre></div>
 
@@ -1165,6 +1167,46 @@
     
 
                             </div>
+                            <div id="ForecastModel.NOT_STARTED" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#ForecastModel.NOT_STARTED">#&nbsp;&nbsp</a>
+
+        <span class="name">NOT_STARTED</span><span class="default_value"> = &#39;NOT STARTED&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="ForecastModel.RUNNING" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#ForecastModel.RUNNING">#&nbsp;&nbsp</a>
+
+        <span class="name">RUNNING</span><span class="default_value"> = &#39;RUNNING&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="ForecastModel.COMPLETED_SUCCESSFULLY" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#ForecastModel.COMPLETED_SUCCESSFULLY">#&nbsp;&nbsp</a>
+
+        <span class="name">COMPLETED_SUCCESSFULLY</span><span class="default_value"> = &#39;COMPLETED&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="ForecastModel.FAILURE" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#ForecastModel.FAILURE">#&nbsp;&nbsp</a>
+
+        <span class="name">FAILURE</span><span class="default_value"> = &#39;FAILURE&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
                             <div id="ForecastModel.model_filename" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#ForecastModel.model_filename">#&nbsp;&nbsp</a>
 
@@ -1184,7 +1226,7 @@
     </div>
 
     
-            <div class="docstring"><p>Return the status of the model, either "Not started", "Finished", "Failed", or "Running".</p>
+            <div class="docstring"><p>Return the status of the model.</p>
 </div>
 
 
@@ -1248,7 +1290,7 @@
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get_process_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Extract the process id from the process file to help with multiprocessing.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Extract the process id from the process file to help with multiprocessing. Return None if not found.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">):</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -1259,7 +1301,7 @@
 
         </details>
 
-            <div class="docstring"><p>Extract the process id from the process file to help with multiprocessing.</p>
+            <div class="docstring"><p>Extract the process id from the process file to help with multiprocessing. Return None if not found.</p>
 </div>
 
 
@@ -1280,7 +1322,7 @@
         <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FAILURE</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model is not running.&quot;</span><span class="p">)</span>
 </pre></div>
@@ -1316,6 +1358,34 @@
 
 
                             </div>
+                            <div id="ForecastModel.delete" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#ForecastModel.delete">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">delete</span><span class="signature">(self)</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete the model&#39;s output directory and the database entry.&quot;&quot;&quot;</span>
+        <span class="c1"># Delete the output directory</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+
+        <span class="c1"># Delete the database entry</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Delete the model's output directory and the database entry.</p>
+</div>
+
+
+                            </div>
                             <div id="ForecastModel.launch_model" class="classattr">
                                         <div class="attr function"><a class="headerlink" href="#ForecastModel.launch_model">#&nbsp;&nbsp</a>
 
@@ -1328,7 +1398,7 @@
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">launch_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_config</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Launch the model&#39;s training in a separate process.&quot;&quot;&quot;</span>
-
+        <span class="c1"># TODO: This should be `launch_model_suprocess`, and then `launch_model` should be the actual process</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># HACK: Because this is launched in another thread, we need to</span>
             <span class="c1">#       recreate the app context (!) Please think of a better way</span>
@@ -1341,9 +1411,9 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executing forecast...&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_forecast</span><span class="p">()</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finished with forecast...&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;COMPLETED&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">COMPLETED_SUCCESSFULLY</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="s2">&quot;FAILURE&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FAILURE</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 
@@ -1378,24 +1448,26 @@
         <span class="c1">#  to make a continuous datetime index.</span>
         <span class="n">df_h</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_hl</span><span class="p">,</span> <span class="n">df_hw</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;dates&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
         <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
+        <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span><span class="p">()</span>
 
         <span class="c1"># Fill Nans for training data</span>
-        <span class="c1"># TODO: Have configuration to set the maximum number of missing values filled</span>
-        <span class="c1">#  this is configured via the pandas &quot;limit&quot; parameter</span>
-        <span class="c1"># TODO: This would ideally be replaced with interpolation</span>
-        <span class="n">df_h</span> <span class="o">=</span> <span class="n">df_h</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;ffill&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;bfill&quot;</span><span class="p">)</span>
+        <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+        <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_h</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
 
         <span class="n">df_f</span> <span class="o">=</span> <span class="n">ForecastWeatherData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
         <span class="n">df_f</span> <span class="o">=</span> <span class="n">df_f</span><span class="p">[</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">)</span>
         <span class="p">]</span>
+        <span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_f</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
 
         <span class="c1"># TODO: Allow for different sized days</span>
         <span class="c1"># Remove all days that are not the same size</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_h</span><span class="p">,</span> <span class="n">df_f</span><span class="p">])</span>
+        <span class="c1"># TODO: This is preventing the model from training past midnight / dispatching</span>
+        <span class="c1">#  at any point in the day!</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">())</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">==</span> <span class="mi">24</span><span class="p">)]</span>
+
         <span class="k">return</span> <span class="n">df</span>
 </pre></div>
 
@@ -1477,8 +1549,10 @@ df exploding is not performed.</p>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the model.&quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Raise an exception if the model doesn&#39;t exist</span>
-        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
 </pre></div>
 
         </details>
@@ -1510,14 +1584,18 @@ df exploding is not performed.</p>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">hld_is_prepared</span><span class="p">,</span> <span class="n">hwd_is_prepared</span><span class="p">,</span> <span class="n">fwd_is_prepared</span><span class="p">]):</span>
             <span class="k">return</span> <span class="p">{}</span>
 
-        <span class="c1"># Ensure that there are at least 24 hours of forecast data</span>
+        <span class="c1"># Ensure that there are at least HOURS_PRIOR hours of forecast data</span>
+        <span class="n">hours_prior</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOURS_PRIOR&quot;</span><span class="p">]</span>
+
         <span class="n">hd_end_date</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">hld_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">],</span> <span class="n">hwd_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]])</span>
-        <span class="k">if</span> <span class="n">hd_end_date</span> <span class="o">-</span> <span class="n">fwd_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">24</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fwd_is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">hd_end_date</span> <span class="o">&lt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span>
+            <span class="n">hours</span><span class="o">=</span><span class="n">hours_prior</span>
+        <span class="p">):</span>
             <span class="k">return</span> <span class="p">{}</span>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">24</span><span class="p">),</span>
+            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">hd_end_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">hours_prior</span><span class="p">),</span>
         <span class="p">}</span>
 </pre></div>
 
@@ -1576,12 +1654,6 @@ df exploding is not performed.</p>
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">friendly_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">update_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Safely update the value of the object.&quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Implement privacy so that users can&#39;t update the value of the object</span>
-        <span class="c1">#  https://stackoverflow.com/questions/10929004/how-to-restrict-setting-an-attribute-outside-of-constructor</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
-
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load_df</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Load a dataframe into the database.&quot;&quot;&quot;</span>
@@ -1625,7 +1697,7 @@ df exploding is not performed.</p>
             <span class="p">)</span>
         <span class="n">df</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">])</span>
 
-        <span class="c1"># Ignoreing DST for now</span>
+        <span class="c1"># Ignoring DST for now</span>
         <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Make datetime continuous. Don&#39;t fill with values right now.</span>
@@ -1636,14 +1708,30 @@ df exploding is not performed.</p>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.</span>
+
+<span class="sd">        A model is prepared if there is there are at least `minimum_data_required` values in the database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">column_name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">cls</span><span class="o">.</span><span class="n">minimum_data_required</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
+            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Given a filepath or a dataframe, parse the data and load it into the database of the given model.&quot;&quot;&quot;</span>
 
-        <span class="c1"># NOTE: Entering a csv with both weather and load will overwrite both.</span>
-        <span class="c1">#  The columns parameter can prevent this.</span>
-        <span class="c1"># TODO: validation should happen here</span>
         <span class="c1"># TODO: This is a mess. Separate out into different functions for easier testing.</span>
-        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LOAD_COL&quot;</span><span class="p">]</span>
         <span class="n">TEMP_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;TEMP_COL&quot;</span><span class="p">]</span>
         <span class="n">HOUR_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOUR_COL&quot;</span><span class="p">]</span>
@@ -1658,10 +1746,8 @@ df exploding is not performed.</p>
                     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;xlsx&quot;</span><span class="p">):</span>
                     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Please attach a file before uploading.&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;File extension not recognized.&quot;</span><span class="p">)</span>
+                    <span class="n">safe_flash</span><span class="p">(</span><span class="s2">&quot;File extension not recognized.&quot;</span><span class="p">,</span> <span class="s2">&quot;danger&quot;</span><span class="p">)</span>
 
             <span class="c1"># Some columns have spaces and quotes in their names.</span>
             <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &quot;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
@@ -1670,17 +1756,15 @@ df exploding is not performed.</p>
 
             <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="n">VAL_COL</span><span class="p">,</span> <span class="n">HOUR_COL</span><span class="p">,</span> <span class="n">DATE_COL</span><span class="p">]:</span>
-                    <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="p">{</span>
-                            <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Warning: column &quot;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s1">&quot; will not be imported.&#39;</span><span class="p">,</span>
-                        <span class="p">}</span>
+                    <span class="n">safe_flash</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;Warning: column &quot;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s1">&quot; will not be imported.&#39;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span>
                     <span class="p">)</span>
 
             <span class="c1"># Select only the columns relevant for this class</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="n">VAL_COL</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">]]</span>
 
             <span class="c1"># If uploading data for the first time, don&#39;t perform tens of thousands of queries</span>
+            <span class="n">new_values</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
                     <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
@@ -1688,37 +1772,35 @@ df exploding is not performed.</p>
                         <span class="n">value</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">),</span>
                     <span class="p">)</span>
                     <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                    <span class="n">new_values</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                    <span class="n">new_value</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">)</span>
                     <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">instance</span><span class="p">:</span>
-                        <span class="n">instance</span><span class="o">.</span><span class="n">update_value</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">,</span> <span class="n">instance</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
-                    <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># If the timestamp doesn&#39;t exist yet, create a new row.</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">instance</span><span class="p">:</span>
                         <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
                             <span class="n">timestamp</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span>
                             <span class="n">value</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">),</span>
                         <span class="p">)</span>
-                    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                        <span class="n">new_values</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="c1"># If the timestamp does exist, only update if the value isn&#39;t null.</span>
+                    <span class="c1">#  This is particularly important for CSVs with discontinuous updates;</span>
+                    <span class="c1">#  If a user inputs a CSV with multiple, random timestamps, we resample</span>
+                    <span class="c1">#  to create a continuous datetime index. If we allow overwriting with null values,</span>
+                    <span class="c1">#  we&#39;d set all values between the largest and smallest timestamps to None.)</span>
+                    <span class="k">elif</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">new_value</span><span class="p">):</span>
+                        <span class="n">instance</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">new_value</span>
+                        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                        <span class="n">new_values</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
-            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Success! Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> historical data points&quot;</span><span class="p">,</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
+            <span class="n">safe_flash</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success! Loaded </span><span class="si">{</span><span class="n">new_values</span><span class="si">}</span><span class="s2"> data points&quot;</span><span class="p">,</span> <span class="s2">&quot;success&quot;</span><span class="p">)</span>
+
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;danger&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Failed to load data. </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
-            <span class="c1"># TODO: Add this logic to all try/excepts</span>
-            <span class="k">if</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="n">e</span>
-        <span class="k">return</span> <span class="n">messages</span>
+            <span class="n">safe_flash</span><span class="p">(</span><span class="s2">&quot;Error: failed to load data. &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="s2">&quot;danger&quot;</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -1805,30 +1887,6 @@ df exploding is not performed.</p>
     
 
                             </div>
-                            <div id="TrainingData.update_value" class="classattr">
-                                        <div class="attr function"><a class="headerlink" href="#TrainingData.update_value">#&nbsp;&nbsp</a>
-
-        
-            <span class="def">def</span>
-            <span class="name">update_value</span><span class="signature">(self, value)</span>:
-    </div>
-
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">update_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Safely update the value of the object.&quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Implement privacy so that users can&#39;t update the value of the object</span>
-        <span class="c1">#  https://stackoverflow.com/questions/10929004/how-to-restrict-setting-an-attribute-outside-of-constructor</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
-</pre></div>
-
-        </details>
-
-            <div class="docstring"><p>Safely update the value of the object.</p>
-</div>
-
-
-                            </div>
                             <div id="TrainingData.load_df" class="classattr">
                                         <div class="attr function"><a class="headerlink" href="#TrainingData.load_df">#&nbsp;&nbsp</a>
 
@@ -1884,6 +1942,47 @@ df exploding is not performed.</p>
 
 
                             </div>
+                            <div id="TrainingData.is_prepared" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#TrainingData.is_prepared">#&nbsp;&nbsp</a>
+
+                <div class="decorator">@classmethod</div>
+
+            <span class="def">def</span>
+            <span class="name">is_prepared</span><span class="signature">(cls)</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.</span>
+
+<span class="sd">        A model is prepared if there is there are at least `minimum_data_required` values in the database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">column_name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">cls</span><span class="o">.</span><span class="n">minimum_data_required</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
+            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
+        <span class="p">}</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.</p>
+
+<p>A model is prepared if there is there are at least <code>minimum_data_required</code> values in the database.</p>
+</div>
+
+
+                            </div>
                             <div id="TrainingData.load_data" class="classattr">
                                         <div class="attr function"><a class="headerlink" href="#TrainingData.load_data">#&nbsp;&nbsp</a>
 
@@ -1899,11 +1998,7 @@ df exploding is not performed.</p>
     <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Given a filepath or a dataframe, parse the data and load it into the database of the given model.&quot;&quot;&quot;</span>
 
-        <span class="c1"># NOTE: Entering a csv with both weather and load will overwrite both.</span>
-        <span class="c1">#  The columns parameter can prevent this.</span>
-        <span class="c1"># TODO: validation should happen here</span>
         <span class="c1"># TODO: This is a mess. Separate out into different functions for easier testing.</span>
-        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">LOAD_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LOAD_COL&quot;</span><span class="p">]</span>
         <span class="n">TEMP_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;TEMP_COL&quot;</span><span class="p">]</span>
         <span class="n">HOUR_COL</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOUR_COL&quot;</span><span class="p">]</span>
@@ -1918,10 +2013,8 @@ df exploding is not performed.</p>
                     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;xlsx&quot;</span><span class="p">):</span>
                     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Please attach a file before uploading.&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;File extension not recognized.&quot;</span><span class="p">)</span>
+                    <span class="n">safe_flash</span><span class="p">(</span><span class="s2">&quot;File extension not recognized.&quot;</span><span class="p">,</span> <span class="s2">&quot;danger&quot;</span><span class="p">)</span>
 
             <span class="c1"># Some columns have spaces and quotes in their names.</span>
             <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &quot;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
@@ -1930,17 +2023,15 @@ df exploding is not performed.</p>
 
             <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="n">VAL_COL</span><span class="p">,</span> <span class="n">HOUR_COL</span><span class="p">,</span> <span class="n">DATE_COL</span><span class="p">]:</span>
-                    <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="p">{</span>
-                            <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Warning: column &quot;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s1">&quot; will not be imported.&#39;</span><span class="p">,</span>
-                        <span class="p">}</span>
+                    <span class="n">safe_flash</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;Warning: column &quot;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s1">&quot; will not be imported.&#39;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span>
                     <span class="p">)</span>
 
             <span class="c1"># Select only the columns relevant for this class</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="n">VAL_COL</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">]]</span>
 
             <span class="c1"># If uploading data for the first time, don&#39;t perform tens of thousands of queries</span>
+            <span class="n">new_values</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
                     <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
@@ -1948,37 +2039,35 @@ df exploding is not performed.</p>
                         <span class="n">value</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">),</span>
                     <span class="p">)</span>
                     <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                    <span class="n">new_values</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                    <span class="n">new_value</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">)</span>
                     <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">instance</span><span class="p">:</span>
-                        <span class="n">instance</span><span class="o">.</span><span class="n">update_value</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">,</span> <span class="n">instance</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
-                    <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># If the timestamp doesn&#39;t exist yet, create a new row.</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">instance</span><span class="p">:</span>
                         <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
                             <span class="n">timestamp</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span>
                             <span class="n">value</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VAL_COL</span><span class="p">),</span>
                         <span class="p">)</span>
-                    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                        <span class="n">new_values</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="c1"># If the timestamp does exist, only update if the value isn&#39;t null.</span>
+                    <span class="c1">#  This is particularly important for CSVs with discontinuous updates;</span>
+                    <span class="c1">#  If a user inputs a CSV with multiple, random timestamps, we resample</span>
+                    <span class="c1">#  to create a continuous datetime index. If we allow overwriting with null values,</span>
+                    <span class="c1">#  we&#39;d set all values between the largest and smallest timestamps to None.)</span>
+                    <span class="k">elif</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">new_value</span><span class="p">):</span>
+                        <span class="n">instance</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">new_value</span>
+                        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                        <span class="n">new_values</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
-            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Success! Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> historical data points&quot;</span><span class="p">,</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
+            <span class="n">safe_flash</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success! Loaded </span><span class="si">{</span><span class="n">new_values</span><span class="si">}</span><span class="s2"> data points&quot;</span><span class="p">,</span> <span class="s2">&quot;success&quot;</span><span class="p">)</span>
+
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;danger&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Failed to load data. </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
-            <span class="c1"># TODO: Add this logic to all try/excepts</span>
-            <span class="k">if</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="n">e</span>
-        <span class="k">return</span> <span class="n">messages</span>
+            <span class="n">safe_flash</span><span class="p">(</span><span class="s2">&quot;Error: failed to load data. &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="s2">&quot;danger&quot;</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -2003,25 +2092,10 @@ df exploding is not performed.</p>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ForecastWeatherData</span><span class="p">(</span><span class="n">TrainingData</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Table of forecasted weather data.&quot;&quot;&quot;</span>
 
-    <span class="c1"># TODO: Shift is_prepared to the abstract class.</span>
-
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;forecast_weather_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Forecast Temperature&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;tempc&quot;</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-
-        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">])</span>
-        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
-        <span class="p">}</span>
+    <span class="n">minimum_data_required</span> <span class="o">=</span> <span class="mi">24</span>
 </pre></div>
 
         </details>
@@ -2063,37 +2137,14 @@ df exploding is not performed.</p>
     
 
                             </div>
-                            <div id="ForecastWeatherData.is_prepared" class="classattr">
-                                        <div class="attr function"><a class="headerlink" href="#ForecastWeatherData.is_prepared">#&nbsp;&nbsp</a>
+                            <div id="ForecastWeatherData.minimum_data_required" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#ForecastWeatherData.minimum_data_required">#&nbsp;&nbsp</a>
 
-                <div class="decorator">@classmethod</div>
-
-            <span class="def">def</span>
-            <span class="name">is_prepared</span><span class="signature">(cls)</span>:
+        <span class="name">minimum_data_required</span><span class="default_value"> = 24</span>
     </div>
 
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-
-        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tempc&quot;</span><span class="p">])</span>
-        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
-        <span class="p">}</span>
-</pre></div>
-
-        </details>
-
-            <div class="docstring"><p>Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.</p>
-</div>
-
+    
+    
 
                             </div>
                             <div id="ForecastWeatherData.timestamp" class="classattr">
@@ -2130,9 +2181,9 @@ df exploding is not performed.</p>
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt><a href="#TrainingData">TrainingData</a></dt>
-                                <dd id="ForecastWeatherData.update_value" class="function"><a href="#TrainingData.update_value">update_value</a></dd>
-                <dd id="ForecastWeatherData.load_df" class="function"><a href="#TrainingData.load_df">load_df</a></dd>
+                                <dd id="ForecastWeatherData.load_df" class="function"><a href="#TrainingData.load_df">load_df</a></dd>
                 <dd id="ForecastWeatherData.to_df" class="function"><a href="#TrainingData.to_df">to_df</a></dd>
+                <dd id="ForecastWeatherData.is_prepared" class="function"><a href="#TrainingData.is_prepared">is_prepared</a></dd>
                 <dd id="ForecastWeatherData.load_data" class="function"><a href="#TrainingData.load_data">load_data</a></dd>
 
             </div>
@@ -2163,20 +2214,7 @@ df exploding is not performed.</p>
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;historical_weather_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Historical Temperature&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;tempc&quot;</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
-
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-
-        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
-        <span class="p">}</span>
+    <span class="n">minimum_data_required</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span>
 </pre></div>
 
         </details>
@@ -2218,37 +2256,14 @@ df exploding is not performed.</p>
     
 
                             </div>
-                            <div id="HistoricalWeatherData.is_prepared" class="classattr">
-                                        <div class="attr function"><a class="headerlink" href="#HistoricalWeatherData.is_prepared">#&nbsp;&nbsp</a>
+                            <div id="HistoricalWeatherData.minimum_data_required" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#HistoricalWeatherData.minimum_data_required">#&nbsp;&nbsp</a>
 
-                <div class="decorator">@classmethod</div>
-
-            <span class="def">def</span>
-            <span class="name">is_prepared</span><span class="signature">(cls)</span>:
+        <span class="name">minimum_data_required</span><span class="default_value"> = 26280</span>
     </div>
 
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
-
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-
-        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
-        <span class="p">}</span>
-</pre></div>
-
-        </details>
-
-            <div class="docstring"><p>Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.</p>
-</div>
-
+    
+    
 
                             </div>
                             <div id="HistoricalWeatherData.timestamp" class="classattr">
@@ -2285,9 +2300,9 @@ df exploding is not performed.</p>
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt><a href="#TrainingData">TrainingData</a></dt>
-                                <dd id="HistoricalWeatherData.update_value" class="function"><a href="#TrainingData.update_value">update_value</a></dd>
-                <dd id="HistoricalWeatherData.load_df" class="function"><a href="#TrainingData.load_df">load_df</a></dd>
+                                <dd id="HistoricalWeatherData.load_df" class="function"><a href="#TrainingData.load_df">load_df</a></dd>
                 <dd id="HistoricalWeatherData.to_df" class="function"><a href="#TrainingData.to_df">to_df</a></dd>
+                <dd id="HistoricalWeatherData.is_prepared" class="function"><a href="#TrainingData.is_prepared">is_prepared</a></dd>
                 <dd id="HistoricalWeatherData.load_data" class="function"><a href="#TrainingData.load_data">load_data</a></dd>
 
             </div>
@@ -2318,18 +2333,7 @@ df exploding is not performed.</p>
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;historical_load_data&quot;</span>
     <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Historical Load&quot;</span>
     <span class="n">column_name</span> <span class="o">=</span> <span class="s2">&quot;load&quot;</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
-        <span class="p">}</span>
+    <span class="n">minimum_data_required</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span>
 </pre></div>
 
         </details>
@@ -2371,35 +2375,14 @@ df exploding is not performed.</p>
     
 
                             </div>
-                            <div id="HistoricalLoadData.is_prepared" class="classattr">
-                                        <div class="attr function"><a class="headerlink" href="#HistoricalLoadData.is_prepared">#&nbsp;&nbsp</a>
+                            <div id="HistoricalLoadData.minimum_data_required" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#HistoricalLoadData.minimum_data_required">#&nbsp;&nbsp</a>
 
-                <div class="decorator">@classmethod</div>
-
-            <span class="def">def</span>
-            <span class="name">is_prepared</span><span class="signature">(cls)</span>:
+        <span class="name">minimum_data_required</span><span class="default_value"> = 26280</span>
     </div>
 
-            <details>
-            <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">is_prepared</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.&quot;&quot;&quot;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-        <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)[</span><span class="s2">&quot;dates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span>
-            <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span>
-        <span class="p">}</span>
-</pre></div>
-
-        </details>
-
-            <div class="docstring"><p>Return the start and end dates of the data if it is prepared. Return an empty dict otherwise.</p>
-</div>
-
+    
+    
 
                             </div>
                             <div id="HistoricalLoadData.timestamp" class="classattr">
@@ -2436,9 +2419,9 @@ df exploding is not performed.</p>
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt><a href="#TrainingData">TrainingData</a></dt>
-                                <dd id="HistoricalLoadData.update_value" class="function"><a href="#TrainingData.update_value">update_value</a></dd>
-                <dd id="HistoricalLoadData.load_df" class="function"><a href="#TrainingData.load_df">load_df</a></dd>
+                                <dd id="HistoricalLoadData.load_df" class="function"><a href="#TrainingData.load_df">load_df</a></dd>
                 <dd id="HistoricalLoadData.to_df" class="function"><a href="#TrainingData.to_df">to_df</a></dd>
+                <dd id="HistoricalLoadData.is_prepared" class="function"><a href="#TrainingData.is_prepared">is_prepared</a></dd>
                 <dd id="HistoricalLoadData.load_data" class="function"><a href="#TrainingData.load_data">load_data</a></dd>
 
             </div>

@@ -99,6 +99,9 @@
                         <li>
                                 <a class="function" href="#TestForecastModel.test_collect_training_data">test_collect_training_data</a>
                         </li>
+                        <li>
+                                <a class="function" href="#TestForecastModel.test_delete">test_delete</a>
+                        </li>
                 </ul>
 
             </li>
@@ -127,19 +130,21 @@
                 
                         <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
 
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+
 <span class="kn">from</span> <span class="nn">forecast_app.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ForecastModel</span><span class="p">,</span>
+    <span class="n">ForecastWeatherData</span><span class="p">,</span>
     <span class="n">HistoricalLoadData</span><span class="p">,</span>
     <span class="n">HistoricalWeatherData</span><span class="p">,</span>
-    <span class="n">ForecastWeatherData</span><span class="p">,</span>
-    <span class="n">ForecastModel</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># TODO: Test that submitting a temperature csv to the load data view works</span>
@@ -153,6 +158,11 @@
 
 <span class="k">class</span> <span class="nc">TestHistoricalLoadData</span><span class="p">:</span>
     <span class="k">def</span> <span class="nf">test_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">app</span><span class="p">):</span>
+        <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;uncontinuous.csv&quot;</span>
+        <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">fixture_path</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">72</span>
+
         <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;historical-load.csv&quot;</span>
         <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">fixture_path</span><span class="p">)</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -162,18 +172,11 @@
         <span class="k">assert</span> <span class="n">obj</span>
         <span class="k">assert</span> <span class="n">obj</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">13319</span>
 
-        <span class="c1"># Ensure that a user can update the data</span>
-        <span class="c1"># FEATURE CURRENTLY DISABLED</span>
-        <span class="c1"># fixture_path2 = pytest.FIXTURE_DIR / &quot;historical-load-update.csv&quot;</span>
-        <span class="c1"># HistoricalLoadData.load_data(fixture_path2)</span>
-        <span class="c1"># obj = HistoricalLoadData.query.get(datetime(2002, 1, 2, 12))</span>
-        <span class="c1"># assert obj</span>
-        <span class="c1"># assert obj.value == 43</span>
-
-        <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;uncontinuous.csv&quot;</span>
+        <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;historical-load-update.csv&quot;</span>
         <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">fixture_path</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">72</span>
+        <span class="k">assert</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">42</span>
+        <span class="c1"># ensure that values in between the timestamps aren&#39;t overwritten with NaN</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">test_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="p">(</span><span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="mf">42.0</span><span class="p">)</span>
@@ -245,14 +248,14 @@
         <span class="n">pytest</span><span class="o">.</span><span class="n">load_demo_db</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
         <span class="n">new_model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="p">()</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">is_running</span>
-        <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_model</span><span class="o">.</span><span class="n">process_file</span><span class="p">)</span>
 
         <span class="n">process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">new_model</span><span class="o">.</span><span class="n">launch_model</span><span class="p">)</span>
         <span class="n">process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="n">new_model</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">is_running</span>
-        <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span>
         <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_model</span><span class="o">.</span><span class="n">process_file</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
 
@@ -260,7 +263,7 @@
         <span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Give the process time to cancel</span>
         <span class="k">assert</span> <span class="n">process</span><span class="o">.</span><span class="n">exitcode</span> <span class="o">==</span> <span class="o">-</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">is_running</span>
-        <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span> <span class="ow">is</span> <span class="kc">False</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span>
 
     <span class="k">def</span> <span class="nf">test_launch_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
@@ -278,8 +281,25 @@
         <span class="n">model_df</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_df</span><span class="p">()</span>
         <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">model_df</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">model_df</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;load&quot;</span><span class="p">])</span>
-        <span class="k">assert</span> <span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">24</span>
+        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">23</span><span class="p">),</span> <span class="s2">&quot;load&quot;</span><span class="p">])</span>
+        <span class="c1"># assert model_df.shape[0] == HistoricalLoadData.to_df().shape[0] + 24</span>
+        <span class="c1"># TODO: Test that intersection of data is correct</span>
+
+    <span class="k">def</span> <span class="nf">test_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
+        <span class="n">pytest</span><span class="o">.</span><span class="n">load_demo_db</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">ForecastModel</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span>
+
+        <span class="c1"># HACK: Put the model&#39;s files back</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="n">demo_data</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;forecast_app/static/demo-data&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">demo_data</span> <span class="o">/</span> <span class="s2">&quot;cached-dataframe.csv&quot;</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">store_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">test_is_prepared</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
@@ -295,22 +315,22 @@
     <span class="c1"># FORECAST MODEL</span>
     <span class="n">is_prepared</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">is_prepared</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
     <span class="c1"># FORECAST DATA</span>
     <span class="n">is_prepared</span> <span class="o">=</span> <span class="n">ForecastWeatherData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">is_prepared</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
     <span class="c1"># HISTORICAL DATA</span>
     <span class="n">is_prepared</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">is_prepared</span>
     <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
     <span class="n">is_prepared</span> <span class="o">=</span> <span class="n">HistoricalWeatherData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">is_prepared</span>
     <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">test_to_df</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
@@ -350,6 +370,11 @@
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">TestHistoricalLoadData</span><span class="p">:</span>
     <span class="k">def</span> <span class="nf">test_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">app</span><span class="p">):</span>
+        <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;uncontinuous.csv&quot;</span>
+        <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">fixture_path</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">72</span>
+
         <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;historical-load.csv&quot;</span>
         <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">fixture_path</span><span class="p">)</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -359,18 +384,11 @@
         <span class="k">assert</span> <span class="n">obj</span>
         <span class="k">assert</span> <span class="n">obj</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">13319</span>
 
-        <span class="c1"># Ensure that a user can update the data</span>
-        <span class="c1"># FEATURE CURRENTLY DISABLED</span>
-        <span class="c1"># fixture_path2 = pytest.FIXTURE_DIR / &quot;historical-load-update.csv&quot;</span>
-        <span class="c1"># HistoricalLoadData.load_data(fixture_path2)</span>
-        <span class="c1"># obj = HistoricalLoadData.query.get(datetime(2002, 1, 2, 12))</span>
-        <span class="c1"># assert obj</span>
-        <span class="c1"># assert obj.value == 43</span>
-
-        <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;uncontinuous.csv&quot;</span>
+        <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;historical-load-update.csv&quot;</span>
         <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">fixture_path</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">72</span>
+        <span class="k">assert</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">42</span>
+        <span class="c1"># ensure that values in between the timestamps aren&#39;t overwritten with NaN</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">test_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="p">(</span><span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="mf">42.0</span><span class="p">)</span>
@@ -407,6 +425,11 @@
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">test_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">app</span><span class="p">):</span>
+        <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;uncontinuous.csv&quot;</span>
+        <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">fixture_path</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">72</span>
+
         <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;historical-load.csv&quot;</span>
         <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">fixture_path</span><span class="p">)</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -416,18 +439,11 @@
         <span class="k">assert</span> <span class="n">obj</span>
         <span class="k">assert</span> <span class="n">obj</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">13319</span>
 
-        <span class="c1"># Ensure that a user can update the data</span>
-        <span class="c1"># FEATURE CURRENTLY DISABLED</span>
-        <span class="c1"># fixture_path2 = pytest.FIXTURE_DIR / &quot;historical-load-update.csv&quot;</span>
-        <span class="c1"># HistoricalLoadData.load_data(fixture_path2)</span>
-        <span class="c1"># obj = HistoricalLoadData.query.get(datetime(2002, 1, 2, 12))</span>
-        <span class="c1"># assert obj</span>
-        <span class="c1"># assert obj.value == 43</span>
-
-        <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;uncontinuous.csv&quot;</span>
+        <span class="n">fixture_path</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">FIXTURE_DIR</span> <span class="o">/</span> <span class="s2">&quot;historical-load-update.csv&quot;</span>
         <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">fixture_path</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">72</span>
+        <span class="k">assert</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">42</span>
+        <span class="c1"># ensure that values in between the timestamps aren&#39;t overwritten with NaN</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -688,14 +704,14 @@
         <span class="n">pytest</span><span class="o">.</span><span class="n">load_demo_db</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
         <span class="n">new_model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="p">()</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">is_running</span>
-        <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_model</span><span class="o">.</span><span class="n">process_file</span><span class="p">)</span>
 
         <span class="n">process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">new_model</span><span class="o">.</span><span class="n">launch_model</span><span class="p">)</span>
         <span class="n">process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="n">new_model</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">is_running</span>
-        <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span>
         <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_model</span><span class="o">.</span><span class="n">process_file</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
 
@@ -703,7 +719,7 @@
         <span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Give the process time to cancel</span>
         <span class="k">assert</span> <span class="n">process</span><span class="o">.</span><span class="n">exitcode</span> <span class="o">==</span> <span class="o">-</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">is_running</span>
-        <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span> <span class="ow">is</span> <span class="kc">False</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span>
 
     <span class="k">def</span> <span class="nf">test_launch_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
@@ -721,8 +737,25 @@
         <span class="n">model_df</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_df</span><span class="p">()</span>
         <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">model_df</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">model_df</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;load&quot;</span><span class="p">])</span>
-        <span class="k">assert</span> <span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">24</span>
+        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">23</span><span class="p">),</span> <span class="s2">&quot;load&quot;</span><span class="p">])</span>
+        <span class="c1"># assert model_df.shape[0] == HistoricalLoadData.to_df().shape[0] + 24</span>
+        <span class="c1"># TODO: Test that intersection of data is correct</span>
+
+    <span class="k">def</span> <span class="nf">test_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
+        <span class="n">pytest</span><span class="o">.</span><span class="n">load_demo_db</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">ForecastModel</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span>
+
+        <span class="c1"># HACK: Put the model&#39;s files back</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="n">demo_data</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;forecast_app/static/demo-data&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">demo_data</span> <span class="o">/</span> <span class="s2">&quot;cached-dataframe.csv&quot;</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">store_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -798,14 +831,14 @@
         <span class="n">pytest</span><span class="o">.</span><span class="n">load_demo_db</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
         <span class="n">new_model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="p">()</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">is_running</span>
-        <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_model</span><span class="o">.</span><span class="n">process_file</span><span class="p">)</span>
 
         <span class="n">process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">new_model</span><span class="o">.</span><span class="n">launch_model</span><span class="p">)</span>
         <span class="n">process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="n">new_model</span><span class="o">.</span><span class="n">store_process_id</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">is_running</span>
-        <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span>
         <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_model</span><span class="o">.</span><span class="n">process_file</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">get_process_id</span><span class="p">()</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
 
@@ -813,7 +846,7 @@
         <span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Give the process time to cancel</span>
         <span class="k">assert</span> <span class="n">process</span><span class="o">.</span><span class="n">exitcode</span> <span class="o">==</span> <span class="o">-</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">is_running</span>
-        <span class="k">assert</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span> <span class="ow">is</span> <span class="kc">False</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">new_model</span><span class="o">.</span><span class="n">exited_successfully</span>
 </pre></div>
 
         </details>
@@ -879,8 +912,41 @@
         <span class="n">model_df</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_df</span><span class="p">()</span>
         <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">model_df</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">model_df</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;dates&quot;</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;load&quot;</span><span class="p">])</span>
-        <span class="k">assert</span> <span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">24</span>
+        <span class="k">assert</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">23</span><span class="p">),</span> <span class="s2">&quot;load&quot;</span><span class="p">])</span>
+        <span class="c1"># assert model_df.shape[0] == HistoricalLoadData.to_df().shape[0] + 24</span>
+        <span class="c1"># TODO: Test that intersection of data is correct</span>
+</pre></div>
+
+        </details>
+
+    
+
+                            </div>
+                            <div id="TestForecastModel.test_delete" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#TestForecastModel.test_delete">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">test_delete</span><span class="signature">(self, app, db)</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">test_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
+        <span class="n">pytest</span><span class="o">.</span><span class="n">load_demo_db</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">ForecastModel</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span>
+
+        <span class="c1"># HACK: Put the model&#39;s files back</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="n">demo_data</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;forecast_app/static/demo-data&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">demo_data</span> <span class="o">/</span> <span class="s2">&quot;cached-dataframe.csv&quot;</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">store_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -912,22 +978,22 @@
     <span class="c1"># FORECAST MODEL</span>
     <span class="n">is_prepared</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">is_prepared</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
     <span class="c1"># FORECAST DATA</span>
     <span class="n">is_prepared</span> <span class="o">=</span> <span class="n">ForecastWeatherData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">is_prepared</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
     <span class="c1"># HISTORICAL DATA</span>
     <span class="n">is_prepared</span> <span class="o">=</span> <span class="n">HistoricalLoadData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">is_prepared</span>
     <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
     <span class="n">is_prepared</span> <span class="o">=</span> <span class="n">HistoricalWeatherData</span><span class="o">.</span><span class="n">is_prepared</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">is_prepared</span>
     <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_prepared</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 </pre></div>
 
         </details>

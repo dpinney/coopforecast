@@ -100,10 +100,11 @@
 <span class="sd">A collection of utilities to help collect and parse historical and forecast weather data.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">requests</span>
 
 
 <span class="k">class</span> <span class="nc">AsosRequest</span><span class="p">:</span>
@@ -119,9 +120,6 @@
 <span class="sd">    * Note for USA stations (beginning with a K) you must NOT include the &#39;K&#39;</span>
 <span class="sd">    * ASOS User&#39;s Guide: https://www.weather.gov/media/asos/aum-toc.pdf</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># TODO: The user should be able to access the request url before sending the request</span>
-    <span class="c1">#  both this and the Nws API should be changed</span>
 
     <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py&quot;</span>
 
@@ -145,12 +143,12 @@
             <span class="s2">&quot;tz&quot;</span><span class="p">:</span> <span class="n">tz</span><span class="p">,</span>
             <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;onlycomma&quot;</span><span class="p">,</span>
             <span class="s2">&quot;missing&quot;</span><span class="p">:</span> <span class="n">missing_value</span><span class="p">,</span>
-            <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>  <span class="c1"># What does this mean?</span>
+            <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>  <span class="c1"># TODO: What does this mean?</span>
             <span class="s2">&quot;latlon&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
             <span class="s2">&quot;elev&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
             <span class="s2">&quot;direct&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
             <span class="s2">&quot;report_type&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="s2">&quot;report_type&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Why?</span>
+            <span class="s2">&quot;report_type&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># TODO: Why?</span>
         <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -276,9 +274,6 @@
 <span class="sd">    * ASOS User&#39;s Guide: https://www.weather.gov/media/asos/aum-toc.pdf</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># TODO: The user should be able to access the request url before sending the request</span>
-    <span class="c1">#  both this and the Nws API should be changed</span>
-
     <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -301,12 +296,12 @@
             <span class="s2">&quot;tz&quot;</span><span class="p">:</span> <span class="n">tz</span><span class="p">,</span>
             <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;onlycomma&quot;</span><span class="p">,</span>
             <span class="s2">&quot;missing&quot;</span><span class="p">:</span> <span class="n">missing_value</span><span class="p">,</span>
-            <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>  <span class="c1"># What does this mean?</span>
+            <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>  <span class="c1"># TODO: What does this mean?</span>
             <span class="s2">&quot;latlon&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
             <span class="s2">&quot;elev&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
             <span class="s2">&quot;direct&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
             <span class="s2">&quot;report_type&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="s2">&quot;report_type&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Why?</span>
+            <span class="s2">&quot;report_type&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># TODO: Why?</span>
         <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -398,12 +393,12 @@
             <span class="s2">&quot;tz&quot;</span><span class="p">:</span> <span class="n">tz</span><span class="p">,</span>
             <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;onlycomma&quot;</span><span class="p">,</span>
             <span class="s2">&quot;missing&quot;</span><span class="p">:</span> <span class="n">missing_value</span><span class="p">,</span>
-            <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>  <span class="c1"># What does this mean?</span>
+            <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>  <span class="c1"># TODO: What does this mean?</span>
             <span class="s2">&quot;latlon&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
             <span class="s2">&quot;elev&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
             <span class="s2">&quot;direct&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
             <span class="s2">&quot;report_type&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="s2">&quot;report_type&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Why?</span>
+            <span class="s2">&quot;report_type&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># TODO: Why?</span>
         <span class="p">}</span>
 </pre></div>
 

@@ -97,6 +97,12 @@
                                 <a class="variable" href="#Config.EPOCHS">EPOCHS</a>
                         </li>
                         <li>
+                                <a class="variable" href="#Config.HOURS_PRIOR">HOURS_PRIOR</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.LOGO_PATH">LOGO_PATH</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#Config.ASOS_STATION">ASOS_STATION</a>
                         </li>
                         <li>
@@ -146,6 +152,9 @@
                         </li>
                         <li>
                                 <a class="variable" href="#ProductionConfig.EPOCHS">EPOCHS</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ProductionConfig.LOGO_PATH">LOGO_PATH</a>
                         </li>
                 </ul>
 
@@ -216,11 +225,7 @@
 
 <span class="c1"># Import the secret configurations</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">forecast_app.secret_config</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">ADMIN_USER</span><span class="p">,</span>
-        <span class="n">ADMIN_PASSWORD</span><span class="p">,</span>
-        <span class="n">SECRET_KEY</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">forecast_app.secret_config</span> <span class="kn">import</span> <span class="n">ADMIN_PASSWORD</span><span class="p">,</span> <span class="n">ADMIN_USER</span><span class="p">,</span> <span class="n">SECRET_KEY</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="c1"># It&#39;s okay if this isn&#39;t defined for local development and testing</span>
     <span class="n">ADMIN_USER</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span>
@@ -229,7 +234,7 @@
 
 <span class="c1"># Email and domain need to be set here so that they can be easily imported in bash scripts</span>
 <span class="n">EMAIL</span> <span class="o">=</span> <span class="s2">&quot;admin@coopforecast.com&quot;</span>
-<span class="n">DOMAIN</span> <span class="o">=</span> <span class="s2">&quot;coopforecast.com&quot;</span>
+<span class="n">DOMAIN</span> <span class="o">=</span> <span class="s2">&quot;burtcoppd.coopforecast.com&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -271,6 +276,10 @@
 
     <span class="sd">&quot;&quot;&quot;Machine learning config&quot;&quot;&quot;</span>
     <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">HOURS_PRIOR</span> <span class="o">=</span> <span class="mi">24</span>
+
+    <span class="sd">&quot;&quot;&quot;Logo path&quot;&quot;&quot;</span>
+    <span class="n">LOGO_PATH</span> <span class="o">=</span> <span class="s2">&quot;img/demo.png&quot;</span>
 
     <span class="sd">&quot;&quot;&quot;External API config&quot;&quot;&quot;</span>
     <span class="c1"># Info for data syncing with external APIs</span>
@@ -305,7 +314,9 @@
     <span class="n">WORKERS</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="n">GUNICORN_PATH</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/.local/bin/gunicorn&quot;</span>
 
-    <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">75</span>
+
+    <span class="n">LOGO_PATH</span> <span class="o">=</span> <span class="s2">&quot;img/burt.png&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">DevelopmentConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
@@ -387,6 +398,10 @@
 
     <span class="sd">&quot;&quot;&quot;Machine learning config&quot;&quot;&quot;</span>
     <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">HOURS_PRIOR</span> <span class="o">=</span> <span class="mi">24</span>
+
+    <span class="sd">&quot;&quot;&quot;Logo path&quot;&quot;&quot;</span>
+    <span class="n">LOGO_PATH</span> <span class="o">=</span> <span class="s2">&quot;img/demo.png&quot;</span>
 
     <span class="sd">&quot;&quot;&quot;External API config&quot;&quot;&quot;</span>
     <span class="c1"># Info for data syncing with external APIs</span>
@@ -557,7 +572,7 @@
                             <div id="Config.CERT_DIR" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#Config.CERT_DIR">#&nbsp;&nbsp</a>
 
-        <span class="name">CERT_DIR</span><span class="default_value"> = &#39;/etc/letsencrypt/live/coopforecast.com&#39;</span>
+        <span class="name">CERT_DIR</span><span class="default_value"> = &#39;/etc/letsencrypt/live/burtcoppd.coopforecast.com&#39;</span>
     </div>
 
     
@@ -577,7 +592,7 @@
                             <div id="Config.DOMAIN" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#Config.DOMAIN">#&nbsp;&nbsp</a>
 
-        <span class="name">DOMAIN</span><span class="default_value"> = &#39;coopforecast.com&#39;</span>
+        <span class="name">DOMAIN</span><span class="default_value"> = &#39;burtcoppd.coopforecast.com&#39;</span>
     </div>
 
     
@@ -632,6 +647,28 @@
                                             <div class="attr variable"><a class="headerlink" href="#Config.EPOCHS">#&nbsp;&nbsp</a>
 
         <span class="name">EPOCHS</span><span class="default_value"> = 1</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.HOURS_PRIOR" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.HOURS_PRIOR">#&nbsp;&nbsp</a>
+
+        <span class="name">HOURS_PRIOR</span><span class="default_value"> = 24</span>
+    </div>
+
+    
+            <div class="docstring"><p>Logo path</p>
+</div>
+
+
+                            </div>
+                            <div id="Config.LOGO_PATH" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.LOGO_PATH">#&nbsp;&nbsp</a>
+
+        <span class="name">LOGO_PATH</span><span class="default_value"> = &#39;img/demo.png&#39;</span>
     </div>
 
     
@@ -728,7 +765,9 @@
     <span class="n">WORKERS</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="n">GUNICORN_PATH</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/.local/bin/gunicorn&quot;</span>
 
-    <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">75</span>
+
+    <span class="n">LOGO_PATH</span> <span class="o">=</span> <span class="s2">&quot;img/burt.png&quot;</span>
 </pre></div>
 
         </details>
@@ -825,7 +864,17 @@
                             <div id="ProductionConfig.EPOCHS" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#ProductionConfig.EPOCHS">#&nbsp;&nbsp</a>
 
-        <span class="name">EPOCHS</span><span class="default_value"> = 10</span>
+        <span class="name">EPOCHS</span><span class="default_value"> = 75</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="ProductionConfig.LOGO_PATH" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#ProductionConfig.LOGO_PATH">#&nbsp;&nbsp</a>
+
+        <span class="name">LOGO_PATH</span><span class="default_value"> = &#39;img/burt.png&#39;</span>
     </div>
 
     
@@ -852,6 +901,7 @@
                 <dd id="ProductionConfig.TEMP_COL" class="variable"><a href="#Config.TEMP_COL">TEMP_COL</a></dd>
                 <dd id="ProductionConfig.HOUR_COL" class="variable"><a href="#Config.HOUR_COL">HOUR_COL</a></dd>
                 <dd id="ProductionConfig.DATE_COL" class="variable"><a href="#Config.DATE_COL">DATE_COL</a></dd>
+                <dd id="ProductionConfig.HOURS_PRIOR" class="variable"><a href="#Config.HOURS_PRIOR">HOURS_PRIOR</a></dd>
                 <dd id="ProductionConfig.ASOS_STATION" class="variable"><a href="#Config.ASOS_STATION">ASOS_STATION</a></dd>
                 <dd id="ProductionConfig.TIMEZONE" class="variable"><a href="#Config.TIMEZONE">TIMEZONE</a></dd>
                 <dd id="ProductionConfig.NWS_CODE" class="variable"><a href="#Config.NWS_CODE">NWS_CODE</a></dd>
@@ -940,6 +990,8 @@
                 <dd id="DevelopmentConfig.HOUR_COL" class="variable"><a href="#Config.HOUR_COL">HOUR_COL</a></dd>
                 <dd id="DevelopmentConfig.DATE_COL" class="variable"><a href="#Config.DATE_COL">DATE_COL</a></dd>
                 <dd id="DevelopmentConfig.EPOCHS" class="variable"><a href="#Config.EPOCHS">EPOCHS</a></dd>
+                <dd id="DevelopmentConfig.HOURS_PRIOR" class="variable"><a href="#Config.HOURS_PRIOR">HOURS_PRIOR</a></dd>
+                <dd id="DevelopmentConfig.LOGO_PATH" class="variable"><a href="#Config.LOGO_PATH">LOGO_PATH</a></dd>
                 <dd id="DevelopmentConfig.ASOS_STATION" class="variable"><a href="#Config.ASOS_STATION">ASOS_STATION</a></dd>
                 <dd id="DevelopmentConfig.TIMEZONE" class="variable"><a href="#Config.TIMEZONE">TIMEZONE</a></dd>
                 <dd id="DevelopmentConfig.NWS_CODE" class="variable"><a href="#Config.NWS_CODE">NWS_CODE</a></dd>
@@ -1063,6 +1115,8 @@
                 <dd id="TestingConfig.HOUR_COL" class="variable"><a href="#Config.HOUR_COL">HOUR_COL</a></dd>
                 <dd id="TestingConfig.DATE_COL" class="variable"><a href="#Config.DATE_COL">DATE_COL</a></dd>
                 <dd id="TestingConfig.EPOCHS" class="variable"><a href="#Config.EPOCHS">EPOCHS</a></dd>
+                <dd id="TestingConfig.HOURS_PRIOR" class="variable"><a href="#Config.HOURS_PRIOR">HOURS_PRIOR</a></dd>
+                <dd id="TestingConfig.LOGO_PATH" class="variable"><a href="#Config.LOGO_PATH">LOGO_PATH</a></dd>
                 <dd id="TestingConfig.ASOS_STATION" class="variable"><a href="#Config.ASOS_STATION">ASOS_STATION</a></dd>
                 <dd id="TestingConfig.TIMEZONE" class="variable"><a href="#Config.TIMEZONE">TIMEZONE</a></dd>
                 <dd id="TestingConfig.NWS_CODE" class="variable"><a href="#Config.NWS_CODE">NWS_CODE</a></dd>
