@@ -78,6 +78,11 @@ class Config(object):
     NAME = None
     SQLALCHEMY_DATABASE_URI = None
 
+    """Freeze site configs"""
+    FREEZER_DESTINATION = "../build"
+    FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS = True
+    FREEZER_RELATIVE_URLS = True  # False?
+
 
 class ProductionConfig(Config):
     """Production configuration."""
