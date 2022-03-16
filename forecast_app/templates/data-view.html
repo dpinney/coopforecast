@@ -20,7 +20,8 @@
   </div>
   <div class="card-body">
     <p>
-      <a href="{{ instructions }}" class="btn btn-secondary btn-sm">Read data upload instructions</a>
+      <a href="{{ url_for('instructions') }}#{{ name }}" class="btn btn-secondary btn-sm">Read data upload
+        instructions</a>
       <a href="{{ gist_example }}" target="_blank" class="btn btn-secondary btn-sm">View an example dataset</a>
     </p>
 
