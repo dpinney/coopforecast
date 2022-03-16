@@ -31,7 +31,6 @@ def url_generator():
     yield "/historical-weather-data"
     yield "/latest-forecast"
     yield "/logout"
-
     yield "/instructions"
 
     # for model in ForecastModel.query.all():
@@ -41,7 +40,7 @@ def url_generator():
 
 
 if __name__ == "__main__":
-    freezer.freeze()
+    # freezer.freeze()
 
     # HACK: Add .html to all files
     os.chdir("forecast_app")
