@@ -126,7 +126,6 @@ class DemoConfig(Config):
     FREEZER_IGNORE_MIMETYPE_WARNINGS = True
     FREEZER_RELATIVE_URLS = True  # Use relative URLs for static files
     FREEZER_REMOVE_EXTRA_FILES = True  # Clear directory before every run
-    # FREEZER_BASE_URL = "https://coopforecast.com/demo/"
 
 
 configs = [TestingConfig, ProductionConfig, DevelopmentConfig, DemoConfig]

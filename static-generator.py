@@ -1,11 +1,10 @@
 import os
 import shutil
 
+import bs4
 from flask_frozen import Freezer
 
 from forecast_app import create_app, views
-
-# from forecast_app.utils import safe_flash
 
 # Remove login permissions from all views
 views.ForecastWeatherDataView.decorators = []
@@ -26,8 +25,6 @@ freezer = Freezer(app, with_no_argument_rules=False)
 
 @freezer.register_generator
 def url_generator():
-
-    # safe_flash("Incorrect username and/or password.")
     yield "/forecast-weather-data"
     yield "/historical-load-data"
     yield "/historical-weather-data"
@@ -41,8 +38,27 @@ def url_generator():
     # yield "/forecast-models"
 
 
+def insert_banner(page_path):
+    """Insert a banner at the top of the page."""
+    with open(page_path) as f:
+        soup = bs4.BeautifulSoup(f.read(), features="html.parser")
+
+    alert = soup.new_tag("div")
+    alert["class"] = "alert alert-danger"
+    alert.string = "⚠️ This is a read-only static site for display purposes only. Most functionality is not available. ⚠️"
+    insert_point = soup.find("div", {"class": "container-fluid"})
+    insert_point.insert(0, alert)
+
+    with open(page_path, "w") as f:
+        f.write(str(soup))
+
+
 if __name__ == "__main__":
-    # freezer.freeze()
+    # HACK: Freezer fails, but we need what it's output before failing
+    try:
+        freezer.freeze()
+    except Exception as e:
+        pass
 
     demo_dir = app.config["FREEZER_DESTINATION"]
 
@@ -58,3 +74,17 @@ if __name__ == "__main__":
     latest_forecast_path = os.path.join(demo_dir, "latest-forecast.html")
     login_path = os.path.join(demo_dir, "index.html")
     shutil.copyfile(latest_forecast_path, login_path)
+
+    # HACK: Insert alert at the top of the page
+    all_pages = [
+        "latest-forecast.html",
+        "forecast-weather-data.html",
+        "historical-load-data.html",
+        "historical-weather-data.html",
+        "forecast-models.html",
+        "index.html",
+        "instructions.html",
+    ]
+    for page in all_pages:
+        page_path = os.path.join(demo_dir, page)
+        insert_banner(page_path)
