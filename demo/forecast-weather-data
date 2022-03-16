@@ -1,0 +1,1125 @@
+<!doctype html>
+
+<head>
+  <title>Forecast Weather Data - Load Forecaster</title>
+
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡️</text></svg>">
+
+  <!-- Everything for bootstrap theme -->
+  <link rel="stylesheet" href="demo/static/css/sb-admin-2.css">
+  <link href="demo/static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet"
+    type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <script src="demo/static/vendor/jquery/jquery.min.js"></script>
+  <script src="demo/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="demo/static/vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="demo/static/js/sb-admin-2.js"></script>
+
+  <!-- Highcharts -->
+  <script src="demo/static/js/highstocks/highstock.js"></script>
+  <script src="demo/static/js/highstocks/modules/data.js"></script>
+  <script src="demo/static/js/highstocks/modules/exporting.js"></script>
+  <script src="demo/static/js/highstocks/modules/export-data.js"></script>
+
+  <!-- Add site-specific CSS and JS -->
+  <link href="demo/static/css/main.css" rel="stylesheet">
+  <script src="demo/static/js/main.js"></script>
+
+  
+
+  
+</head>
+
+
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+
+    <!-- Sidebar -->
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+  <!-- Sidebar - Brand -->
+  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="forecast">
+    <div class="sidebar-brand-text mx-3">Load Forecast [demo]
+    </div>
+  </a>
+
+  <!-- Divider -->
+  <hr class="sidebar-divider my-0">
+
+  <!-- Nav Item - Dashboard -->
+  
+  <li class="nav-item 
+
+
+
+
+">
+    <a class="nav-link" href="demo/latest-forecast">
+      <i class="fas fa-fw fa-binoculars"></i>
+      <span>Forecast</span>
+    </a>
+  </li>
+  
+  
+  <li class="nav-item 
+
+
+
+
+">
+    <a class="nav-link" href="demo/forecast-models">
+      <i class="fas fa-fw fa-list"></i>
+      <span>All Models</span>
+    </a>
+  </li>
+  
+
+  
+  <li class="nav-item 
+
+
+
+
+">
+    <a class="nav-link" href="demo/historical-load-data">
+      <i class="fas fa-fw fa-bolt"></i>
+      <span>Load Data</span></a>
+  </li>
+  
+
+  <!-- Nav Item - Pages Collapse Menu -->
+  
+  <li class="nav-item 
+
+
+
+active
+">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
+      aria-controls="collapseTwo">
+      <i class="fas fa-fw fa-cloud"></i>
+      <span>Weather Data</span>
+    </a>
+    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+      <div class="bg-white py-2 collapse-inner rounded">
+        <!-- <h6 class="collapse-header">Custom Components:</h6> -->
+        <a class="collapse-item" href="demo/historical-weather-data">Historical</a>
+        <a class="collapse-item" href="demo/forecast-weather-data">Forecast</a>
+      </div>
+    </div>
+  </li>
+  
+
+  
+  <li class="nav-item 
+
+
+
+
+">
+    <a class="nav-link" href="demo/instructions">
+      <i class="fas fa-fw fa-book"></i>
+      <span>Instructions</span></a>
+  </li>
+  
+
+  <!-- Sidebar Toggler (Sidebar) -->
+  <div class="text-center d-none d-md-inline" style="margin-top: 20px;">
+    <button class="rounded-circle border-0" id="sidebarToggle"></button>
+  </div>
+</ul>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+
+        <!-- Topbar -->
+        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+          <!-- Sidebar Toggle (Topbar) -->
+          <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+          </button>
+
+          <!-- Topbar Navbar -->
+          <ul class="navbar-nav ml-auto">
+            <!-- Nav Item - User Information -->
+            <li class="nav-item dropdown no-arrow">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <img height="65px" src="demo/static/img/demo.png">
+              </a>
+              <!-- Dropdown - User Information -->
+              <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                  <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                  Logout
+                </a>
+              </div>
+            </li>
+
+          </ul>
+
+        </nav>
+        <!-- End of Topbar -->
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          
+
+
+
+
+<h1>Forecast Weather Data</h1>
+<ul>
+  <li><a href="#upload">Upload Data</a></li>
+  <li><a href="#summary">Summary</a></li>
+  <li><a href="#chart">Chart</a></li>
+  <li><a href="#table">Table</a></li>
+</ul>
+
+<div class="card shadow mb-4" id="upload">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Upload Data</h6>
+  </div>
+  <div class="card-body">
+    <p>
+      <a href="/instructions#forecast-weather-data" class="btn btn-secondary btn-sm">Read data upload instructions</a>
+      <a href="https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4" target="_blank" class="btn btn-secondary btn-sm">View an example dataset</a>
+    </p>
+
+    <div class="input-group mb-3">
+      <form method=post enctype=multipart/form-data>
+        <input type=file name=file>
+        <input type=submit value=Upload>
+      </form>
+    </div>
+
+    
+    <hr>
+    <form action="/forecast-weather-data/sync" method="POST">
+      <input type=submit value="Sync data with The National Weather Service">
+    </form>
+    
+  </div>
+</div>
+
+
+<div class="card shadow mb-4" id="summary">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-summary" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-summary">
+    <h6 class="m-0 font-weight-bold text-primary">Data summary</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-summary">
+    <div class="card-body">
+      <dl class="row">
+        <dt class="col-4">Number of data points</dt>
+        <dd class="col-8">96</dd>
+        <dt class="col-4">First timestamp</dt>
+        <dd class="col-8">2018-12-18 00:00:00</dd>
+        <dt class="col-4">Latest timestamp</dt>
+        <dd class="col-8">2018-12-21 23:00:00</dd>
+      </dl>
+      
+      <dt>Missing values</dt>
+      <dd>0</dd>
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="card shadow mb-4" id="chart">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-chart" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-chart">
+    <h6 class="m-0 font-weight-bold text-primary">Chart</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-chart">
+    <div class="card-body">
+      <div id="chart-container" style="height: 400px; min-width: 310px"></div>
+      <script type="text/javascript">
+        create_timeseries_chart(id = 'chart-container', data = [{"data": [[1545091200000, 10.066639315705864], [1545094800000, 8.888579330394666], [1545098400000, 5.660421193773856], [1545102000000, 12.15517269626761], [1545105600000, 5.766903823704343], [1545109200000, 7.606734143365796], [1545112800000, 6.358566424814907], [1545116400000, 7.630364325906122], [1545120000000, 5.616342337796231], [1545123600000, 2.269131638878944], [1545127200000, 8.230869211020517], [1545130800000, 3.5962060577411146], [1545134400000, 6.423071437639242], [1545138000000, 3.8084490099962776], [1545141600000, 8.729235791552844], [1545145200000, 11.399127727061297], [1545148800000, 7.865288895498238], [1545152400000, 14.141120560964351], [1545156000000, 16.468096863779856], [1545159600000, 18.22877555389724], [1545163200000, 14.999591076515324], [1545166800000, 20.294820893658468], [1545170400000, 11.727431126060502], [1545174000000, 9.577125207958591], [1545177600000, 6.831114592934103], [1545181200000, 13.975134073151397], [1545184800000, 11.243722122419006], [1545188400000, 9.630357813726103], [1545192000000, 10.25925790964852], [1545195600000, 8.968765567261393], [1545199200000, 10.256414400346424], [1545202800000, 8.230084293365262], [1545206400000, 4.19391281232608], [1545210000000, 7.293298598552061], [1545213600000, 8.775060610028934], [1545217200000, 11.444447322149966], [1545220800000, 10.7386469351518], [1545224400000, 11.994118397245062], [1545228000000, 8.244180852003925], [1545231600000, 11.6608291965231], [1545235200000, 10.571099613102694], [1545238800000, 8.735761946242281], [1545242400000, 15.486300926128411], [1545246000000, 12.077324109242484], [1545249600000, 19.157467341479567], [1545253200000, 14.600669155910618], [1545256800000, 17.303642068137325], [1545260400000, 15.033386398496424], [1545264000000, 13.035282509828589], [1545267600000, 7.698301779824018], [1545271200000, 7.732636837291451], [1545274800000, 15.852527629108586], [1545278400000, 13.674613166368038], [1545282000000, 8.270651584318014], [1545285600000, 10.184904937138], [1545289200000, 11.920355766598243], [1545292800000, 11.997165392109972], [1545296400000, 14.417725115654829], [1545300000000, 11.856573436740256], [1545303600000, 3.342323642311417], [1545307200000, 5.612732899449078], [1545310800000, 10.736484008275012], [1545314400000, 7.802500826866384], [1545318000000, 7.733956507113454], [1545321600000, 12.420437735573952], [1545325200000, 17.099762086413357], [1545328800000, 14.155899779391117], [1545332400000, 10.992152505913923], [1545336000000, 11.974460980831962], [1545339600000, 12.805882113279472], [1545343200000, 12.035842544863868], [1545346800000, 11.994211694115297], [1545350400000, 12.67520206818483], [1545354000000, 16.110515293241075], [1545357600000, 13.325069354783452], [1545361200000, 10.094651211087877], [1545364800000, 13.55651442776078], [1545368400000, 8.27987631973571], [1545372000000, 6.384949791592269], [1545375600000, 9.693070310431173], [1545379200000, 4.865914860712646], [1545382800000, 5.482383604789578], [1545386400000, 8.341163590562001], [1545390000000, 1.792573957273171], [1545393600000, 4.8452372680270495], [1545397200000, 6.072842039418704], [1545400800000, 6.121599249864169], [1545404400000, 10.083116359591642], [1545408000000, 6.8613058441331445], [1545411600000, 13.241897126349704], [1545415200000, 15.126924007002486], [1545418800000, 16.54581474872297], [1545422400000, 13.49225064969242], [1545426000000, 15.765056992442489], [1545429600000, 10.269213336776517], [1545433200000, 14.04945624276444]], "name": "tempc"}], title = 'Forecast Weather Data')
+      </script>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="card shadow mb-4" id="table">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-table" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-table">
+    <h6 class="m-0 font-weight-bold text-primary">Table</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-table">
+    <div class="card-body">
+      <h3>Forecast Data</h3>
+      <div class="table-responsive " id="large-table">
+  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+    <thead>
+      <tr>
+        
+        <th>timestamp</th>
+        
+        <th>value</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        
+        <td>2018-12-21 23:00:00</td>
+        
+        <td>14.04945624276444</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 22:00:00</td>
+        
+        <td>10.269213336776517</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 21:00:00</td>
+        
+        <td>15.765056992442489</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 20:00:00</td>
+        
+        <td>13.49225064969242</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 19:00:00</td>
+        
+        <td>16.54581474872297</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 18:00:00</td>
+        
+        <td>15.126924007002486</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 17:00:00</td>
+        
+        <td>13.241897126349704</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 16:00:00</td>
+        
+        <td>6.8613058441331445</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 15:00:00</td>
+        
+        <td>10.083116359591642</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 14:00:00</td>
+        
+        <td>6.121599249864169</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 13:00:00</td>
+        
+        <td>6.072842039418704</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 12:00:00</td>
+        
+        <td>4.8452372680270495</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 11:00:00</td>
+        
+        <td>1.792573957273171</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 10:00:00</td>
+        
+        <td>8.341163590562001</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 09:00:00</td>
+        
+        <td>5.482383604789578</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 08:00:00</td>
+        
+        <td>4.865914860712646</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 07:00:00</td>
+        
+        <td>9.693070310431173</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 06:00:00</td>
+        
+        <td>6.384949791592269</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 05:00:00</td>
+        
+        <td>8.27987631973571</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 04:00:00</td>
+        
+        <td>13.55651442776078</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 03:00:00</td>
+        
+        <td>10.094651211087877</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 02:00:00</td>
+        
+        <td>13.325069354783452</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 01:00:00</td>
+        
+        <td>16.110515293241075</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-21 00:00:00</td>
+        
+        <td>12.67520206818483</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 23:00:00</td>
+        
+        <td>11.994211694115297</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 22:00:00</td>
+        
+        <td>12.035842544863868</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 21:00:00</td>
+        
+        <td>12.805882113279472</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 20:00:00</td>
+        
+        <td>11.974460980831962</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 19:00:00</td>
+        
+        <td>10.992152505913923</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 18:00:00</td>
+        
+        <td>14.155899779391117</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 17:00:00</td>
+        
+        <td>17.099762086413357</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 16:00:00</td>
+        
+        <td>12.420437735573952</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 15:00:00</td>
+        
+        <td>7.733956507113454</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 14:00:00</td>
+        
+        <td>7.802500826866384</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 13:00:00</td>
+        
+        <td>10.736484008275012</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 12:00:00</td>
+        
+        <td>5.612732899449078</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 11:00:00</td>
+        
+        <td>3.342323642311417</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 10:00:00</td>
+        
+        <td>11.856573436740256</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 09:00:00</td>
+        
+        <td>14.417725115654829</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 08:00:00</td>
+        
+        <td>11.997165392109972</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 07:00:00</td>
+        
+        <td>11.920355766598243</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 06:00:00</td>
+        
+        <td>10.184904937138</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 05:00:00</td>
+        
+        <td>8.270651584318014</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 04:00:00</td>
+        
+        <td>13.674613166368038</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 03:00:00</td>
+        
+        <td>15.852527629108586</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 02:00:00</td>
+        
+        <td>7.732636837291451</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 01:00:00</td>
+        
+        <td>7.698301779824018</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-20 00:00:00</td>
+        
+        <td>13.035282509828589</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 23:00:00</td>
+        
+        <td>15.033386398496424</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 22:00:00</td>
+        
+        <td>17.303642068137325</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 21:00:00</td>
+        
+        <td>14.600669155910618</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 20:00:00</td>
+        
+        <td>19.157467341479567</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 19:00:00</td>
+        
+        <td>12.077324109242484</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 18:00:00</td>
+        
+        <td>15.486300926128411</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 17:00:00</td>
+        
+        <td>8.735761946242281</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 16:00:00</td>
+        
+        <td>10.571099613102694</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 15:00:00</td>
+        
+        <td>11.6608291965231</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 14:00:00</td>
+        
+        <td>8.244180852003925</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 13:00:00</td>
+        
+        <td>11.994118397245062</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 12:00:00</td>
+        
+        <td>10.7386469351518</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 11:00:00</td>
+        
+        <td>11.444447322149966</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 10:00:00</td>
+        
+        <td>8.775060610028934</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 09:00:00</td>
+        
+        <td>7.293298598552061</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 08:00:00</td>
+        
+        <td>4.19391281232608</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 07:00:00</td>
+        
+        <td>8.230084293365262</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 06:00:00</td>
+        
+        <td>10.256414400346424</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 05:00:00</td>
+        
+        <td>8.968765567261393</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 04:00:00</td>
+        
+        <td>10.25925790964852</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 03:00:00</td>
+        
+        <td>9.630357813726103</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 02:00:00</td>
+        
+        <td>11.243722122419006</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 01:00:00</td>
+        
+        <td>13.975134073151397</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-19 00:00:00</td>
+        
+        <td>6.831114592934103</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 23:00:00</td>
+        
+        <td>9.577125207958591</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 22:00:00</td>
+        
+        <td>11.727431126060502</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 21:00:00</td>
+        
+        <td>20.294820893658468</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 20:00:00</td>
+        
+        <td>14.999591076515324</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 19:00:00</td>
+        
+        <td>18.22877555389724</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 18:00:00</td>
+        
+        <td>16.468096863779856</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 17:00:00</td>
+        
+        <td>14.141120560964351</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 16:00:00</td>
+        
+        <td>7.865288895498238</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 15:00:00</td>
+        
+        <td>11.399127727061297</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 14:00:00</td>
+        
+        <td>8.729235791552844</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 13:00:00</td>
+        
+        <td>3.8084490099962776</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 12:00:00</td>
+        
+        <td>6.423071437639242</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 11:00:00</td>
+        
+        <td>3.5962060577411146</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 10:00:00</td>
+        
+        <td>8.230869211020517</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 09:00:00</td>
+        
+        <td>2.269131638878944</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 08:00:00</td>
+        
+        <td>5.616342337796231</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 07:00:00</td>
+        
+        <td>7.630364325906122</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 06:00:00</td>
+        
+        <td>6.358566424814907</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 05:00:00</td>
+        
+        <td>7.606734143365796</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 04:00:00</td>
+        
+        <td>5.766903823704343</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 03:00:00</td>
+        
+        <td>12.15517269626761</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 02:00:00</td>
+        
+        <td>5.660421193773856</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 01:00:00</td>
+        
+        <td>8.888579330394666</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2018-12-18 00:00:00</td>
+        
+        <td>10.066639315705864</td>
+        
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+        </div>
+        <!-- /.container-fluid -->
+
+      </div>
+      <!-- End of Main Content -->
+
+      <!-- Footer -->
+      <footer class="sticky-footer bg-white">
+  <div class="container my-auto">
+    <div class="copyright text-center my-auto">
+      <span>Released under <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public
+          License v3.0</a>. Copyright &copy; NRECA
+        <script>document.write(new Date().getFullYear())</script>.
+      </span>
+      <div style="margin: 5px;">
+        <span>Found a problem? Submit <a
+            href="https://github.com/dpinney/coopforecast/issues/new?labels=bug&template=bug.yaml">a bug
+            report</a></span>
+      </div>
+    </div>
+  </div>
+  </div>
+</footer>
+      <!-- End of Footer -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+  <!-- Scroll to Top Button-->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+
+  <!-- Logout Modal-->
+  <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+          <a class="btn btn-primary" href="demo/logout">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+
+</html>

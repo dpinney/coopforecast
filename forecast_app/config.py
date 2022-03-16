@@ -123,8 +123,10 @@ class DemoConfig(Config):
     NAME = "demo"
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/demo.db"
     FREEZER_DESTINATION = "../demo"
-    FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS = True
+    FREEZER_IGNORE_MIMETYPE_WARNINGS = True
     FREEZER_RELATIVE_URLS = True  # False?
+    # FREEZER_REDIRECT_POLICY =
+    FREEZER_BASE_URL = "https://coopforecast.com/demo/"
 
 
 configs = [TestingConfig, ProductionConfig, DevelopmentConfig, DemoConfig]
