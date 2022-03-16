@@ -5,6 +5,8 @@ from flask_frozen import Freezer
 
 from forecast_app import create_app, views
 
+# from forecast_app.utils import safe_flash
+
 # Remove login permissions from all views
 views.ForecastWeatherDataView.decorators = []
 views.HistoricalLoadDataView.decorators = []
@@ -24,9 +26,8 @@ freezer = Freezer(app, with_no_argument_rules=False)
 
 @freezer.register_generator
 def url_generator():
-    from forecast_app.models import ForecastModel
 
-    yield "/"
+    # safe_flash("Incorrect username and/or password.")
     yield "/forecast-weather-data"
     yield "/historical-load-data"
     yield "/historical-weather-data"
