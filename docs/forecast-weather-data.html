@@ -1,0 +1,568 @@
+<!doctype html>
+
+<head>
+  <title>Forecast Weather Data - Load Forecaster</title>
+
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡️</text></svg>">
+
+  <!-- Everything for bootstrap theme -->
+  <link rel="stylesheet" href="static/css/sb-admin-2.css">
+  <link href="static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet"
+    type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <script src="static/vendor/jquery/jquery.min.js"></script>
+  <script src="static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="static/vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="static/js/sb-admin-2.js"></script>
+
+  <!-- Highcharts -->
+  <script src="static/js/highstocks/highstock.js"></script>
+  <script src="static/js/highstocks/modules/data.js"></script>
+  <script src="static/js/highstocks/modules/exporting.js"></script>
+  <script src="static/js/highstocks/modules/export-data.js"></script>
+
+  <!-- Add site-specific CSS and JS -->
+  <link href="static/css/main.css" rel="stylesheet">
+  <script src="static/js/main.js"></script>
+
+  
+
+  
+</head>
+
+
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+
+    <!-- Sidebar -->
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+  <!-- Sidebar - Brand -->
+  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="forecast">
+    <div class="sidebar-brand-text mx-3">Load Forecaster</div>
+  </a>
+
+  <!-- Divider -->
+  <hr class="sidebar-divider my-0">
+
+  <!-- Nav Item - Dashboard -->
+  
+  <li class="nav-item 
+
+
+
+
+">
+    <a class="nav-link" href="latest-forecast.html"><i
+        class="fas fa-fw fa-binoculars"></i><span>Forecast</span></a>
+  </li>
+  
+  
+  <li class="nav-item 
+
+
+
+
+">
+    <a class="nav-link" href="forecast-models.html"><i
+        class="fas fa-fw fa-list"></i><span>All Models</span></a>
+  </li>
+  
+
+  <!-- Divider -->
+  <hr class="sidebar-divider">
+
+  <div class="sidebar-heading">
+    Upload & Review Data
+  </div>
+  
+  <li class="nav-item 
+
+
+
+
+">
+    <a class="nav-link" href="historical-load-data.html"><i
+        class="fas fa-fw fa-bolt"></i><span>Load Data</span></a>
+  </li>
+  
+
+  <!-- Nav Item - Pages Collapse Menu -->
+  
+  <li class="nav-item 
+
+
+
+active
+">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
+      aria-controls="collapseTwo">
+      <i class="fas fa-fw fa-cloud"></i>
+      <span>Weather Data</span>
+    </a>
+    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+      <div class="bg-white py-2 collapse-inner rounded">
+        <!-- <h6 class="collapse-header">Custom Components:</h6> -->
+        <a class="collapse-item"
+          href="historical-weather-data.html">Historical</a>
+        <a class="collapse-item"
+          href="forecast-weather-data.html">Forecast</a>
+      </div>
+    </div>
+  </li>
+  
+
+
+  <!-- Divider -->
+  <hr class="sidebar-divider">
+
+  
+  <li class="nav-item 
+
+
+
+
+">
+    <a class="nav-link" href="model-settings.html">
+      <i class="fas fa-fw fa-cogs"></i>
+      <span>Model Settings</span></a>
+  </li>
+  
+
+  
+  <li class="nav-item 
+
+
+
+
+">
+    <a class="nav-link" href="instructions.html">
+      <i class="fas fa-fw fa-book"></i>
+      <span>Instructions</span></a>
+  </li>
+  
+
+  <!-- Sidebar Toggler (Sidebar) -->
+  <div class="text-center d-none d-md-inline">
+    <button class="rounded-circle border-0" id="sidebarToggle"></button>
+  </div>
+</ul>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+
+        <!-- Topbar -->
+        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+          <!-- Sidebar Toggle (Topbar) -->
+          <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+          </button>
+
+          <!-- Topbar Navbar -->
+          <ul class="navbar-nav ml-auto">
+            <!-- Nav Item - User Information -->
+            <li class="nav-item dropdown no-arrow">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <img height="65px" src="static/img/burt.png">
+              </a>
+              <!-- Dropdown - User Information -->
+              <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                <a class="dropdown-item" href="user-settings">
+                  <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                  Settings
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                  <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                  Logout
+                </a>
+              </div>
+            </li>
+
+          </ul>
+
+        </nav>
+        <!-- End of Topbar -->
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          
+
+
+<h1>Forecast Weather Data</h1>
+<ul>
+  <li><a href="#upload">Upload Data</a></li>
+  <li><a href="#chart">Chart</a></li>
+  <li><a href="#table">Table</a></li>
+</ul>
+
+<div class="card shadow mb-4" id="upload">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Upload Data</h6>
+  </div>
+  <div class="card-body">
+    <p>
+      <a href="/instructions#forecast-weather-data" class="btn btn-secondary btn-sm">Read data upload instructions</a>
+      <a href="https://gist.github.com/kmcelwee/e56308a8096356fcdc699ca168904aa4" class="btn btn-secondary btn-sm">View an example dataset</a>
+    </p>
+
+    <div class="input-group mb-3">
+      <form method=post enctype=multipart/form-data>
+        <input type=file name=file>
+        <input type=submit value=Upload>
+      </form>
+    </div>
+
+    
+    <hr>
+    <form action="/forecast-weather-data/sync" method="POST">
+      <input type=submit value="Sync data with The National Weather Service">
+    </form>
+    
+  </div>
+</div>
+
+
+<div class="card shadow mb-4" id="chart">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-chart" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-chart">
+    <h6 class="m-0 font-weight-bold text-primary">Data summary</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-chart">
+    <div class="card-body">
+      <dl>
+        <dt>Number of data points</dt>
+        <dd>24</dd>
+        <dt>First timestamp</dt>
+        <dd>2019-01-01 00:00:00</dd>
+        <dt>Latest timestamp</dt>
+        <dd>2019-01-01 23:00:00</dd>
+        
+        <dt>Missing values</dt>
+        <dd>0</dd>
+        
+      </dl>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="card shadow mb-4" id="chart">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-chart" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-chart">
+    <h6 class="m-0 font-weight-bold text-primary">Charts</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-chart">
+    <div class="card-body">
+      <div id="chart-container" style="height: 400px; min-width: 310px"></div>
+      <script type="text/javascript">
+        create_timeseries_chart(id = 'chart-container', data = [{"data": [[1546300800000, 4.124172694385234], [1546304400000, 4.3412422776368125], [1546308000000, 3.23765872912431], [1546311600000, 4.84284013517382], [1546315200000, 2.8617770506164755], [1546318800000, 6.032119197135247], [1546322400000, 5.088355268896954], [1546326000000, 5.8534907916631225], [1546329600000, 3.5899560658778293], [1546333200000, 3.311269950514014], [1546336800000, 5.595837110255957], [1546340400000, -1.8258401364720416], [1546344000000, 0.183690069164444], [1546347600000, 0.2291304523933493], [1546351200000, 5.258593859842503], [1546354800000, 3.062565769558921], [1546358400000, 1.149312113789862], [1546362000000, 6.524910495108818], [1546365600000, 2.906820210505669], [1546369200000, 3.1623370546651333], [1546372800000, 2.051292497892394], [1546376400000, 2.3597794447978964], [1546380000000, 3.5147050330864165], [1546383600000, 6.232769253266892]], "name": "tempc"}], title = 'Forecast Weather Data')
+      </script>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="card shadow mb-4" id="table">
+  <!-- Card Header - Accordion -->
+  <a href="#collapse-table" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true"
+    aria-controls="collapse-table">
+    <h6 class="m-0 font-weight-bold text-primary">Table</h6>
+  </a>
+  <!-- Card Content - Collapse -->
+  <div class="collapse show" id="collapse-table">
+    <div class="card-body">
+      <h3>Forecast Data</h3>
+      <div class="table-responsive " id="large-table">
+  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+    <thead>
+      <tr>
+        
+        <th>timestamp</th>
+        
+        <th>value</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        
+        <td>2019-01-01 23:00:00</td>
+        
+        <td>6.232769253266892</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 22:00:00</td>
+        
+        <td>3.5147050330864165</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 21:00:00</td>
+        
+        <td>2.3597794447978964</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 20:00:00</td>
+        
+        <td>2.051292497892394</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 19:00:00</td>
+        
+        <td>3.1623370546651333</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 18:00:00</td>
+        
+        <td>2.906820210505669</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 17:00:00</td>
+        
+        <td>6.524910495108818</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 16:00:00</td>
+        
+        <td>1.149312113789862</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 15:00:00</td>
+        
+        <td>3.062565769558921</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 14:00:00</td>
+        
+        <td>5.258593859842503</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 13:00:00</td>
+        
+        <td>0.2291304523933493</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 12:00:00</td>
+        
+        <td>0.183690069164444</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 11:00:00</td>
+        
+        <td>-1.8258401364720416</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 10:00:00</td>
+        
+        <td>5.595837110255957</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 09:00:00</td>
+        
+        <td>3.311269950514014</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 08:00:00</td>
+        
+        <td>3.5899560658778293</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 07:00:00</td>
+        
+        <td>5.8534907916631225</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 06:00:00</td>
+        
+        <td>5.088355268896954</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 05:00:00</td>
+        
+        <td>6.032119197135247</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 04:00:00</td>
+        
+        <td>2.8617770506164755</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 03:00:00</td>
+        
+        <td>4.84284013517382</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 02:00:00</td>
+        
+        <td>3.23765872912431</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 01:00:00</td>
+        
+        <td>4.3412422776368125</td>
+        
+      </tr>
+      
+      <tr>
+        
+        <td>2019-01-01 00:00:00</td>
+        
+        <td>4.124172694385234</td>
+        
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+        </div>
+        <!-- /.container-fluid -->
+
+      </div>
+      <!-- End of Main Content -->
+
+      <!-- Footer -->
+      <footer class="sticky-footer bg-white">
+        <div class="container my-auto">
+          <div class="copyright text-center my-auto">
+            <span>Released under <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public
+                License v3.0</a>. Copyright &copy; NRECA
+              <script>document.write(new Date().getFullYear())</script>.
+            </span>
+            <div style="margin: 5px;">
+              <span>Found a problem? Submit <a
+                  href="https://github.com/dpinney/coopforecast/issues/new?labels=bug&template=bug.yaml">a bug
+                  report</a></span>
+            </div>
+          </div>
+        </div>
+    </div>
+    </footer>
+    <!-- End of Footer -->
+
+  </div>
+  <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+  <!-- Scroll to Top Button-->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+
+  <!-- Logout Modal-->
+  <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+          <a class="btn btn-primary" href="logout">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+
+</html>

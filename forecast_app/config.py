@@ -122,7 +122,7 @@ class DemoConfig(Config):
     # FREEZE CONFIGS
     NAME = "demo"
     SQLALCHEMY_DATABASE_URI = "sqlite:///db/demo.db"
-    FREEZER_DESTINATION = "../build"
+    FREEZER_DESTINATION = "../docs"
     FREEZER_IGNORE_MINIMAL_MIMETYPE_WARNINGS = True
     FREEZER_RELATIVE_URLS = True  # False?
 
