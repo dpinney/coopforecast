@@ -1,3 +1,8 @@
+"""
+A utility to generate static pages from the forecast app. There are many hacks
+in this file, but further investment wasn't deemed appropriate. 
+"""
+
 import os
 import shutil
 
@@ -16,9 +21,6 @@ views.ForecastModelListView.decorators = []
 views.ForecastModelDetailView.decorators = []
 
 app = create_app("demo")
-# for view in dir(views):
-#     if hasattr(getattr(views, view), "decorators"):
-#         getattr(views, view).decorators = []
 
 freezer = Freezer(app, with_no_argument_rules=False)
 
@@ -32,14 +34,9 @@ def url_generator():
     yield "/logout"
     yield "/instructions"
 
-    # for model in ForecastModel.query.all():
-    #     yield f"/forecast-models/{model.slug}"
-
-    # yield "/forecast-models"
-
 
 def insert_banner(page_path):
-    """Insert a banner at the top of the page."""
+    """Insert a banner at the top of the page to warn users about lack of functionality."""
     with open(page_path) as f:
         soup = bs4.BeautifulSoup(f.read(), features="html.parser")
 

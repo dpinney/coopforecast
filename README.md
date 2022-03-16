@@ -96,6 +96,7 @@ pdoc -o docs forecast_app
 ```
 
 and commit updates to publish to the static site.
+The site is available at coopforecast.com/docs.
 
 ### Install pre-commit
 
@@ -106,3 +107,26 @@ pre-commit install
 ```
 
 This will prevent you from committing un-styled code.
+
+### Generate the demo static site
+
+This process requires libraries separate from `requirements.txt`. To install these libraries, run the following command:
+
+```
+pip install bs4 Frozen-Flask
+```
+
+Load a database with the intended demo data:
+
+```sh
+python cli.py demo --config demo
+```
+
+Run the script to generate the updated static site:
+```sh
+python static-generator.py
+```
+
+And commit the files. See `config.py` under `DemoConfig` to see Frozen-Flask's configuration.
+The site is available at coopforecast.com/demo.
+
