@@ -33,8 +33,6 @@ def url_generator():
     yield "/logout"
 
     yield "/instructions"
-    yield "/user-settings"
-    yield "/model-settings"
 
     # for model in ForecastModel.query.all():
     #     yield f"/forecast-models/{model.slug}"
