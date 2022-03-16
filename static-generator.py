@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from flask_frozen import Freezer
 
@@ -42,10 +43,17 @@ def url_generator():
 if __name__ == "__main__":
     # freezer.freeze()
 
+    demo_dir = app.config["FREEZER_DESTINATION"]
+
     # HACK: Add .html to all files
     os.chdir("forecast_app")
-    for file in os.listdir(app.config["FREEZER_DESTINATION"]):
-        path = os.path.join(app.config["FREEZER_DESTINATION"], file)
+    for file in os.listdir(demo_dir):
+        path = os.path.join(demo_dir, file)
         if os.path.isfile(path) and "." not in file:
             new_name = path + ".html"
             os.rename(path, new_name)
+
+    # HACK: Set index page to the latest forecast
+    latest_forecast_path = os.path.join(demo_dir, "latest-forecast.html")
+    login_path = os.path.join(demo_dir, "index.html")
+    shutil.copyfile(latest_forecast_path, login_path)
