@@ -17,11 +17,11 @@ def load_demo_db(app):
     """Loading data via CSV is a lengthy process. Store a backup, and refresh when necessary."""
     test_path = db_path(app)
     if os.path.exists(BACKUP_DB_PATH):
-        os.system(f"cp {BACKUP_DB_PATH} {test_path}")
+        shutil.copyfile(BACKUP_DB_PATH, test_path)
     else:
         init_db()
         upload_demo_data()
-        os.system(f"cp {test_path} {BACKUP_DB_PATH}")
+        shutil.copyfile(test_path, BACKUP_DB_PATH)
 
 
 def db_path(app):

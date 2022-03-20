@@ -1,5 +1,6 @@
 import datetime
 import os
+import shutil
 from subprocess import Popen
 from urllib.parse import urljoin
 
@@ -171,7 +172,7 @@ def backup(
     backup_db_path = os.path.join(
         export_dir, f"{local_db.split('/')[-1]}-{export_id}.db"
     )
-    os.popen(f"cp {db_path} {backup_db_path}")
+    shutil.copyfile(db_path, backup_db_path)
 
     # TODO: BACKUP MODELS
 
