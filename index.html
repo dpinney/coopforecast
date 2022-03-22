@@ -29,7 +29,7 @@
       margin: 20px
     }
 
-    .card:hover {
+    .card-expand:hover {
       transform: scale(1.05);
       transition: 200ms;
     }
@@ -67,8 +67,21 @@
   <div class="container">
     <div class="row">
       <div class="col">
+        <div class="card shadow-lg">
+          <div class="card-body">
+            <p><code>coopforecast</code> is a web application that uses deep learning networks to generate day-ahead
+              load forecast for electric utilities. This tool is especially useful for informing demand management
+              decisions.
+              When configured, it syncs with the National Weather Service, ASOS, and your utility to
+              provide daily forecasts automatically.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
         <a href="/docs">
-          <div class="card shadow-lg">
+          <div class="card card-expand shadow-lg">
             <div class="card-body text-center">
               <p>
                 <i class="fas fa-fw fa-book fa-5x"></i>
@@ -83,7 +96,7 @@
       </div>
       <div class="col">
         <a href="/demo/">
-          <div class="card shadow-lg">
+          <div class="card card-expand shadow-lg">
             <div class="card-body text-center">
               <p>
                 <i class="fa fa-bar-chart fa-5x" aria-hidden="true"></i>
@@ -98,7 +111,7 @@
       </div>
       <div class="col">
         <a href="https://github.com/dpinney/coopforecast">
-          <div class="card shadow-lg">
+          <div class="card card-expand shadow-lg">
             <div class="card-body text-center">
               <p>
                 <i class="fab fa-github fa-5x" aria-hidden="true"></i>
@@ -111,24 +124,6 @@
           </div>
       </div>
       </a>
-    </div>
-    <div class="row">
-      <div class="col">
-        <div class="card shadow-lg">
-          <div class="card-body">
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nihil recusandae quos at ut, corporis
-              exercitationem
-              a, excepturi aut enim labore, vitae magni? Expedita nulla impedit voluptatem voluptatibus, praesentium
-              culpa
-              recusandae!</p>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nihil recusandae quos at ut, corporis
-              exercitationem
-              a, excepturi aut enim labore, vitae magni? Expedita nulla impedit voluptatem voluptatibus, praesentium
-              culpa
-              recusandae!</p>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </body>
