@@ -31,6 +31,10 @@ def restart_db(config: str = "dev"):
     #  included as options in deploy()
     app = create_app(config)
     with app.app_context():
+        if os.path.exists(app.config["SQLALCHEMY_DATABASE_URI"]):
+            all_models = ForecastModel.query.all()
+            for model in all_models:
+                model.delete()
         init_db()
 
 
@@ -41,6 +45,10 @@ def demo(config: str = "dev"):
     #  included as options in deploy()
     app = create_app(config)
     with app.app_context():
+        if os.path.exists(app.config["SQLALCHEMY_DATABASE_URI"]):
+            all_models = ForecastModel.query.all()
+            for model in all_models:
+                model.delete()
         init_db()
         upload_demo_data()
 
