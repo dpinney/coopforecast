@@ -110,12 +110,11 @@ class DataSplit:
             [
                 np_a[i : i + self.hours_prior]
                 for i in range(np_a.shape[0] - self.hours_prior)
-                # NOTE: Bumping up on RAM on VM since this 24x's the size of
-                #  the data we're working with. This'll take a fifth of the data
-                #  we're creating. It's important that this number not be divisible
-                #  by 24 so that we have a diverse dataset. It's important to also
-                #  increase the number of epochs.
-                if i % 5 == 0
+                # NOTE: If you bump up against the RAM of your machine, uncomment the following line.
+                #  This'll take a fifth of the data we're creating. It's important that this number
+                #  not be divisible by 24 so that we have a diverse dataset. It's also important
+                #  to increase the number of epochs.
+                # if i % 5 == 0
             ]
         )
 
