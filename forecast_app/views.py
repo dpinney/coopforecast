@@ -248,7 +248,8 @@ class ForecastModelListView(MethodView):
 
     def post(self):
         """Generate a new forecast model."""
-        new_model = ForecastModel()
+        # Use `quick_init` so we don't generate the dataframe until the subprocess
+        new_model = ForecastModel(quick_init=True)
         new_model.save()
         print(f"Starting model {new_model.creation_date}")
         # NOTE: For testing, send 'mock' as a parameter to avoid lengthy training
@@ -257,7 +258,7 @@ class ForecastModelListView(MethodView):
             process = Process(target=time.sleep, args=(3,))
         else:
             process = Process(
-                target=new_model.launch_model, args=(current_app.config["NAME"],)
+                target=new_model.launch_subprocess, args=(current_app.config["NAME"],)
             )
         process.start()
         new_model.store_process_id(process.pid)

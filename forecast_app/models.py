@@ -40,8 +40,15 @@ class ForecastModel(db.Model):
     COMPLETED_SUCCESSFULLY = "COMPLETED"
     FAILURE = "FAILURE"
 
-    def __init__(self):
-        """Collect the current state of the database and prepare a model for training."""
+    def __init__(self, quick_init=False):
+        """Collect the current state of the database and prepare a model for training.
+
+        quick_init: If True, don't collect the dataframe from the database. Because
+           collecting a dataframe can take a few seconds, this is useful for pushing
+           this logic to a subprocess when loading a web page. If this option is used,
+           `collect_training_data` and `store_df` must be called manually or use
+           `launch_subprocess`.
+        """
 
         # NOTE: Object is initialized from state of the database
         # First ensure that the environment is prepared to create a new model
@@ -72,8 +79,9 @@ class ForecastModel(db.Model):
         ]
         self.epochs = current_app.config["EPOCHS"]
 
-        df = self.collect_training_data()
-        self.store_df(df)
+        if not quick_init:
+            df = self.collect_training_data()
+            self.store_df(df)
 
     @property
     def model_filename(self):
@@ -147,20 +155,23 @@ class ForecastModel(db.Model):
     def __repr__(self):
         return f"<ForecastModel {self.creation_date}>"
 
-    def launch_model(self, app_config):
+    def launch_subprocess(self, app_config):
         """Launch the model's training in a separate process."""
-        # TODO: This should be `launch_model_suprocess`, and then `launch_model` should be the actual process
-        try:
-            # HACK: Because this is launched in another thread, we need to
-            #       recreate the app context (!) Please think of a better way
-            #       to do this.
-            # https://www.reddit.com/r/flask/comments/5jrrsu/af_appapp_context_in_thread_throws_working/
-            from forecast_app import create_app
+        # HACK: Because this is launched in another thread, we need to
+        #       recreate the app context (!) Please think of a better way
+        #       to do this.
+        # https://www.reddit.com/r/flask/comments/5jrrsu/af_appapp_context_in_thread_throws_working/
+        from forecast_app import create_app
 
-            app = create_app(app_config)
-            app.app_context().push()
+        app = create_app(app_config)
+        app.app_context().push()
+
+        df = self.collect_training_data()
+        self.store_df(df)
+
+        try:
             print("Executing forecast...")
-            self._execute_forecast()
+            self.execute_forecast()
             print("Finished with forecast...")
             self.store_process_id(self.COMPLETED_SUCCESSFULLY)
         except Exception as e:
@@ -214,7 +225,10 @@ class ForecastModel(db.Model):
 
     def get_df(self):
         """Return the dataframe used for training."""
-        return pd.read_csv(self.df_path, parse_dates=["dates"])
+        if os.path.exists(self.df_path):
+            return pd.read_csv(self.df_path, parse_dates=["dates"])
+        else:
+            return None
 
     def get_model(self):
         """Return the model."""
@@ -223,7 +237,7 @@ class ForecastModel(db.Model):
         else:
             return None
 
-    def _execute_forecast(self):
+    def execute_forecast(self):
         """Execute the forecast (outside a thread.) And save all info after finishing.
 
         Given the cached dataframe collected from the database's state when the

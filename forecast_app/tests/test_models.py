@@ -119,7 +119,7 @@ class TestForecastModel:
         assert not new_model.exited_successfully
         assert not os.path.exists(new_model.process_file)
 
-        process = Process(target=new_model.launch_model)
+        process = Process(target=new_model.execute_forecast)
         process.start()
         new_model.store_process_id(process.pid)
         assert new_model.is_running
