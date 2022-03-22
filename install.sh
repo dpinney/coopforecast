@@ -16,21 +16,20 @@ sudo ln -s $REPO/systemd/cert.timer /etc/systemd/system/cert.timer
 export EMAIL=$(python3 -c "from forecast_app.config import EMAIL; print(EMAIL)")
 export DOMAIN=$(python3 -c "from forecast_app.config import DOMAIN; print(DOMAIN)")
 
-# If crontab hasn't been set up, set it up
-if [ $(crontab -l | grep -v "^#" | wc -l) -eq 0 ]; then
-    export ADMIN_USER=$(python3 -c "from forecast_app.secret_config import ADMIN_USER; print(ADMIN_USER)")
-    export ADMIN_PASSWORD=$(python3 -c "from forecast_app.secret_config import ADMIN_PASSWORD; print(ADMIN_PASSWORD)")
-    # TODO: Update this login config to use the domain
-    export LOGIN_CONFIG="--username $ADMIN_USER --password='$ADMIN_PASSWORD' --url https://burtcoppd.coopforecast.com"
+# Remove crontab, then add new crontab
+crontab -r
+export ADMIN_USER=$(python3 -c "from forecast_app.secret_config import ADMIN_USER; print(ADMIN_USER)")
+export ADMIN_PASSWORD=$(python3 -c "from forecast_app.secret_config import ADMIN_PASSWORD; print(ADMIN_PASSWORD)")
+# TODO: Update this login config to use the domain
+export LOGIN_CONFIG="--username $ADMIN_USER --password='$ADMIN_PASSWORD' --url https://burtcoppd.coopforecast.com"
 
-    # Pull from the weather APIs every hour
-    export WEATHER_SYNC_CRON="0 * * * * /usr/bin/python3 $REPO/cli.py sync-weather-data $LOGIN_CONFIG"
-    (crontab -l ; echo "$WEATHER_SYNC_CRON")| crontab -
-    
-    # Every day at 7:05 am, launch a new model
-    export FORECAST_INIT_CRON="05 07 * * * /usr/bin/python3 $REPO/cli.py launch-new-model $LOGIN_CONFIG"
-    (crontab -l ; echo "$FORECAST_INIT_CRON")| crontab -
-fi
+# Pull from the weather APIs every hour
+export WEATHER_SYNC_CRON="0 * * * * /usr/bin/python3 $REPO/cli.py sync-weather-data $LOGIN_CONFIG"
+(crontab -l ; echo "$WEATHER_SYNC_CRON")| crontab -
+
+# Every day at 7:05 am, launch a new model
+export FORECAST_INIT_CRON="05 07 * * * /usr/bin/python3 $REPO/cli.py launch-new-model $LOGIN_CONFIG"
+(crontab -l ; echo "$FORECAST_INIT_CRON")| crontab -
 
 # Setup TLS
 sudo certbot certonly --standalone --agree-tos -n -m $EMAIL -d $DOMAIN
