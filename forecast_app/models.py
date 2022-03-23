@@ -259,12 +259,20 @@ class ForecastModel(db.Model):
         self.save()
 
     @classmethod
-    def is_prepared(cls):
-        """Return the start and end timestamps of when the current database can forecast."""
+    def is_prepared(cls, is_prepared_dict=None):
+        """Return the start and end timestamps of when the current database can forecast.
 
-        hld_is_prepared = HistoricalLoadData.is_prepared()
-        hwd_is_prepared = HistoricalWeatherData.is_prepared()
-        fwd_is_prepared = ForecastWeatherData.is_prepared()
+        `is_prepared_dict` is useful to cut down on runtime. It's a bit of a hack.
+        """
+
+        if is_prepared_dict is None:
+            hld_is_prepared = HistoricalLoadData.is_prepared()
+            hwd_is_prepared = HistoricalWeatherData.is_prepared()
+            fwd_is_prepared = ForecastWeatherData.is_prepared()
+        else:
+            hld_is_prepared = is_prepared_dict["Historical load data"]
+            hwd_is_prepared = is_prepared_dict["Historical weather data"]
+            fwd_is_prepared = is_prepared_dict["Forecast weather data"]
 
         if not all([hld_is_prepared, hwd_is_prepared, fwd_is_prepared]):
             return {}

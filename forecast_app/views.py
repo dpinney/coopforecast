@@ -268,12 +268,12 @@ class ForecastModelListView(MethodView):
     def get(self):
         """Render the list of all forecast models and show the state of all data views"""
         models = ForecastModel.query.order_by(desc(ForecastModel.creation_date)).all()
-        model_is_prepared = ForecastModel.is_prepared()
         data_is_prepared = {
             "Historical load data": HistoricalLoadData.is_prepared(),
             "Historical weather data": HistoricalWeatherData.is_prepared(),
             "Forecast weather data": ForecastWeatherData.is_prepared(),
         }
+        model_is_prepared = ForecastModel.is_prepared(is_prepared_dict=data_is_prepared)
 
         return render_template(
             "forecast-model-list.html",
