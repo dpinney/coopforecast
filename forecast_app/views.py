@@ -7,7 +7,6 @@ from datetime import date, timedelta
 from multiprocessing import Process
 
 import flask_login
-import pandas as pd
 from flask import (
     current_app,
     redirect,
@@ -17,7 +16,7 @@ from flask import (
     url_for,
 )
 from flask.views import MethodView, View
-from sqlalchemy import desc, null
+from sqlalchemy import desc
 
 from forecast_app import burtcoppd
 from forecast_app.models import (
@@ -26,7 +25,7 @@ from forecast_app.models import (
     HistoricalLoadData,
     HistoricalWeatherData,
 )
-from forecast_app.utils import ADMIN_USER, db, safe_error, safe_flash, upload_file
+from forecast_app.utils import ADMIN_USER, db, safe_flash, upload_file
 from forecast_app.weather import AsosRequest, NwsForecastRequest
 
 # TODO: Set default ordering to milliseconds / timestamps to prevent chart mixups
@@ -111,7 +110,7 @@ class DataView(MethodView):
         """Render the data view"""
         # NOTE: Just pass self?
         return render_template(
-            f"data-view.html",
+            "data-view.html",
             **{
                 "name": self.view_name,
                 "table": self.get_table(),
@@ -182,8 +181,7 @@ class LatestForecastView(MethodView):
         model = self.get_latest_successful_model()
         if model:
             return ForecastModelDetailView().get(slug=model.slug)
-        else:
-            return render_template("latest-forecast.html")
+        return render_template("latest-forecast.html")
 
 
 class LoginView(MethodView):
@@ -194,13 +192,16 @@ class LoginView(MethodView):
 
     def post(self):
         """Given a POST request to the login page, authenticate the user and redirect"""
-        if request.form.get("password") == current_app.config["ADMIN_PASSWORD"]:
+        if (
+            request.form.get("password") == current_app.config["ADMIN_PASSWORD"]
+            and request.form.get("username") == current_app.config["ADMIN_USER"]
+        ):
             remember = request.form.get("remember-me") == "on"
             flask_login.login_user(ADMIN_USER, remember=remember)
             return redirect(url_for("latest-forecast"))
         # NOTE: Some kind of attribute error is preventing me from simply using
         #  self.get(error=error). It's not occuring in other pages.
-        safe_flash("Incorrect username and/or password.")
+        safe_flash("Incorrect username and/or password.", "danger")
         return redirect(url_for("login"))
 
     def get(self):
