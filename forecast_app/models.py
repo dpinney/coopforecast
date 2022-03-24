@@ -132,7 +132,8 @@ class ForecastModel(db.Model):
         if self.is_running:
             os.kill(int(pid), signal.SIGKILL)
             self.store_process_id(self.FAILURE)
-        raise Exception("Model is not running.")
+        else:
+            raise Exception("Model is not running.")
 
     def save(self):
         """Save the model's state to the database. WARNING: Other queued changes will also be committed."""
