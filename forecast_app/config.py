@@ -16,7 +16,7 @@ EMAIL = "admin@coopforecast.com"
 DOMAIN = "burtcoppd.coopforecast.com"
 
 
-class Config(object):
+class Config:
     """Base configuration."""
 
     """Flask configuration."""

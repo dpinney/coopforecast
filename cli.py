@@ -19,7 +19,6 @@ from forecast_app.models import (
     HistoricalWeatherData,
 )
 from forecast_app.tests.test_weather import TestAsosRequest, TestNwsForecastRequest
-from forecast_app.views import ForecastWeatherDataSync, HistoricalWeatherDataSync
 
 typer_app = typer.Typer()
 

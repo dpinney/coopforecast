@@ -1,12 +1,7 @@
 """A collection of utilities to help with building and executing the machine learning model."""
 
 import datetime
-import os
-import pickle
 from datetime import date
-from datetime import datetime as dt
-from datetime import timedelta
-from os.path import join as pJoin
 
 import numpy as np
 import pandas as pd
@@ -172,7 +167,7 @@ def train_and_test_model(ds: DataSplit, epochs=20, save_file=None, tensorboard=F
         "test": model.evaluate(ds.test_X, ds.test_y, verbose=0),
     }
 
-    if save_file != None:
+    if save_file is not None:
         model.save(save_file)
 
     return model, accuracy
