@@ -98,9 +98,8 @@ class ForecastModel(db.Model):
             return self.NOT_STARTED
         elif pid in [self.COMPLETED_SUCCESSFULLY, self.FAILURE]:
             return pid
-        else:
-            # If pid is a number, it is a running process
-            return self.RUNNING
+        # If pid is a number, it is a running process
+        return self.RUNNING
 
     @property
     def is_running(self):
@@ -124,8 +123,7 @@ class ForecastModel(db.Model):
         if os.path.exists(self.process_file):
             with open(self.process_file, "r") as f:
                 return f.read()
-        else:
-            return None
+        return None
 
     def cancel(self):
         """Cancel the model's training if it is running. If it isn't running, raise an exception."""
@@ -134,8 +132,7 @@ class ForecastModel(db.Model):
         if self.is_running:
             os.kill(int(pid), signal.SIGKILL)
             self.store_process_id(self.FAILURE)
-        else:
-            raise Exception("Model is not running.")
+        raise Exception("Model is not running.")
 
     def save(self):
         """Save the model's state to the database. WARNING: Other queued changes will also be committed."""
@@ -229,15 +226,13 @@ class ForecastModel(db.Model):
         """Return the dataframe used for training."""
         if os.path.exists(self.df_path):
             return pd.read_csv(self.df_path, parse_dates=["dates"])
-        else:
-            return None
+        return None
 
     def get_model(self):
         """Return the model."""
         if os.path.exists(self.model_file):
             return tf.keras.models.load_model(self.model_file)
-        else:
-            return None
+        return None
 
     def store_prediction_data(self, model, data_split):
         """Store the prediction data in the model's dataframe."""
