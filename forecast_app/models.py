@@ -5,6 +5,7 @@ import os
 import shutil
 import signal
 
+import numpy as np
 import pandas as pd
 import tensorflow as tf
 from flask import current_app
@@ -207,10 +208,11 @@ class ForecastModel(db.Model):
         # TODO: Allow for different sized days
         # Remove all days that are not the same size
         df = pd.concat([df_h, df_f])
-        # TODO: This is preventing the model from training past midnight / dispatching
-        #  at any point in the day!
+
+        # Remove DST from the dates except for the last day
         d = dict(df.groupby(df.dates.dt.date)["dates"].count())
-        df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24)]
+        max_date = df.dates.dt.date.max()
+        df = df[df["dates"].dt.date.apply(lambda x: d[x] == 24 or x == max_date)]
 
         return df
 
@@ -237,6 +239,21 @@ class ForecastModel(db.Model):
         else:
             return None
 
+    def store_prediction_data(self, model, data_split):
+        """Store the prediction data in the model's dataframe."""
+        INT_PLACEHOLDER = -9999
+        df = data_split.df
+        predictions = model.predict(data_split.important_X).flatten()
+
+        # Pad the predictions with -9999 to match the length of the dataframe and then replace with NaNs
+        padded_predictions = np.insert(
+            predictions, 0, [INT_PLACEHOLDER] * (df.shape[0] % 24)
+        )
+        df["forecasted_load"] = padded_predictions
+        df["forecasted_load"] = df["forecasted_load"].replace(INT_PLACEHOLDER, np.nan)
+
+        self.store_df(df)
+
     def execute_forecast(self):
         """Execute the forecast (outside a thread.) And save all info after finishing.
 
@@ -245,17 +262,15 @@ class ForecastModel(db.Model):
         into training and testing sets, and train the model. Store all pertinent
         information in the database.
         """
-        hours_prior = current_app.config["HOURS_PRIOR"]
-
-        df = self.get_df()
-        data_split = lf.DataSplit(df, hours_prior=hours_prior)
+        data_split = lf.DataSplit(
+            self.get_df(), hours_prior=current_app.config["HOURS_PRIOR"]
+        )
 
         model, self.accuracy = lf.train_and_test_model(
             data_split, epochs=self.epochs, save_file=self.model_file, tensorboard=False
         )
 
-        df["forecasted_load"] = model.predict(data_split.important_X).flatten()
-        self.store_df(df)
+        self.store_prediction_data(model, data_split)
         self.save()
 
     @classmethod

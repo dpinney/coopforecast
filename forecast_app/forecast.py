@@ -96,9 +96,12 @@ class DataSplit:
         feature_count = r_df.shape[1]
         # The important predictions of the model are those that start at the hour we care about.
         #  Because we're cutting off the input df at the model.end_date, this should be evenly
-        #  divisible by 24.
-        # TODO: Double check that the start_date is equal to the model's starting hour.
-        self.important_X = r_df.to_numpy().reshape((-1, hours_prior, feature_count))
+        #  divisible by 24. We need to trim first few hours of the dataframe to make sure it is
+        #  evenly divisible by 24.
+        divisible_by_24_df = r_df.iloc[r_df.shape[0] % 24 :]
+        self.important_X = divisible_by_24_df.to_numpy().reshape(
+            (-1, hours_prior, feature_count)
+        )
 
     def _3d_transform(self, data):
         """Group the data into 24-hour, 3D tests.
