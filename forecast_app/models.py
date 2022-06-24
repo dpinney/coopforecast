@@ -192,6 +192,7 @@ class ForecastModel(db.Model):
         df_h = pd.merge(df_hl, df_hw, on="dates", how="inner")
         df_h = df_h.set_index("dates", drop=False)
         df_h = df_h.resample("h").last()
+        df_h['dates'] = df_h.index
 
         # Fill Nans for training data
         df_h["load"] = df_h["load"].interpolate(limit_direction="both")
