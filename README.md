@@ -9,7 +9,7 @@ Electric Utility Load Forecaster Application
 
 Coopforecast is a web application that generates a day-ahead load forecast for purposes of demand management. It automatically pulls in historical demand data, past weather behavior, and multi-day-ahead weather forecasts. 
 
-For an overview of the application please see our report (coming soon) or the documentation (also coming soon).
+For an overview of the application please see our [report](https://www.cooperative.com/programs-services/bts/Documents/TechSurveillance/Surveillance-Automated-Load-Forecasts-April-2022.pdf) or the [documentation](https://coopforecast.com/docs/forecast_app.html).
 
 <img width="468" alt="Picture1" src="https://user-images.githubusercontent.com/2131438/157679134-f577f822-da5d-4f9b-8771-a93a322adbc4.png">
 
